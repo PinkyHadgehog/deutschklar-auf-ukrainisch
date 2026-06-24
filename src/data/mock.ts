@@ -241,7 +241,16 @@ export const grammarCategories: { id: string; title: string; titleDe: string; to
       { slug: "personalpron-im-akkusativ", title: "Personalpronomen im Akkusativ", titleDe: "Personalpronomen im Akkusativ" },
       { slug: "verben-mit-akkusativ-a1", title: "Verben mit Akkusativ — дієслова з Akkusativ", titleDe: "Verben mit Akkusativ" },
     ]},
-    { slug: "dativ", title: "Dativ", titleDe: "Dativ", level: "A2", lessons: 8, progress: 45, premium: false },
+    { slug: "dativ", title: "A2 — Dativ (давальний)", titleDe: "Dativ", level: "A2", lessons: 8, progress: 0, premium: false, sub: [
+      { slug: "was-ist-dativ", title: "Was ist der Dativ? — що таке Dativ", titleDe: "Was ist der Dativ?" },
+      { slug: "artikel-im-dativ", title: "Artikel im Dativ — dem / der / dem / den +n", titleDe: "Artikel im Dativ" },
+      { slug: "personalpron-dativ", title: "Personalpronomen im Dativ — mir, dir, ihm, ihr…", titleDe: "Personalpronomen im Dativ" },
+      { slug: "possessiv-dativ", title: "Possessivpronomen im Dativ — meinem, meiner…", titleDe: "Possessivpronomen im Dativ" },
+      { slug: "verben-mit-dativ-a2", title: "Verben mit Dativ — helfen, danken, gehören…", titleDe: "Verben mit Dativ" },
+      { slug: "verben-akk-dat-a2", title: "Verben mit Akkusativ und Dativ — geben, schenken, zeigen…", titleDe: "Verben mit Akkusativ und Dativ" },
+      { slug: "praep-mit-dativ-a2", title: "Präpositionen mit Dativ — aus, bei, mit, nach, seit, von, zu", titleDe: "Präpositionen mit Dativ" },
+      { slug: "dativ-position", title: "Position: Dativ und Akkusativ im Satz", titleDe: "Position: Dativ und Akkusativ" },
+    ]},
     { slug: "genitiv", title: "Genitiv", titleDe: "Genitiv", level: "B1", lessons: 6, progress: 0, premium: true },
   ]},
   { id: "wortbildung", title: "Словотвір", titleDe: "Wortbildung", topics: [
