@@ -6,12 +6,14 @@ import { substantiveA1 } from "./substantive";
 import { artikelA1 } from "./artikel";
 import { pronomenA1 } from "./pronomen";
 import { faelleA1 } from "./faelle";
+import { alphabetA1 } from "./alphabet";
 import type { A1Map } from "./_helpers";
 import type { LessonContent } from "@/content/lessons";
 import type { LessonExtras } from "@/content/lessonExtensions";
 import type { ExerciseItem } from "@/content/exerciseSets";
 
 const all: A1Map = {
+  ...alphabetA1,
   ...verbenA1,
   ...substantiveA1,
   ...artikelA1,
