@@ -5,6 +5,7 @@
 
 import type { LessonContent } from "./lessons";
 import type { ExerciseItem } from "./exerciseSets";
+import { a1ExtraLessons, a1Extras, a1Exercises15 } from "./a1";
 
 export interface RuleBoxData {
   title?: string;
@@ -30,7 +31,7 @@ export interface LessonExtras {
 }
 
 // ============== EXTRAS ==============
-export const lessonExtras: Record<string, LessonExtras> = {
+const lessonExtrasBase: Record<string, LessonExtras> = {
   praesens: {
     duration: 15,
     premium: false,
@@ -158,7 +159,7 @@ export const lessonExtras: Record<string, LessonExtras> = {
 };
 
 // ============== ДОДАТКОВІ ПОВНІ УРОКИ (slug-и, яких ще немає в lessons.ts) ==============
-export const extraLessons: Record<string, LessonContent> = {
+const extraLessonsBase: Record<string, LessonContent> = {
   konjunktiv1: {
     slug: "konjunktiv1",
     level: "C1",
@@ -218,7 +219,7 @@ export const extraLessons: Record<string, LessonContent> = {
 
 // ============== 15-ВПРАВ-НАБОРИ для еталонних лекцій ==============
 // Якщо для уроку є запис у lessonExercises15 — Lesson.tsx показує саме його.
-export const lessonExercises15: Record<string, ExerciseItem[]> = {
+const lessonExercises15Base: Record<string, ExerciseItem[]> = {
   konjunktiv1: [
     { type: "mc", q: "Er sagt, er ___ krank.", options: ["ist","sei","wäre","war"], correct: 1, explain: "Konjunktiv I від sein → sei." },
     { type: "mc", q: "Sie behauptet, sie ___ keine Zeit.", options: ["hat","habe","hätte","haben"], correct: 1, explain: "3 ос. одн.: habe." },
@@ -256,3 +257,9 @@ export const lessonExercises15: Record<string, ExerciseItem[]> = {
       explain: "Перевір: 3 ос. — sei/habe/werde; якщо форма = Indikativ → K.II." },
   ],
 };
+
+// ============== ЗВЕДЕНІ ЕКСПОРТИ (база + A1 модуль) ==============
+// A1-записи мають пріоритет, якщо slug збігається.
+export const lessonExtras: Record<string, LessonExtras> = { ...lessonExtrasBase, ...a1Extras };
+export const extraLessons: Record<string, LessonContent> = { ...extraLessonsBase, ...a1ExtraLessons };
+export const lessonExercises15: Record<string, ExerciseItem[]> = { ...lessonExercises15Base, ...a1Exercises15 };
