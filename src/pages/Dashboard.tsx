@@ -101,18 +101,22 @@ const Dashboard = () => {
               <BookOpen className="h-6 w-6 text-primary-foreground" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-semibold truncate">Adjektivdeklination nach dem bestimmten Artikel</div>
-              <div className="text-sm text-muted-foreground">Прогрес: 62% · 4 вправи залишилось</div>
-              <Progress value={62} className="h-1.5 mt-2" />
+              <div className="font-semibold truncate">{lastLesson?.title ?? "Adjektivdeklination nach dem bestimmten Artikel"}</div>
+              <div className="text-sm text-muted-foreground">
+                {lastLesson
+                  ? `Завершено ${new Date(lastLesson.completedAt).toLocaleDateString("uk-UA")} · +${lastLesson.points} балів`
+                  : "Прогрес: 62% · 4 вправи залишилось"}
+              </div>
+              <Progress value={lastLesson ? 100 : 62} className="h-1.5 mt-2" />
             </div>
             <Button asChild size="sm" className="bg-gradient-primary">
-              <Link to="/lesson/adjektivdeklination-bestimmter">Далі</Link>
+              <Link to={`/lesson/${lastLesson?.slug ?? "adjektivdeklination-bestimmter"}`}>{lastLesson ? "Повторити" : "Далі"}</Link>
             </Button>
           </div>
 
           <div className="mt-6 grid sm:grid-cols-3 gap-3">
             {[
-              { i: BookOpen, n: 47, l: "Лекцій пройдено" },
+              { i: BookOpen, n: 47 + completedCount, l: "Лекцій пройдено" },
               { i: Sparkles, n: 12, l: "Квізів складено" },
               { i: Clock, n: "8 год", l: "Часу за тиждень" },
             ].map((s, idx) => (
