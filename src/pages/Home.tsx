@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, BookOpen, Target, TrendingUp, Sparkles, Clock, Globe2, Star, ArrowRight } from "lucide-react";
 import { courses, testimonials, plans } from "@/data/mock";
