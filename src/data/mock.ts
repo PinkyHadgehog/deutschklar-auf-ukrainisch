@@ -32,6 +32,12 @@ export interface GrammarTopic {
 
 export const grammarCategories: { id: string; title: string; titleDe: string; topics: GrammarTopic[] }[] = [
   {
+    id: "alphabet", title: "Алфавіт і вимова", titleDe: "Alphabet & Aussprache",
+    topics: [
+      { slug: "alphabet", title: "A1 — Німецький алфавіт", titleDe: "Das deutsche Alphabet", level: "A1", lessons: 1, progress: 0, premium: false },
+    ],
+  },
+  {
     id: "verben", title: "Дієслова", titleDe: "Verben",
     topics: [
       { slug: "verben-a1", title: "A1 — Основи дієслів", titleDe: "Verben A1 — Grundlagen", level: "A1", lessons: 8, progress: 60, premium: false, sub: [
