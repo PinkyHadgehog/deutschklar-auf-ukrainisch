@@ -5,6 +5,7 @@
 
 import type { LessonContent } from "./lessons";
 import type { ExerciseItem } from "./exerciseSets";
+import { a1ExtraLessons, a1Extras, a1Exercises15 } from "./a1";
 
 export interface RuleBoxData {
   title?: string;
