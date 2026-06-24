@@ -239,7 +239,25 @@ const Lesson = () => {
           <Button variant="outline" onClick={checkAll} className="gap-2">Перевірити всі</Button>
           <div className="flex gap-2">
             <Button variant="outline" asChild><Link to="/grammar"><ArrowLeft className="h-4 w-4 mr-1"/> Попередня</Link></Button>
-            <Button className="bg-gradient-primary" onClick={() => { setProgress(100); toast.success("Лекцію завершено! +10 балів"); }}>Завершити урок</Button>
+            <Button className="bg-gradient-primary" onClick={() => {
+              setProgress(100);
+              if (!user) {
+                toast("Увійдіть, щоб зберегти прогрес");
+                navigate("/login");
+                return;
+              }
+              if (alreadyDone) {
+                toast.success("Лекцію вже зараховано раніше ✓");
+              } else {
+                completeLesson({
+                  slug: lessonSlug,
+                  title: "Adjektivdeklination nach dem bestimmten Artikel",
+                  level: "B1",
+                  points: 10,
+                });
+                toast.success("Лекцію завершено! +10 балів — прогрес збережено в профілі 🎉");
+              }
+            }}>{alreadyDone ? "Завершено ✓" : "Завершити урок"}</Button>
             <Button variant="outline" asChild><Link to="/lesson/komparativ-superlativ">Наступна <ArrowRight className="h-4 w-4 ml-1"/></Link></Button>
           </div>
         </div>
