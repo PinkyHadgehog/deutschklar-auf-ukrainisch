@@ -25,10 +25,7 @@ const Lesson = () => {
   const lesson = getLesson(slug);
 
   const alreadyDone = useMemo(() => (slug ? isLessonCompleted(slug) : false), [slug, isLessonCompleted]);
-  const [progress, setProgress] = useState(alreadyDone ? 100 : 35);
-  const [mc, setMc] = useState<number | null>(null);
-  const [gap, setGap] = useState("");
-  const [ending, setEnding] = useState<string | null>(null);
+  const [progress, setProgress] = useState(alreadyDone ? 100 : 50);
 
   if (!lesson) {
     return (
@@ -45,17 +42,22 @@ const Lesson = () => {
     );
   }
 
-  const ex = lesson.exercises;
-
-  const checkAll = () => {
-    let total = 0; let score = 0;
-    if (ex.mc) { total++; if (mc === ex.mc.correct) score++; }
-    if (ex.gap) { total++; if (gap.trim().toLowerCase() === ex.gap.answer.toLowerCase()) score++; }
-    if (ex.ending) { total++; if (ending === ex.ending.correct) score++; }
-    setProgress(Math.min(100, 60 + Math.round((score / Math.max(1, total)) * 40)));
-    if (total > 0 && score === total) toast.success("Чудово! Усі вправи правильні 🎉");
-    else toast(`${score}/${total} правильно — спробуй ще раз!`);
-  };
+  // Convert legacy single-exercise format (mc/gap/ending) to ExerciseItem[]
+  // and prepend to the extra set so everything lives in one unified "Вправи" block.
+  const legacyItems: ExerciseItem[] = [];
+  const lex = lesson.exercises;
+  if (lex.mc) legacyItems.push({ type: "mc", q: lex.mc.q, options: lex.mc.options, correct: lex.mc.correct, explain: lex.mc.explain });
+  if (lex.gap) legacyItems.push({ type: "gap", q: lex.gap.q, answer: lex.gap.answer, hint: lex.gap.hint });
+  if (lex.ending) {
+    legacyItems.push({
+      type: "mc",
+      q: lex.ending.q,
+      options: lex.ending.options,
+      correct: Math.max(0, lex.ending.options.indexOf(lex.ending.correct)),
+      explain: lex.ending.hint,
+    });
+  }
+  const allExercises: ExerciseItem[] = [...legacyItems, ...(exerciseSets[lesson.slug] ?? [])];
 
   const finish = () => {
     setProgress(100);
@@ -64,6 +66,7 @@ const Lesson = () => {
     completeLesson({ slug: lesson.slug, title: lesson.titleDe, level: lesson.level, points: 10 });
     toast.success("Лекцію завершено! +10 балів — прогрес збережено в профілі 🎉");
   };
+
 
   return (
     <div className="container max-w-4xl py-8 md:py-12">
