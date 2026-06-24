@@ -173,11 +173,15 @@ export const grammarCategories: { id: string; title: string; titleDe: string; to
     ]},
   ]},
   { id: "adjektive", title: "Прикметники", titleDe: "Adjektive", topics: [
-    { slug: "adjektive", title: "Прикметники — загальний огляд", titleDe: "Adjektive", level: "A2", lessons: 18, progress: 30, premium: false, sub: [
-      { slug: "adjektivdeklination-bestimmter", title: "Adjektivdeklination — після означеного артикля", titleDe: "Adjektivdeklination" },
-      { slug: "komparativ-superlativ", title: "Komparativ und Superlativ", titleDe: "Komparativ & Superlativ" },
-      { slug: "adjektive-praep", title: "Adjektive mit Präpositionen", titleDe: "Adjektive mit Präpositionen" },
-      { slug: "partizipien", title: "Partizipien als Adjektive", titleDe: "Partizipien als Adjektive" },
+    { slug: "adjektive", title: "A2 — Прикметники: відмінювання та ступені", titleDe: "Adjektive A2 — Deklination & Steigerung", level: "A2", lessons: 8, progress: 0, premium: false, sub: [
+      { slug: "adjektive-praedikativ-attributiv", title: "Prädikativ vs. attributiv — присудкові та означальні прикметники", titleDe: "Prädikativ vs. attributiv" },
+      { slug: "adjektivdeklination-bestimmter", title: "Adjektivdeklination — після означеного артикля", titleDe: "Adjektivdeklination (bestimmt)" },
+      { slug: "adjektivdeklination-unbestimmter", title: "Adjektivdeklination — після неозначеного артикля", titleDe: "Adjektivdeklination (unbestimmt)" },
+      { slug: "adjektivdeklination-nullartikel", title: "Adjektivdeklination — без артикля (Nullartikel)", titleDe: "Adjektivdeklination (Nullartikel)" },
+      { slug: "komparativ-superlativ", title: "Komparativ und Superlativ — ступені порівняння", titleDe: "Komparativ & Superlativ" },
+      { slug: "komparativ-unregelmaessig", title: "Unregelmäßige Steigerung — нерегулярні ступені (gut, viel, gern, hoch, nah)", titleDe: "Unregelmäßige Steigerung" },
+      { slug: "adjektive-als-nomen", title: "Adjektive als Nomen — субстантивовані прикметники", titleDe: "Adjektive als Nomen" },
+      { slug: "farben-adjektive", title: "Farben als Adjektive — кольори як прикметники", titleDe: "Farben als Adjektive" },
     ]},
   ]},
   { id: "adverbien", title: "Прислівники", titleDe: "Adverbien", topics: [
