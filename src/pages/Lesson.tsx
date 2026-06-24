@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +10,11 @@ import { toast } from "sonner";
 
 const Lesson = () => {
   const { slug } = useParams();
-  const [progress, setProgress] = useState(35);
+  const navigate = useNavigate();
+  const { user, completeLesson, isLessonCompleted } = useAuth();
+  const lessonSlug = slug ?? "adjektivdeklination-bestimmter";
+  const alreadyDone = isLessonCompleted(lessonSlug);
+  const [progress, setProgress] = useState(alreadyDone ? 100 : 35);
   const [mc, setMc] = useState<number | null>(null);
   const [gap, setGap] = useState("");
   const [order, setOrder] = useState<string[]>(["liest", "der", "Mann", "große", "Zeitung", "die", "interessante"]);
