@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Check, BookOpen, Target, TrendingUp, Sparkles, Clock, Globe2, Star, ArrowRight } from "lucide-react";
 import { courses, testimonials, plans } from "@/data/mock";
@@ -99,18 +100,35 @@ const Home = () => {
             </div>
             <Button asChild variant="outline"><Link to="/courses">Усі курси <ArrowRight className="ml-1.5 h-4 w-4"/></Link></Button>
           </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {courses.slice(0, 3).map((c) => (
-              <Card key={c.level} className="p-6 rounded-2xl border-0 shadow-soft group hover:-translate-y-1 transition">
-                <div className={`h-16 w-16 rounded-2xl bg-gradient-to-br ${c.color} grid place-items-center text-primary-foreground font-display font-extrabold text-2xl mb-4`}>{c.level}</div>
-                <h3 className="font-display font-bold text-xl">{c.title}</h3>
-                <p className="text-sm text-muted-foreground mt-1.5 mb-4">{c.description}</p>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">{c.lessons} лекцій</span>
-                  <span className="font-semibold text-primary">{c.progress}%</span>
-                </div>
-              </Card>
-            ))}
+          <div className="grid sm:grid-cols-2 gap-5">
+            {([
+              { level: "A1", title: "Початковий A1", description: "Перші кроки: алфавіт, привітання, прості речення, Präsens, sein, haben та базові дієслова.", lessons: 48, progress: 100, badge: "bg-teal-500", text: "text-white" },
+              { level: "A2", title: "Базовий A2", description: "Повсякденне спілкування, Perfekt, Dativ, прийменники, reflexive Verben та розширений словниковий запас.", lessons: 56, progress: 64, badge: "bg-blue-500", text: "text-white" },
+              { level: "B1", title: "Середній B1", description: "Складні речення, Präteritum, Konjunktiv II, Passiv, Verben mit Präpositionen та впевнене спілкування.", lessons: 72, progress: 22, badge: "bg-violet-600", text: "text-white" },
+              { level: "B2", title: "Вище середнього B2", description: "Складні тексти, Passiv у різних часах, Funktionsverbgefüge, Nominalisierung та професійне спілкування.", lessons: 84, progress: 8, badge: "bg-indigo-600", text: "text-white" },
+              { level: "C1", title: "Просунутий C1", description: "Konjunktiv I, непряма мова, складні дієслівні конструкції, формальний стиль та точне висловлювання.", lessons: 96, progress: 0, badge: "bg-amber-500", text: "text-white" },
+              { level: "C2", title: "Майже як носій C2", description: "Стилістичні нюанси, ідіоматика, складна аргументація, Kollokationen та професійне володіння мовою.", lessons: 108, progress: 0, badge: "bg-blue-900", text: "text-white" },
+            ] as const).map((c) => {
+              const status = c.progress === 100 ? "Завершено" : c.progress > 0 ? "У процесі" : "Не розпочато";
+              const statusClass = c.progress === 100 ? "bg-success/15 text-success" : c.progress > 0 ? "bg-primary-soft text-primary" : "bg-secondary text-muted-foreground";
+              return (
+                <Link key={c.level} to="/courses" className="block group">
+                  <Card className="p-6 rounded-2xl border-0 shadow-soft h-full flex flex-col bg-card hover:-translate-y-1 hover:shadow-elevated transition">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`h-14 w-14 rounded-2xl ${c.badge} ${c.text} grid place-items-center font-display font-extrabold text-xl shadow-soft`}>{c.level}</div>
+                      <Badge variant="secondary" className={`${statusClass} border-0`}>{status}</Badge>
+                    </div>
+                    <h3 className="font-display font-bold text-xl">{c.title}</h3>
+                    <p className="text-sm text-muted-foreground mt-1.5 mb-5 flex-1">{c.description}</p>
+                    <div className="flex items-center justify-between text-sm mb-2">
+                      <span className="text-muted-foreground">{c.lessons} лекцій</span>
+                      <span className="font-semibold text-primary">{c.progress}%</span>
+                    </div>
+                    <Progress value={c.progress} className="h-2" />
+                  </Card>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
