@@ -212,7 +212,16 @@ export const grammarCategories: { id: string; title: string; titleDe: string; to
     { slug: "konjunktionen", title: "Сурядні та підрядні сполучники", titleDe: "Konjunktionen", level: "B1", lessons: 10, progress: 0, premium: true },
   ]},
   { id: "satzbau", title: "Будова речення", titleDe: "Satzbau", topics: [
-    { slug: "satzbau", title: "Прямий, зворотний порядок, підрядне речення", titleDe: "Satzbau", level: "A2", lessons: 12, progress: 33, premium: false },
+    { slug: "satzbau", title: "A2 — Satzbau (огляд)", titleDe: "Satzbau", level: "A2", lessons: 8, progress: 0, premium: false, sub: [
+      { slug: "satz-grundregel", title: "Verb auf Position 2 — головне правило порядку слів", titleDe: "Verb auf Position 2" },
+      { slug: "satz-fragen", title: "Fragesätze — W-Fragen & Ja/Nein-Fragen", titleDe: "Fragesätze" },
+      { slug: "satz-tekamolo", title: "Te-Ka-Mo-Lo — порядок обставин", titleDe: "Te-Ka-Mo-Lo" },
+      { slug: "satz-negation", title: "Negation — nicht & kein", titleDe: "Negation" },
+      { slug: "satz-konjunktionen", title: "Hauptsatz-Konjunktionen — und, aber, oder, denn, sondern", titleDe: "Hauptsatz-Konjunktionen" },
+      { slug: "satz-weil-dass", title: "Nebensatz — weil & dass (дієслово в кінець)", titleDe: "Nebensatz: weil & dass" },
+      { slug: "satz-modalverben-position", title: "Satzklammer — Modalverben, Perfekt, відокремлювані префікси", titleDe: "Satzklammer" },
+      { slug: "satz-temporale-nebensaetze", title: "Temporale Nebensätze — wenn, als, bevor, nachdem, während", titleDe: "Temporale Nebensätze" },
+    ]},
   ]},
   { id: "zeiten", title: "Часи", titleDe: "Zeiten", topics: [
     { slug: "zeiten", title: "Огляд усіх часів", titleDe: "Zeiten", level: "B1", lessons: 8, progress: 0, premium: true },
