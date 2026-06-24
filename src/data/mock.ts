@@ -185,7 +185,16 @@ export const grammarCategories: { id: string; title: string; titleDe: string; to
     ]},
   ]},
   { id: "adverbien", title: "Прислівники", titleDe: "Adverbien", topics: [
-    { slug: "adverbien", title: "Прислівники місця, часу, способу", titleDe: "Adverbien", level: "A2", lessons: 8, progress: 12, premium: false },
+    { slug: "adverbien", title: "A2 — Прислівники: місце, час, спосіб, причина", titleDe: "Adverbien A2", level: "A2", lessons: 8, progress: 0, premium: false, sub: [
+      { slug: "lokaladverbien", title: "Lokaladverbien — прислівники місця (hier, dort, oben…)", titleDe: "Lokaladverbien" },
+      { slug: "temporaladverbien", title: "Temporaladverbien — прислівники часу (heute, bald, immer…)", titleDe: "Temporaladverbien" },
+      { slug: "modaladverbien", title: "Modaladverbien — прислівники способу (gern, leider, hoffentlich…)", titleDe: "Modaladverbien" },
+      { slug: "kausaladverbien", title: "Kausaladverbien — прислівники причини (deshalb, trotzdem, deswegen…)", titleDe: "Kausaladverbien" },
+      { slug: "haeufigkeitsadverbien", title: "Häufigkeitsadverbien — частота (immer, oft, manchmal, selten, nie)", titleDe: "Häufigkeitsadverbien" },
+      { slug: "graduierungsadverbien", title: "Gradadverbien — інтенсивність (sehr, ziemlich, ganz, kaum…)", titleDe: "Gradadverbien" },
+      { slug: "adverbien-position", title: "Position im Satz — порядок Te-Ka-Mo-Lo", titleDe: "Position im Satz (TeKaMoLo)" },
+      { slug: "pronominaladverbien", title: "Pronominaladverbien — darüber, damit, dafür, worauf…", titleDe: "Pronominaladverbien" },
+    ]},
   ]},
   { id: "praepositionen", title: "Прийменники", titleDe: "Präpositionen", topics: [
     { slug: "praepositionen", title: "Прийменники з Akk., Dat., Gen.", titleDe: "Präpositionen", level: "A2", lessons: 16, progress: 50, premium: false },
