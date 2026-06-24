@@ -110,6 +110,18 @@ export const lessons: Record<string, LessonContent> = {
       "З <b>sein</b> вживаються дієслова руху (gehen, fahren, kommen) та зміни стану (aufstehen, einschlafen, werden), а також sein, bleiben, passieren. Усі інші — з <b>haben</b>.",
       "Partizip II слабких дієслів: <b>ge- + основа + -t</b> (machen → gemacht). Сильних: <b>ge- + (зміна) + -en</b> (gehen → gegangen, lesen → gelesen).",
     ],
+    table: {
+      headers: ["Position 1", "Position 2 (Hilfsverb)", "Mittelfeld", "Satzende (Partizip II)"],
+      rows: [
+        ["Ich", "habe", "gestern Deutsch", "gelernt."],
+        ["Wir", "sind", "nach Berlin", "gefahren."],
+        ["Anna", "hat", "einen Film", "gesehen."],
+        ["Er", "ist", "um 7 Uhr", "aufgestanden."],
+        ["Sie", "haben", "Pizza", "gegessen."],
+        ["Ich", "habe", "mit Oma", "telefoniert."],
+      ],
+    },
+
     examples: [
       { de: "Ich habe gestern Deutsch gelernt.", uk: "Учора я вчила німецьку." },
       { de: "Wir sind nach Berlin gefahren.", uk: "Ми поїхали до Берліна.", tag: "sein" },
