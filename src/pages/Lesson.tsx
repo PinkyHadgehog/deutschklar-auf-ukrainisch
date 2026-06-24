@@ -5,13 +5,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  ArrowLeft, ArrowRight, Lightbulb, AlertTriangle, Check, X, Sparkles, BookOpen,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, Lightbulb, AlertTriangle, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { getLesson } from "@/content/lessons";
-import { exerciseSets } from "@/content/exerciseSets";
+import { exerciseSets, type ExerciseItem } from "@/content/exerciseSets";
 import ExerciseBlock from "@/components/lesson/ExerciseBlock";
+
 
 // Render explanation paragraphs with allowed inline tags (<b>, <span class="hl">, <i>).
 const Html = ({ html }: { html: string }) => (
