@@ -55,14 +55,22 @@ const Profile = () => {
             <button onClick={() => setLang("de")} className={`p-3 rounded-xl border-2 text-sm font-semibold ${lang === "de" ? "border-primary bg-primary-soft" : "border-border"}`}>🇩🇪 Deutsch</button>
           </div>
 
-          <div className="mt-6 font-display font-bold mb-3">Сертифікати</div>
-          <div className="space-y-2">
-            {["A1 — пройдено", "A2 — пройдено"].map((c) => (
-              <div key={c} className="flex items-center gap-2 p-2.5 rounded-lg bg-accent-soft text-sm">
-                <Trophy className="h-4 w-4 text-accent-foreground" /> {c}
-              </div>
+          <div className="mt-6 font-display font-bold mb-3">Пройдені лекції</div>
+          <div className="space-y-2 max-h-64 overflow-auto pr-1">
+            {user.completedLessons.length === 0 && (
+              <div className="text-sm text-muted-foreground">Ще немає завершених лекцій. Завершіть першу — і вона з'явиться тут.</div>
+            )}
+            {user.completedLessons.map((l) => (
+              <Link key={l.slug + l.completedAt} to={`/lesson/${l.slug}`} className="flex items-center gap-2 p-2.5 rounded-lg bg-accent-soft text-sm hover:bg-accent-soft/70 transition">
+                <Trophy className="h-4 w-4 text-accent-foreground shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium truncate">{l.title}</div>
+                  <div className="text-xs text-muted-foreground">{l.level} · {new Date(l.completedAt).toLocaleDateString("uk-UA")} · +{l.points}</div>
+                </div>
+              </Link>
             ))}
           </div>
+          <div className="mt-4 text-xs text-muted-foreground">Усього балів: <span className="font-bold text-foreground">{user.points}</span></div>
         </Card>
 
         <Card className="p-6 rounded-2xl border-0 shadow-soft md:col-span-2">
