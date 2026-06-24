@@ -233,8 +233,12 @@ const Lesson = () => {
             {ending && ending !== ex.ending.correct && ex.ending.hint && (
               <div className="mt-2 text-sm text-muted-foreground">💡 {ex.ending.hint}</div>
             )}
-          </Card>
+        </Card>
         )}
+
+        <ExerciseBlock items={exerciseSets[lesson.slug] ?? []} />
+
+
 
         <div className="flex flex-col sm:flex-row gap-3 items-center justify-between mt-6">
           <Button variant="outline" onClick={checkAll} className="gap-2">Перевірити всі</Button>
