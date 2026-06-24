@@ -12,7 +12,12 @@ const Dashboard = () => {
   if (!user) return <Navigate to="/login" replace />;
 
   const myCourse = courses.find((c) => c.level === user.level) ?? courses[1];
-  const weekDone = 75;
+  const completedCount = user.completedLessons.length;
+  const totalLessons = courses.reduce((s, c) => s + c.lessons, 0);
+  const courseProgress = Math.min(100, Math.round((completedCount / Math.max(1, myCourse.lessons)) * 100) + myCourse.progress);
+  const displayedProgress = Math.min(100, completedCount > 0 ? courseProgress : myCourse.progress);
+  const lastLesson = user.completedLessons[0];
+  const weekDone = Math.min(100, 60 + completedCount * 8);
   const weekly = [40, 60, 30, 80, 45, 70, 55];
 
   return (
@@ -42,9 +47,9 @@ const Dashboard = () => {
               <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
                 <circle cx="50" cy="50" r="42" strokeWidth="10" stroke="rgba(255,255,255,0.25)" fill="none" />
                 <circle cx="50" cy="50" r="42" strokeWidth="10" stroke="white" fill="none"
-                  strokeDasharray={`${(myCourse.progress / 100) * 264} 264`} strokeLinecap="round" />
+                  strokeDasharray={`${(displayedProgress / 100) * 264} 264`} strokeLinecap="round" />
               </svg>
-              <div className="absolute inset-0 grid place-items-center font-display font-extrabold text-xl">{myCourse.progress}%</div>
+              <div className="absolute inset-0 grid place-items-center font-display font-extrabold text-xl">{displayedProgress}%</div>
             </div>
           </div>
           <div className="mt-6 grid grid-cols-3 gap-3">
@@ -60,7 +65,7 @@ const Dashboard = () => {
             </div>
             <div className="rounded-xl bg-white/15 p-3 backdrop-blur">
               <Trophy className="h-5 w-5 mb-1.5" />
-              <div className="text-2xl font-bold">128</div>
+              <div className="text-2xl font-bold">{128 + user.points}</div>
               <div className="text-xs opacity-80">балів</div>
             </div>
           </div>
@@ -96,18 +101,22 @@ const Dashboard = () => {
               <BookOpen className="h-6 w-6 text-primary-foreground" />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="font-semibold truncate">Adjektivdeklination nach dem bestimmten Artikel</div>
-              <div className="text-sm text-muted-foreground">Прогрес: 62% · 4 вправи залишилось</div>
-              <Progress value={62} className="h-1.5 mt-2" />
+              <div className="font-semibold truncate">{lastLesson?.title ?? "Adjektivdeklination nach dem bestimmten Artikel"}</div>
+              <div className="text-sm text-muted-foreground">
+                {lastLesson
+                  ? `Завершено ${new Date(lastLesson.completedAt).toLocaleDateString("uk-UA")} · +${lastLesson.points} балів`
+                  : "Прогрес: 62% · 4 вправи залишилось"}
+              </div>
+              <Progress value={lastLesson ? 100 : 62} className="h-1.5 mt-2" />
             </div>
             <Button asChild size="sm" className="bg-gradient-primary">
-              <Link to="/lesson/adjektivdeklination-bestimmter">Далі</Link>
+              <Link to={`/lesson/${lastLesson?.slug ?? "adjektivdeklination-bestimmter"}`}>{lastLesson ? "Повторити" : "Далі"}</Link>
             </Button>
           </div>
 
           <div className="mt-6 grid sm:grid-cols-3 gap-3">
             {[
-              { i: BookOpen, n: 47, l: "Лекцій пройдено" },
+              { i: BookOpen, n: 47 + completedCount, l: "Лекцій пройдено" },
               { i: Sparkles, n: 12, l: "Квізів складено" },
               { i: Clock, n: "8 год", l: "Часу за тиждень" },
             ].map((s, idx) => (

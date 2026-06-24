@@ -1,5 +1,13 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 
+export interface CompletedLesson {
+  slug: string;
+  title: string;
+  level: "A1" | "A2" | "B1" | "B2" | "C1" | "C2";
+  completedAt: string;
+  points: number;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -9,6 +17,8 @@ export interface User {
   goalMinutes: number;
   streak: number;
   joinedAt: string;
+  completedLessons: CompletedLesson[];
+  points: number;
 }
 
 interface Ctx {
@@ -17,17 +27,25 @@ interface Ctx {
   signup: (name: string, email: string, password: string, level: User["level"]) => Promise<void>;
   logout: () => void;
   updateUser: (patch: Partial<User>) => void;
+  completeLesson: (lesson: Omit<CompletedLesson, "completedAt">) => CompletedLesson;
+  isLessonCompleted: (slug: string) => boolean;
 }
 
 const KEY = "dk_user";
 const AuthContext = createContext<Ctx | null>(null);
+
+const normalize = (u: User): User => ({
+  ...u,
+  completedLessons: u.completedLessons ?? [],
+  points: u.points ?? 0,
+});
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const raw = localStorage.getItem(KEY);
-    if (raw) setUser(JSON.parse(raw));
+    if (raw) setUser(normalize(JSON.parse(raw)));
   }, []);
 
   const persist = (u: User | null) => {
@@ -37,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (email: string, _password: string) => {
-    const u: User = {
+    persist({
       id: "u_1",
       name: email.split("@")[0] || "Олена",
       email,
@@ -46,12 +64,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       goalMinutes: 20,
       streak: 7,
       joinedAt: new Date().toISOString(),
-    };
-    persist(u);
+      completedLessons: [],
+      points: 0,
+    });
   };
 
   const signup = async (name: string, email: string, _password: string, level: User["level"]) => {
-    const u: User = {
+    persist({
       id: "u_1",
       name,
       email,
@@ -60,15 +79,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       goalMinutes: 15,
       streak: 1,
       joinedAt: new Date().toISOString(),
-    };
-    persist(u);
+      completedLessons: [],
+      points: 0,
+    });
   };
 
   const logout = () => persist(null);
   const updateUser = (patch: Partial<User>) => user && persist({ ...user, ...patch });
 
+  const completeLesson: Ctx["completeLesson"] = (lesson) => {
+    const entry: CompletedLesson = { ...lesson, completedAt: new Date().toISOString() };
+    if (!user) return entry;
+    const existingIdx = user.completedLessons.findIndex((l) => l.slug === lesson.slug);
+    const alreadyDone = existingIdx >= 0;
+    const completedLessons = alreadyDone
+      ? user.completedLessons.map((l, i) => (i === existingIdx ? entry : l))
+      : [entry, ...user.completedLessons];
+    const points = alreadyDone ? user.points : user.points + lesson.points;
+    persist({ ...user, completedLessons, points });
+    return entry;
+  };
+
+  const isLessonCompleted = (slug: string) =>
+    !!user?.completedLessons.some((l) => l.slug === slug);
+
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, login, signup, logout, updateUser, completeLesson, isLessonCompleted }}>
       {children}
     </AuthContext.Provider>
   );
