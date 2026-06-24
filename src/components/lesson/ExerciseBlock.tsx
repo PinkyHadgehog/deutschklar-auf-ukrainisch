@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, X, GripHorizontal } from "lucide-react";
+import { Check, X, GripHorizontal, BookOpen } from "lucide-react";
 import type { ExerciseItem } from "@/content/exerciseSets";
 
 const norm = (s: string) =>
