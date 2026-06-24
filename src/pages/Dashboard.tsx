@@ -12,7 +12,12 @@ const Dashboard = () => {
   if (!user) return <Navigate to="/login" replace />;
 
   const myCourse = courses.find((c) => c.level === user.level) ?? courses[1];
-  const weekDone = 75;
+  const completedCount = user.completedLessons.length;
+  const totalLessons = courses.reduce((s, c) => s + c.lessons, 0);
+  const courseProgress = Math.min(100, Math.round((completedCount / Math.max(1, myCourse.lessons)) * 100) + myCourse.progress);
+  const displayedProgress = Math.min(100, completedCount > 0 ? courseProgress : myCourse.progress);
+  const lastLesson = user.completedLessons[0];
+  const weekDone = Math.min(100, 60 + completedCount * 8);
   const weekly = [40, 60, 30, 80, 45, 70, 55];
 
   return (
@@ -42,9 +47,9 @@ const Dashboard = () => {
               <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
                 <circle cx="50" cy="50" r="42" strokeWidth="10" stroke="rgba(255,255,255,0.25)" fill="none" />
                 <circle cx="50" cy="50" r="42" strokeWidth="10" stroke="white" fill="none"
-                  strokeDasharray={`${(myCourse.progress / 100) * 264} 264`} strokeLinecap="round" />
+                  strokeDasharray={`${(displayedProgress / 100) * 264} 264`} strokeLinecap="round" />
               </svg>
-              <div className="absolute inset-0 grid place-items-center font-display font-extrabold text-xl">{myCourse.progress}%</div>
+              <div className="absolute inset-0 grid place-items-center font-display font-extrabold text-xl">{displayedProgress}%</div>
             </div>
           </div>
           <div className="mt-6 grid grid-cols-3 gap-3">
@@ -60,7 +65,7 @@ const Dashboard = () => {
             </div>
             <div className="rounded-xl bg-white/15 p-3 backdrop-blur">
               <Trophy className="h-5 w-5 mb-1.5" />
-              <div className="text-2xl font-bold">128</div>
+              <div className="text-2xl font-bold">{128 + user.points}</div>
               <div className="text-xs opacity-80">балів</div>
             </div>
           </div>
