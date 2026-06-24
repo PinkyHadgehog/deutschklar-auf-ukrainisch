@@ -4,6 +4,7 @@ import { adjektiveA2 } from "./adjektive";
 import { adverbienA2 } from "./adverbien";
 import { praepositionenA2 } from "./praepositionen";
 import { satzbauA2 } from "./satzbau";
+import { dativA2 } from "./dativ";
 import type { A2Map } from "./_helpers";
 import type { LessonContent } from "@/content/lessons";
 import type { LessonExtras } from "@/content/lessonExtensions";
@@ -15,6 +16,7 @@ const all: A2Map = {
   ...adverbienA2,
   ...praepositionenA2,
   ...satzbauA2,
+  ...dativA2,
 };
 
 export const a2ExtraLessons: Record<string, LessonContent> = Object.fromEntries(
