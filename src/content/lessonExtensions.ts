@@ -257,3 +257,9 @@ const lessonExercises15Base: Record<string, ExerciseItem[]> = {
       explain: "Перевір: 3 ос. — sei/habe/werde; якщо форма = Indikativ → K.II." },
   ],
 };
+
+// ============== ЗВЕДЕНІ ЕКСПОРТИ (база + A1 модуль) ==============
+// A1-записи мають пріоритет, якщо slug збігається.
+export const lessonExtras: Record<string, LessonExtras> = { ...lessonExtrasBase, ...a1Extras };
+export const extraLessons: Record<string, LessonContent> = { ...extraLessonsBase, ...a1ExtraLessons };
+export const lessonExercises15: Record<string, ExerciseItem[]> = { ...lessonExercises15Base, ...a1Exercises15 };
