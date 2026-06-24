@@ -1,24 +1,63 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, X, GripHorizontal, BookOpen } from "lucide-react";
+import { Check, X, GripHorizontal, BookOpen, RotateCcw, Trophy, ArrowRight, Eye } from "lucide-react";
 import type { ExerciseItem } from "@/content/exerciseSets";
 
 const norm = (s: string) =>
   s.toLowerCase().replace(/[.,!?;:„"""'’()\s]+/g, " ").trim();
 
-const ExerciseCard = ({ item, idx }: { item: ExerciseItem; idx: number }) => {
+const typeLabel: Record<ExerciseItem["type"], string> = {
+  mc: "Multiple Choice",
+  gap: "Lückentext",
+  tf: "Richtig / Falsch",
+  order: "Скласти речення",
+  translate: "Переклад",
+  match: "Зіставлення",
+  multi: "Кілька правильних",
+  correct: "Виправ помилку",
+  writeFree: "Коротка відповідь",
+};
+
+interface CardProps {
+  item: ExerciseItem;
+  idx: number;
+  onResult: (correct: boolean) => void;
+}
+
+const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
   const [answer, setAnswer] = useState<unknown>(null);
   const [checked, setChecked] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [reported, setReported] = useState(false);
 
-  // For "order" — local list of words being arranged
+  // ORDER state
   const [orderWords, setOrderWords] = useState<string[]>(item.type === "order" ? item.words : []);
-
   const moveLeft = (i: number) => {
     if (i === 0) return;
     const next = [...orderWords];
     [next[i - 1], next[i]] = [next[i], next[i - 1]];
     setOrderWords(next);
+  };
+
+  // MATCH state
+  const [matchPicks, setMatchPicks] = useState<Record<number, number>>({}); // leftIdx -> rightIdx
+  const [activeLeft, setActiveLeft] = useState<number | null>(null);
+  const matchRightShuffled = item.type === "match" ? [...item.pairs].reverse().map(p => p.right) : [];
+  const matchPick = (rightIdx: number) => {
+    if (activeLeft === null || checked) return;
+    setMatchPicks({ ...matchPicks, [activeLeft]: rightIdx });
+    setActiveLeft(null);
+  };
+
+  // MULTI state
+  const [multiPicks, setMultiPicks] = useState<Set<number>>(new Set());
+  const toggleMulti = (i: number) => {
+    if (checked) return;
+    const next = new Set(multiPicks);
+    if (next.has(i)) next.delete(i); else next.add(i);
+    setMultiPicks(next);
   };
 
   let correct = false;
@@ -41,16 +80,70 @@ const ExerciseCard = ({ item, idx }: { item: ExerciseItem; idx: number }) => {
         correct = expected.some(e => norm(e) === ans);
         break;
       }
+      case "match": {
+        correct = item.pairs.every((_, leftIdx) => {
+          const rightIdx = matchPicks[leftIdx];
+          if (rightIdx === undefined) return false;
+          return matchRightShuffled[rightIdx] === item.pairs[leftIdx].right;
+        });
+        break;
+      }
+      case "multi": {
+        const picks = [...multiPicks].sort();
+        const want = [...item.correct].sort();
+        correct = picks.length === want.length && picks.every((v, i) => v === want[i]);
+        break;
+      }
+      case "correct": {
+        const ans = norm(String(answer ?? ""));
+        const expected = Array.isArray(item.correct) ? item.correct : [item.correct];
+        correct = expected.some(e => norm(e) === ans);
+        break;
+      }
+      case "writeFree":
+        correct = String(answer ?? "").trim().length >= 10;
+        break;
     }
   }
 
-  const typeLabel: Record<ExerciseItem["type"], string> = {
-    mc: "Multiple Choice",
-    gap: "Lückentext",
-    tf: "Richtig / Falsch",
-    order: "Скласти речення",
-    translate: "Переклад",
+  const onCheck = () => {
+    setChecked(true);
+    setAttempts(a => a + 1);
   };
+
+  const onRetry = () => {
+    setChecked(false);
+    setAnswer(null);
+    if (item.type === "order") setOrderWords(item.words);
+    if (item.type === "match") { setMatchPicks({}); setActiveLeft(null); }
+    if (item.type === "multi") setMultiPicks(new Set());
+  };
+
+  // report result to parent — only first time we settle (correct OR showAnswer)
+  const reportIfNeeded = (val: boolean) => {
+    if (!reported) {
+      setReported(true);
+      onResult(val);
+    }
+  };
+  if (checked && correct && !reported) reportIfNeeded(true);
+
+  const expectedAnswerText = (() => {
+    switch (item.type) {
+      case "mc": return item.options[item.correct];
+      case "gap": return Array.isArray(item.answer) ? item.answer[0] : item.answer;
+      case "tf": return item.correct ? "Richtig" : "Falsch";
+      case "order": return item.correct.join(" ").replace(/\s([.,!?;:])/g, "$1");
+      case "translate": return Array.isArray(item.de) ? item.de[0] : item.de;
+      case "match": return item.pairs.map(p => `${p.left} → ${p.right}`).join(" · ");
+      case "multi": return item.correct.map(i => item.options[i]).join(" · ");
+      case "correct": return Array.isArray(item.correct) ? item.correct[0] : item.correct;
+      case "writeFree": return item.sample;
+    }
+  })();
+
+  const explain = "explain" in item ? item.explain : undefined;
+  const canShowAnswer = attempts >= 1 && !correct;
 
   return (
     <Card className="p-5 rounded-2xl border-0 shadow-soft mb-3">
@@ -60,7 +153,7 @@ const ExerciseCard = ({ item, idx }: { item: ExerciseItem; idx: number }) => {
         </div>
         {checked && (
           <span className={`text-xs font-semibold inline-flex items-center gap-1 ${correct ? "text-success" : "text-destructive"}`}>
-            {correct ? <><Check className="h-3.5 w-3.5"/> Правильно</> : <><X className="h-3.5 w-3.5"/> Неправильно</>}
+            {correct ? <><Check className="h-3.5 w-3.5"/> Правильно!</> : <><X className="h-3.5 w-3.5"/> Спробуй ще раз</>}
           </span>
         )}
       </div>
@@ -76,8 +169,8 @@ const ExerciseCard = ({ item, idx }: { item: ExerciseItem; idx: number }) => {
               return (
                 <button
                   key={i}
-                  disabled={checked}
-                  onClick={() => setAnswer(i)}
+                  disabled={checked && correct}
+                  onClick={() => { setAnswer(i); setChecked(false); }}
                   className={`text-left p-3 rounded-xl border-2 transition font-medium text-sm ${
                     state === "correct" ? "border-success bg-success/10 text-success"
                     : state === "wrong" ? "border-destructive bg-destructive/10 text-destructive"
@@ -97,19 +190,14 @@ const ExerciseCard = ({ item, idx }: { item: ExerciseItem; idx: number }) => {
           <div className="font-medium mb-3">{item.q}</div>
           <input
             value={String(answer ?? "")}
-            disabled={checked}
-            onChange={(e) => setAnswer(e.target.value)}
+            disabled={checked && correct}
+            onChange={(e) => { setAnswer(e.target.value); setChecked(false); }}
             placeholder="Твоя відповідь…"
             className={`w-full h-11 rounded-xl border-2 px-4 font-medium focus:outline-none ${
               checked ? (correct ? "border-success bg-success/10" : "border-destructive bg-destructive/10") : "border-input focus:border-primary"
             }`}
           />
           {item.hint && !checked && <div className="mt-2 text-xs text-muted-foreground">💡 {item.hint}</div>}
-          {checked && !correct && (
-            <div className="mt-2 text-xs text-muted-foreground">
-              ✅ Правильна відповідь: <b>{Array.isArray(item.answer) ? item.answer[0] : item.answer}</b>
-            </div>
-          )}
         </>
       )}
 
@@ -127,8 +215,8 @@ const ExerciseCard = ({ item, idx }: { item: ExerciseItem; idx: number }) => {
               return (
                 <button
                   key={l}
-                  disabled={checked}
-                  onClick={() => setAnswer(v)}
+                  disabled={checked && correct}
+                  onClick={() => { setAnswer(v); setChecked(false); }}
                   className={`h-11 px-5 rounded-xl border-2 font-semibold transition ${
                     state === "correct" ? "border-success bg-success/10 text-success"
                     : state === "wrong" ? "border-destructive bg-destructive/10 text-destructive"
@@ -150,7 +238,7 @@ const ExerciseCard = ({ item, idx }: { item: ExerciseItem; idx: number }) => {
             {orderWords.map((w, i) => (
               <button
                 key={i}
-                disabled={checked}
+                disabled={checked && correct}
                 onClick={() => moveLeft(i)}
                 className="px-3 h-10 rounded-xl bg-primary-soft text-primary font-semibold hover:bg-primary/15 inline-flex items-center gap-1.5"
               >
@@ -159,9 +247,6 @@ const ExerciseCard = ({ item, idx }: { item: ExerciseItem; idx: number }) => {
             ))}
           </div>
           <div className="mt-2 text-xs text-muted-foreground">Натисни на слово, щоб посунути його ліворуч.</div>
-          {checked && !correct && (
-            <div className="mt-2 text-xs text-muted-foreground">✅ Правильно: <b>{item.correct.join(" ").replace(/\s([.,!?;:])/g, "$1")}</b></div>
-          )}
         </>
       )}
 
@@ -172,65 +257,259 @@ const ExerciseCard = ({ item, idx }: { item: ExerciseItem; idx: number }) => {
           <div className="text-sm text-muted-foreground mb-3">«{item.uk}»</div>
           <textarea
             value={String(answer ?? "")}
-            disabled={checked}
-            onChange={(e) => setAnswer(e.target.value)}
+            disabled={checked && correct}
+            onChange={(e) => { setAnswer(e.target.value); setChecked(false); }}
             placeholder="Напиши німецькою…"
             rows={2}
             className={`w-full rounded-xl border-2 px-4 py-2 font-medium focus:outline-none ${
               checked ? (correct ? "border-success bg-success/10" : "border-destructive bg-destructive/10") : "border-input focus:border-primary"
             }`}
           />
-          {checked && !correct && (
-            <div className="mt-2 text-xs text-muted-foreground">
-              ✅ Один із прийнятних варіантів: <b>{(Array.isArray(item.de) ? item.de[0] : item.de)}</b>
-            </div>
-          )}
         </>
       )}
 
-      <div className="mt-4 flex justify-end gap-2">
-        {checked ? (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setChecked(false);
-              setAnswer(null);
-              if (item.type === "order") setOrderWords(item.words);
-            }}
-          >Ще раз</Button>
-        ) : (
+      {/* MATCH */}
+      {item.type === "match" && (
+        <>
+          <div className="font-medium mb-3">{item.prompt}</div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            <div className="space-y-2">
+              {item.pairs.map((p, leftIdx) => {
+                const pickedRight = matchPicks[leftIdx];
+                const matchedText = pickedRight !== undefined ? matchRightShuffled[pickedRight] : null;
+                const isActive = activeLeft === leftIdx;
+                const isRight = checked && matchedText === p.right;
+                const isWrong = checked && matchedText !== null && matchedText !== p.right;
+                return (
+                  <button key={leftIdx}
+                    disabled={checked && correct}
+                    onClick={() => setActiveLeft(leftIdx)}
+                    className={`w-full text-left p-3 rounded-xl border-2 text-sm transition ${
+                      isRight ? "border-success bg-success/10"
+                      : isWrong ? "border-destructive bg-destructive/10"
+                      : isActive ? "border-primary bg-primary-soft"
+                      : "border-border hover:border-primary/50"
+                    }`}>
+                    <div className="font-medium">{p.left}</div>
+                    {matchedText && <div className="text-xs text-muted-foreground mt-0.5">→ {matchedText}</div>}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="space-y-2">
+              {matchRightShuffled.map((r, rIdx) => {
+                const used = Object.values(matchPicks).includes(rIdx);
+                return (
+                  <button key={rIdx}
+                    disabled={(checked && correct) || activeLeft === null}
+                    onClick={() => matchPick(rIdx)}
+                    className={`w-full text-left p-3 rounded-xl border-2 text-sm transition ${
+                      used ? "opacity-50 border-border" : "border-border hover:border-primary/50"
+                    }`}>
+                    {r}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div className="mt-2 text-xs text-muted-foreground">Спочатку обери ліворуч, потім — праворуч.</div>
+        </>
+      )}
+
+      {/* MULTI */}
+      {item.type === "multi" && (
+        <>
+          <div className="font-medium mb-3">{item.q}</div>
+          <div className="grid sm:grid-cols-2 gap-2">
+            {item.options.map((opt, i) => {
+              const picked = multiPicks.has(i);
+              const inCorrect = item.correct.includes(i);
+              const state = !checked ? "" : inCorrect && picked ? "correct" : inCorrect ? "missed" : picked ? "wrong" : "";
+              return (
+                <button key={i}
+                  disabled={checked && correct}
+                  onClick={() => toggleMulti(i)}
+                  className={`text-left p-3 rounded-xl border-2 transition font-medium text-sm ${
+                    state === "correct" ? "border-success bg-success/10 text-success"
+                    : state === "missed" ? "border-success/50 bg-success/5 text-success/80"
+                    : state === "wrong" ? "border-destructive bg-destructive/10 text-destructive"
+                    : picked ? "border-primary bg-primary-soft"
+                    : "border-border hover:border-primary/50"
+                  }`}>
+                  <span className="inline-block w-4">{picked ? "☑" : "☐"}</span> {opt}
+                </button>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* CORRECT */}
+      {item.type === "correct" && (
+        <>
+          <div className="font-medium mb-1">{item.prompt}</div>
+          <div className="text-sm mb-3 text-destructive">❌ <span className="line-through">{item.wrong}</span></div>
+          <input
+            value={String(answer ?? "")}
+            disabled={checked && correct}
+            onChange={(e) => { setAnswer(e.target.value); setChecked(false); }}
+            placeholder="Запиши правильний варіант…"
+            className={`w-full h-11 rounded-xl border-2 px-4 font-medium focus:outline-none ${
+              checked ? (correct ? "border-success bg-success/10" : "border-destructive bg-destructive/10") : "border-input focus:border-primary"
+            }`}
+          />
+        </>
+      )}
+
+      {/* WRITE FREE */}
+      {item.type === "writeFree" && (
+        <>
+          <div className="font-medium mb-3">{item.prompt}</div>
+          <textarea
+            value={String(answer ?? "")}
+            disabled={checked && correct}
+            onChange={(e) => { setAnswer(e.target.value); setChecked(false); }}
+            placeholder="Напиши свою відповідь (мін. 10 символів)…"
+            rows={3}
+            className={`w-full rounded-xl border-2 px-4 py-2 font-medium focus:outline-none ${
+              checked ? (correct ? "border-success bg-success/10" : "border-destructive bg-destructive/10") : "border-input focus:border-primary"
+            }`}
+          />
+        </>
+      )}
+
+      {/* FEEDBACK + buttons */}
+      {checked && !correct && (
+        <div className="mt-3 p-3 rounded-xl bg-destructive/5 text-sm">
+          <div className="font-semibold text-destructive">Спробуй ще раз.</div>
+          {explain && <div className="text-foreground/80 mt-1">💡 {explain}</div>}
+          {showAnswer && (
+            <div className="mt-2 text-foreground">
+              ✅ Правильна відповідь: <b>{expectedAnswerText}</b>
+            </div>
+          )}
+        </div>
+      )}
+      {checked && correct && explain && (
+        <div className="mt-3 p-3 rounded-xl bg-success/5 text-sm text-foreground/85">
+          <span className="font-semibold text-success">Правильно!</span> {explain}
+        </div>
+      )}
+
+      <div className="mt-4 flex justify-end gap-2 flex-wrap">
+        {!checked && (
           <Button
             size="sm"
             className="bg-gradient-primary"
-            disabled={answer === null && item.type !== "order"}
-            onClick={() => setChecked(true)}
+            disabled={
+              (item.type !== "order" && item.type !== "match" && item.type !== "multi" && (answer === null || answer === "")) ||
+              (item.type === "match" && Object.keys(matchPicks).length < item.pairs.length) ||
+              (item.type === "multi" && multiPicks.size === 0)
+            }
+            onClick={onCheck}
           >Перевірити</Button>
+        )}
+        {checked && !correct && (
+          <>
+            {canShowAnswer && !showAnswer && (
+              <Button variant="outline" size="sm" onClick={() => { setShowAnswer(true); reportIfNeeded(false); }}>
+                <Eye className="h-4 w-4 mr-1" /> Показати відповідь
+              </Button>
+            )}
+            <Button variant="outline" size="sm" onClick={onRetry}>
+              <RotateCcw className="h-4 w-4 mr-1" /> Ще раз
+            </Button>
+          </>
+        )}
+        {checked && correct && (
+          <Button variant="ghost" size="sm" onClick={onRetry}>
+            <RotateCcw className="h-4 w-4 mr-1" /> Повторити
+          </Button>
         )}
       </div>
     </Card>
   );
 };
 
-const ExerciseBlock = ({ items }: { items: ExerciseItem[] }) => {
+interface BlockProps {
+  items: ExerciseItem[];
+  onFinish?: () => void;
+  onNext?: () => void;
+  onPrev?: () => void;
+}
+
+const ExerciseBlock = ({ items, onFinish, onNext, onPrev }: BlockProps) => {
+  const [results, setResults] = useState<Record<number, boolean>>({});
+
   if (!items || items.length === 0) return null;
+  const total = items.length;
+  const answered = Object.keys(results).length;
+  const correctCount = Object.values(results).filter(Boolean).length;
+  const allDone = answered >= total;
+  const percent = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+
+  let message = "Чудовий результат! Ти добре засвоїв / засвоїла цю тему.";
+  let suggestRepeat = false;
+  if (percent < 50) { message = "Раджу повторити теорію — ти зрозумієш матеріал краще на другому колі."; suggestRepeat = true; }
+  else if (percent < 80) { message = "Гарний результат! Кілька тем варто повторити."; }
+
+  const restart = () => { setResults({}); };
+
   return (
     <section className="mt-10">
       <div className="flex items-end justify-between mb-1">
         <h2 className="font-display text-2xl font-bold flex items-center gap-2">
           <BookOpen className="h-5 w-5 text-primary"/> Вправи
         </h2>
-        <span className="text-sm text-muted-foreground">{items.length} завдань · від простіших до складніших</span>
+        <span className="text-sm text-muted-foreground">{total} завдань · від простіших до складніших</span>
       </div>
-      <p className="text-sm text-muted-foreground mb-4">Виконуй по черзі та перевіряй себе одразу після кожної вправи.</p>
+      <p className="text-sm text-muted-foreground mb-4">
+        Виконуй по черзі та перевіряй себе одразу. Прогрес: <b>{answered}/{total}</b> · правильно: <b>{correctCount}</b>.
+      </p>
       <div>
         {items.map((it, i) => (
-          <ExerciseCard key={i} item={it} idx={i} />
+          <ExerciseCard
+            key={i}
+            item={it}
+            idx={i}
+            onResult={(ok) => setResults(prev => prev[i] === undefined ? { ...prev, [i]: ok } : prev)}
+          />
         ))}
       </div>
+
+      {allDone && (
+        <Card className="mt-6 p-6 rounded-2xl border-0 shadow-soft bg-gradient-primary text-primary-foreground">
+          <div className="flex items-start gap-4">
+            <Trophy className="h-10 w-10 shrink-0" />
+            <div className="flex-1">
+              <div className="font-display text-xl font-extrabold">
+                {correctCount} із {total} правильно · {percent}%
+              </div>
+              <p className="text-sm opacity-90 mt-1">{message}</p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button variant="secondary" size="sm" onClick={restart}>
+                  <RotateCcw className="h-4 w-4 mr-1" /> Повторити вправи
+                </Button>
+                {onPrev && (
+                  <Button variant="secondary" size="sm" onClick={onPrev}>Повернутися до правила</Button>
+                )}
+                {onFinish && (
+                  <Button size="sm" className="bg-white text-primary hover:bg-white/90" onClick={onFinish}>
+                    Завершити урок
+                  </Button>
+                )}
+                {onNext && !suggestRepeat && (
+                  <Button size="sm" className="bg-white text-primary hover:bg-white/90" onClick={onNext}>
+                    Наступний урок <ArrowRight className="h-4 w-4 ml-1" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
     </section>
   );
 };
 
 export default ExerciseBlock;
-
