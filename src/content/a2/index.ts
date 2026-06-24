@@ -2,6 +2,7 @@
 import { verbenA2 } from "./verben";
 import { adjektiveA2 } from "./adjektive";
 import { adverbienA2 } from "./adverbien";
+import { praepositionenA2 } from "./praepositionen";
 import type { A2Map } from "./_helpers";
 import type { LessonContent } from "@/content/lessons";
 import type { LessonExtras } from "@/content/lessonExtensions";
@@ -11,6 +12,7 @@ const all: A2Map = {
   ...verbenA2,
   ...adjektiveA2,
   ...adverbienA2,
+  ...praepositionenA2,
 };
 
 export const a2ExtraLessons: Record<string, LessonContent> = Object.fromEntries(

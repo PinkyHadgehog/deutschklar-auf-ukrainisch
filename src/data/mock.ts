@@ -197,7 +197,16 @@ export const grammarCategories: { id: string; title: string; titleDe: string; to
     ]},
   ]},
   { id: "praepositionen", title: "Прийменники", titleDe: "Präpositionen", topics: [
-    { slug: "praepositionen", title: "Прийменники з Akk., Dat., Gen.", titleDe: "Präpositionen", level: "A2", lessons: 16, progress: 50, premium: false },
+    { slug: "praepositionen", title: "A2 — Präpositionen (огляд)", titleDe: "Präpositionen", level: "A2", lessons: 8, progress: 0, premium: false, sub: [
+      { slug: "praep-akkusativ", title: "Präpositionen mit Akkusativ (durch, für, gegen, ohne, um, bis, entlang)", titleDe: "Präpositionen mit Akkusativ" },
+      { slug: "praep-dativ", title: "Präpositionen mit Dativ (aus, bei, mit, nach, seit, von, zu…)", titleDe: "Präpositionen mit Dativ" },
+      { slug: "wechselpraepositionen", title: "Wechselpräpositionen — Wo? / Wohin?", titleDe: "Wechselpräpositionen" },
+      { slug: "praep-genitiv", title: "Präpositionen mit Genitiv (wegen, trotz, während, statt)", titleDe: "Präpositionen mit Genitiv" },
+      { slug: "temporale-praepositionen", title: "Temporale Präpositionen — am, im, um, vor, seit, in…", titleDe: "Temporale Präpositionen" },
+      { slug: "lokale-praepositionen", title: "Lokale Präpositionen — nach / in / zu / aus / von", titleDe: "Lokale Präpositionen" },
+      { slug: "verschmelzungen", title: "Verschmelzungen — am, im, ans, ins, beim, vom, zum, zur", titleDe: "Verschmelzungen" },
+      { slug: "praep-feste-wendungen", title: "Feste Wendungen — zu Hause, nach Hause, zu Fuß, auf Deutsch", titleDe: "Feste Wendungen" },
+    ]},
   ]},
   { id: "konjunktionen", title: "Сполучники", titleDe: "Konjunktionen", topics: [
     { slug: "konjunktionen", title: "Сурядні та підрядні сполучники", titleDe: "Konjunktionen", level: "B1", lessons: 10, progress: 0, premium: true },
