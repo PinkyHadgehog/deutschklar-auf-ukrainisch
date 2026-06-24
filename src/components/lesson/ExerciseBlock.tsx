@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, X, GripHorizontal } from "lucide-react";
+import { Check, X, GripHorizontal, BookOpen } from "lucide-react";
 import type { ExerciseItem } from "@/content/exerciseSets";
 
 const norm = (s: string) =>
@@ -216,7 +216,13 @@ const ExerciseBlock = ({ items }: { items: ExerciseItem[] }) => {
   if (!items || items.length === 0) return null;
   return (
     <section className="mt-10">
-      <h2 className="font-display text-2xl font-bold mb-4">Додаткові вправи · від легких до складніших</h2>
+      <div className="flex items-end justify-between mb-1">
+        <h2 className="font-display text-2xl font-bold flex items-center gap-2">
+          <BookOpen className="h-5 w-5 text-primary"/> Вправи
+        </h2>
+        <span className="text-sm text-muted-foreground">{items.length} завдань · від простіших до складніших</span>
+      </div>
+      <p className="text-sm text-muted-foreground mb-4">Виконуй по черзі та перевіряй себе одразу після кожної вправи.</p>
       <div>
         {items.map((it, i) => (
           <ExerciseCard key={i} item={it} idx={i} />
@@ -227,3 +233,4 @@ const ExerciseBlock = ({ items }: { items: ExerciseItem[] }) => {
 };
 
 export default ExerciseBlock;
+
