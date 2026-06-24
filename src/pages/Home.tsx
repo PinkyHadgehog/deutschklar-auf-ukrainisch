@@ -76,7 +76,7 @@ const Home = () => {
           {[
             { icon: Target, title: "1. Обери рівень", text: "Пройди короткий тест або обери A1–C2 самостійно. Ми підлаштуємо програму." },
             { icon: BookOpen, title: "2. Вчи лекції", text: "Граматика з прикладами, аудіо, вправи. Маленькі кроки — стабільний результат." },
-            { icon: TrendingUp, title: "3. Бачи прогрес", text: "Особистий кабінет, серії, квізи, рекомендації — мотивація щодня." },
+            { icon: TrendingUp, title: "3. Дивись прогрес", text: "Особистий кабінет, серії, квізи, рекомендації — мотивація щодня." },
           ].map((s, i) => (
             <Card key={i} className="p-7 rounded-2xl border-0 shadow-soft hover:shadow-elevated transition">
               <div className="h-12 w-12 rounded-xl bg-gradient-primary grid place-items-center mb-5">
