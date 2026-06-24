@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { getLesson } from "@/content/lessons";
+import { exerciseSets } from "@/content/exerciseSets";
+import ExerciseBlock from "@/components/lesson/ExerciseBlock";
 
 // Render explanation paragraphs with allowed inline tags (<b>, <span class="hl">, <i>).
 const Html = ({ html }: { html: string }) => (
