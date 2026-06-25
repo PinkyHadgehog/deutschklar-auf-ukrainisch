@@ -14,6 +14,7 @@ import LessonHeader from "@/components/lesson/LessonHeader";
 import {
   LearningGoals, RuleBox, UkrainianTips, LanguageComparison, LessonSummary, PremiumNotice,
 } from "@/components/lesson/LessonSections";
+import AlphabetAudio from "@/components/lesson/AlphabetAudio";
 
 const Html = ({ html }: { html: string }) => (
   <span dangerouslySetInnerHTML={{ __html: html.replace(/class='hl'/g, 'class="text-primary font-semibold"') }} />
