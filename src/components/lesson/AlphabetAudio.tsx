@@ -54,13 +54,19 @@ function pickGermanVoice(): SpeechSynthesisVoice | null {
 const AlphabetAudio = () => {
   const [speakingId, setSpeakingId] = useState<string | null>(null);
   const [supported, setSupported] = useState(true);
+  const [speed, setSpeed] = useState<Speed>(1);
+  const [volume, setVolume] = useState<number>(1); // 0..1
+  const speedRef = useRef(speed);
+  const volumeRef = useRef(volume);
+
+  useEffect(() => { speedRef.current = speed; }, [speed]);
+  useEffect(() => { volumeRef.current = volume; }, [volume]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       setSupported(false);
       return;
     }
-    // Trigger voice list load (some browsers populate async)
     const load = () => window.speechSynthesis.getVoices();
     load();
     window.speechSynthesis.onvoiceschanged = load;
@@ -70,13 +76,15 @@ const AlphabetAudio = () => {
     };
   }, []);
 
-  const speak = (text: string, id: string, rate = 0.9) => {
+  const speak = (text: string, id: string, baseRate = 0.9) => {
     if (!supported) return;
     try {
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = "de-DE";
-      utter.rate = rate;
+      // Clamp to Web Speech valid range (0.1..10 rate, 0..1 volume)
+      utter.rate = Math.max(0.1, Math.min(10, baseRate * speedRef.current));
+      utter.volume = Math.max(0, Math.min(1, volumeRef.current));
       utter.pitch = 1;
       const voice = pickGermanVoice();
       if (voice) utter.voice = voice;
@@ -90,9 +98,10 @@ const AlphabetAudio = () => {
   };
 
   const playRow = (r: Row) => {
-    // Letter name + example word, with a tiny pause via comma
     speak(`${r.spell}. ${r.example}`, `row-${r.letter}`, 0.85);
   };
+
+  const VolIcon = volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
 
   return (
     <div className="mt-5">
