@@ -110,6 +110,49 @@ const AlphabetAudio = () => {
           Твій браузер не підтримує озвучення (Web Speech API). Спробуй Chrome або Edge.
         </div>
       )}
+      <Card className="mb-3 p-3 rounded-xl border-0 shadow-soft flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+        <div className="flex items-center gap-2">
+          <Gauge className="h-4 w-4 text-muted-foreground" aria-hidden />
+          <span className="text-xs font-medium text-muted-foreground">Швидкість</span>
+          <div className="inline-flex rounded-lg border border-border overflow-hidden">
+            {SPEEDS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSpeed(s)}
+                aria-pressed={speed === s}
+                disabled={!supported}
+                className={[
+                  "px-2.5 py-1 text-xs font-medium transition-colors",
+                  speed === s
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background hover:bg-secondary/50 text-foreground/80",
+                ].join(" ")}
+              >
+                {s}x
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-1 min-w-[180px]">
+          <VolIcon className="h-4 w-4 text-muted-foreground" aria-hidden />
+          <span className="text-xs font-medium text-muted-foreground">Гучність</span>
+          <Slider
+            value={[Math.round(volume * 100)]}
+            onValueChange={(v) => setVolume((v[0] ?? 0) / 100)}
+            max={100}
+            step={5}
+            disabled={!supported}
+            aria-label="Гучність озвучення"
+            className="flex-1 max-w-[220px]"
+          />
+          <span className="text-xs tabular-nums w-9 text-right text-muted-foreground">
+            {Math.round(volume * 100)}%
+          </span>
+        </div>
+      </Card>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
         {ROWS.map((r) => {
           const rowId = `row-${r.letter}`;
