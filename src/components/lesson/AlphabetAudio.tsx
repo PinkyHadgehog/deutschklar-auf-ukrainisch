@@ -1,7 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Volume2, Loader2 } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Volume2, VolumeX, Volume1, Loader2, Gauge } from "lucide-react";
+
+const SPEEDS = [0.75, 1, 1.25] as const;
+type Speed = (typeof SPEEDS)[number];
 
 type Row = { letter: string; name: string; example: string; transcription: string; spell: string };
 
@@ -50,13 +54,19 @@ function pickGermanVoice(): SpeechSynthesisVoice | null {
 const AlphabetAudio = () => {
   const [speakingId, setSpeakingId] = useState<string | null>(null);
   const [supported, setSupported] = useState(true);
+  const [speed, setSpeed] = useState<Speed>(1);
+  const [volume, setVolume] = useState<number>(1); // 0..1
+  const speedRef = useRef(speed);
+  const volumeRef = useRef(volume);
+
+  useEffect(() => { speedRef.current = speed; }, [speed]);
+  useEffect(() => { volumeRef.current = volume; }, [volume]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       setSupported(false);
       return;
     }
-    // Trigger voice list load (some browsers populate async)
     const load = () => window.speechSynthesis.getVoices();
     load();
     window.speechSynthesis.onvoiceschanged = load;
@@ -66,13 +76,15 @@ const AlphabetAudio = () => {
     };
   }, []);
 
-  const speak = (text: string, id: string, rate = 0.9) => {
+  const speak = (text: string, id: string, baseRate = 0.9) => {
     if (!supported) return;
     try {
       window.speechSynthesis.cancel();
       const utter = new SpeechSynthesisUtterance(text);
       utter.lang = "de-DE";
-      utter.rate = rate;
+      // Clamp to Web Speech valid range (0.1..10 rate, 0..1 volume)
+      utter.rate = Math.max(0.1, Math.min(10, baseRate * speedRef.current));
+      utter.volume = Math.max(0, Math.min(1, volumeRef.current));
       utter.pitch = 1;
       const voice = pickGermanVoice();
       if (voice) utter.voice = voice;
@@ -86,9 +98,10 @@ const AlphabetAudio = () => {
   };
 
   const playRow = (r: Row) => {
-    // Letter name + example word, with a tiny pause via comma
     speak(`${r.spell}. ${r.example}`, `row-${r.letter}`, 0.85);
   };
+
+  const VolIcon = volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
 
   return (
     <div className="mt-5">
@@ -97,6 +110,49 @@ const AlphabetAudio = () => {
           Твій браузер не підтримує озвучення (Web Speech API). Спробуй Chrome або Edge.
         </div>
       )}
+      <Card className="mb-3 p-3 rounded-xl border-0 shadow-soft flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+        <div className="flex items-center gap-2">
+          <Gauge className="h-4 w-4 text-muted-foreground" aria-hidden />
+          <span className="text-xs font-medium text-muted-foreground">Швидкість</span>
+          <div className="inline-flex rounded-lg border border-border overflow-hidden">
+            {SPEEDS.map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => setSpeed(s)}
+                aria-pressed={speed === s}
+                disabled={!supported}
+                className={[
+                  "px-2.5 py-1 text-xs font-medium transition-colors",
+                  speed === s
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-background hover:bg-secondary/50 text-foreground/80",
+                ].join(" ")}
+              >
+                {s}x
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 flex-1 min-w-[180px]">
+          <VolIcon className="h-4 w-4 text-muted-foreground" aria-hidden />
+          <span className="text-xs font-medium text-muted-foreground">Гучність</span>
+          <Slider
+            value={[Math.round(volume * 100)]}
+            onValueChange={(v) => setVolume((v[0] ?? 0) / 100)}
+            max={100}
+            step={5}
+            disabled={!supported}
+            aria-label="Гучність озвучення"
+            className="flex-1 max-w-[220px]"
+          />
+          <span className="text-xs tabular-nums w-9 text-right text-muted-foreground">
+            {Math.round(volume * 100)}%
+          </span>
+        </div>
+      </Card>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
         {ROWS.map((r) => {
           const rowId = `row-${r.letter}`;
