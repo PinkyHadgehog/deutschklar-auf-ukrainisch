@@ -1,7 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Volume2, Loader2 } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Volume2, VolumeX, Volume1, Loader2, Gauge } from "lucide-react";
+
+const SPEEDS = [0.75, 1, 1.25] as const;
+type Speed = (typeof SPEEDS)[number];
 
 type Row = { letter: string; name: string; example: string; transcription: string; spell: string };
 
