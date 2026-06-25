@@ -107,7 +107,9 @@ const Lesson = () => {
           ))}
         </div>
 
-        {lesson.table && (
+        {slug === "alphabet" && <AlphabetAudio />}
+
+        {lesson.table && slug !== "alphabet" && (
           <div className="mt-5 overflow-x-auto rounded-2xl border bg-card">
             <table className="w-full text-sm min-w-[520px]">
               <thead className="bg-secondary/60">
