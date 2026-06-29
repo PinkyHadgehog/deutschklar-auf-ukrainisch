@@ -215,7 +215,18 @@ export const grammarCategories: { id: string; title: string; titleDe: string; to
     ]},
   ]},
   { id: "konjunktionen", title: "Сполучники", titleDe: "Konjunktionen", topics: [
-    { slug: "konjunktionen", title: "Сурядні та підрядні сполучники", titleDe: "Konjunktionen", level: "B1", lessons: 10, progress: 0, premium: true },
+    { slug: "konjunktionen", title: "B1 — Сурядні та підрядні сполучники", titleDe: "Konjunktionen B1", level: "B1", lessons: 10, progress: 0, premium: true, sub: [
+      { slug: "hauptsatz-konjunktionen-b1", title: "Сурядні сполучники — und, aber, oder, denn, sondern", titleDe: "Hauptsatz-Konjunktionen" },
+      { slug: "weil-da", title: "weil / da — причина", titleDe: "weil / da" },
+      { slug: "dass-ob", title: "dass / ob — підрядні з'ясувальні", titleDe: "dass / ob" },
+      { slug: "wenn-als-b1", title: "wenn / als — час у минулому й майбутньому", titleDe: "wenn / als" },
+      { slug: "nachdem-bevor-waehrend", title: "nachdem, bevor, während — часова послідовність", titleDe: "nachdem / bevor / während" },
+      { slug: "obwohl-trotzdem", title: "obwohl / trotzdem — допустовість", titleDe: "obwohl / trotzdem" },
+      { slug: "damit-um-zu", title: "damit / um … zu — мета", titleDe: "damit / um … zu" },
+      { slug: "sodass", title: "sodass — наслідок", titleDe: "sodass" },
+      { slug: "je-desto", title: "je … desto — пропорційність", titleDe: "je … desto" },
+      { slug: "zweiteilige-konjunktionen", title: "Двочленні сполучники — entweder…oder, weder…noch, sowohl…als auch", titleDe: "Zweiteilige Konjunktionen" },
+    ]},
   ]},
   { id: "satzbau", title: "Будова речення", titleDe: "Satzbau", topics: [
     { slug: "satzbau", title: "A2 — Satzbau (огляд)", titleDe: "Satzbau", level: "A2", lessons: 8, progress: 0, premium: false, sub: [
@@ -230,7 +241,16 @@ export const grammarCategories: { id: string; title: string; titleDe: string; to
     ]},
   ]},
   { id: "zeiten", title: "Часи", titleDe: "Zeiten", topics: [
-    { slug: "zeiten", title: "Огляд усіх часів", titleDe: "Zeiten", level: "B1", lessons: 8, progress: 0, premium: true },
+    { slug: "zeiten", title: "B1 — Огляд усіх часів", titleDe: "Zeiten B1", level: "B1", lessons: 8, progress: 0, premium: true, sub: [
+      { slug: "zeiten-uebersicht", title: "Огляд системи часів — Übersicht", titleDe: "Tempora — Übersicht" },
+      { slug: "praesens-b1", title: "Präsens — функції на рівні B1", titleDe: "Präsens (B1)" },
+      { slug: "perfekt-b1", title: "Perfekt — розмовне минуле", titleDe: "Perfekt (B1)" },
+      { slug: "praeteritum-b1", title: "Präteritum — письмове минуле", titleDe: "Präteritum (B1)" },
+      { slug: "plusquamperfekt", title: "Plusquamperfekt — передминулий час", titleDe: "Plusquamperfekt" },
+      { slug: "futur1-zeiten", title: "Futur I — прогноз і намір", titleDe: "Futur I" },
+      { slug: "futur2", title: "Futur II — припущення про минуле", titleDe: "Futur II" },
+      { slug: "zeitfolge", title: "Consecutio temporum — узгодження часів", titleDe: "Zeitfolge / Consecutio temporum" },
+    ]},
   ]},
   { id: "faelle", title: "Відмінки", titleDe: "Fälle", topics: [
     { slug: "nominativ", title: "A1 — Nominativ (називний)", titleDe: "Nominativ", level: "A1", lessons: 4, progress: 100, premium: false, sub: [
@@ -257,10 +277,27 @@ export const grammarCategories: { id: string; title: string; titleDe: string; to
       { slug: "praep-mit-dativ-a2", title: "Präpositionen mit Dativ — aus, bei, mit, nach, seit, von, zu", titleDe: "Präpositionen mit Dativ" },
       { slug: "dativ-position", title: "Position: Dativ und Akkusativ im Satz", titleDe: "Position: Dativ und Akkusativ" },
     ]},
-    { slug: "genitiv", title: "Genitiv", titleDe: "Genitiv", level: "B1", lessons: 6, progress: 0, premium: true },
+    { slug: "genitiv", title: "B1 — Genitiv (родовий)", titleDe: "Genitiv", level: "B1", lessons: 6, progress: 0, premium: true, sub: [
+      { slug: "was-ist-genitiv", title: "Was ist der Genitiv? — що таке Genitiv", titleDe: "Was ist der Genitiv?" },
+      { slug: "artikel-genitiv", title: "Artikel im Genitiv — des/der/des/der", titleDe: "Artikel im Genitiv" },
+      { slug: "n-deklination-genitiv", title: "n-Deklination у Genitiv — des Studenten, des Herrn", titleDe: "n-Deklination im Genitiv" },
+      { slug: "praep-genitiv-b1", title: "Präpositionen mit Genitiv — wegen, trotz, während, statt, aufgrund", titleDe: "Präpositionen mit Genitiv" },
+      { slug: "genitiv-namen", title: "Genitiv bei Eigennamen — Annas Buch, Peters Auto", titleDe: "Genitiv bei Eigennamen" },
+      { slug: "genitiv-vs-von", title: "Genitiv чи von+Dativ? — стиль і вживання", titleDe: "Genitiv vs. von+Dativ" },
+    ]},
   ]},
   { id: "wortbildung", title: "Словотвір", titleDe: "Wortbildung", topics: [
-    { slug: "wortbildung", title: "Префікси, суфікси, складні слова", titleDe: "Wortbildung", level: "B1", lessons: 9, progress: 0, premium: true },
+    { slug: "wortbildung", title: "B1 — Префікси, суфікси, складні слова", titleDe: "Wortbildung B1", level: "B1", lessons: 9, progress: 0, premium: true, sub: [
+      { slug: "nomen-suffixe", title: "Суфікси іменників — -ung, -heit, -keit, -schaft, -tum", titleDe: "Nomensuffixe" },
+      { slug: "verb-suffixe", title: "Утворення дієслів — -ieren, -eln, -igen", titleDe: "Verbsuffixe" },
+      { slug: "adjektiv-suffixe", title: "Суфікси прикметників — -ig, -lich, -isch, -bar, -los, -voll", titleDe: "Adjektivsuffixe" },
+      { slug: "untrennbare-praefixe", title: "Невідокремлювані префікси — be-, ge-, er-, ver-, zer-, ent-, miss-", titleDe: "Untrennbare Präfixe" },
+      { slug: "trennbare-praefixe-b1", title: "Відокремлювані префікси — auf-, an-, aus-, ein-, mit-, vor-, zu-, weg-", titleDe: "Trennbare Präfixe" },
+      { slug: "negationspraefixe", title: "Префікси заперечення — un-, miss-, in-/il-/ir-, non-", titleDe: "Negationspräfixe" },
+      { slug: "komposita-nomen", title: "Складні іменники — Komposita", titleDe: "Nomenkomposita" },
+      { slug: "komposita-fugen", title: "З'єднувальні елементи — -s-, -n-, -en-, -es-", titleDe: "Fugenelemente" },
+      { slug: "adjektiv-komposita", title: "Складні прикметники — dunkelblau, eiskalt, hellwach", titleDe: "Adjektivkomposita" },
+    ]},
   ]},
 ];
 
