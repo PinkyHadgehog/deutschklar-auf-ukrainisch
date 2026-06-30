@@ -212,9 +212,10 @@ const Courses = () => {
                   </div>
 
                   <Accordion
+                    key={q ? `q-${q}` : "noq"}
                     type="multiple"
                     className="w-full"
-                    {...(q ? { value: cat.topics.map((t) => t.slug) } : {})}
+                    defaultValue={q ? cat.topics.map((t) => t.slug) : []}
                   >
                     {cat.topics.map((topic) => (
                       <AccordionItem key={topic.slug} value={topic.slug}>
