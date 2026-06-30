@@ -103,7 +103,7 @@ const Courses = () => {
       </div>
 
       {level !== "all" && (
-        <section className="mt-12">
+        <section ref={lessonsRef} className="mt-12 scroll-mt-24">
           <div className="flex items-end justify-between flex-wrap gap-3">
             <div>
               <h2 className="font-display text-2xl md:text-3xl font-extrabold">
