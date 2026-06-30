@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,7 +17,15 @@ const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"]
 
 const Courses = () => {
   const [level, setLevel] = useState<"all" | Level>("all");
+  const lessonsRef = useRef<HTMLElement | null>(null);
   const filteredCourses = level === "all" ? courses : courses.filter((c) => c.level === level);
+
+  const openLevel = (l: Level) => {
+    setLevel(l);
+    requestAnimationFrame(() => {
+      lessonsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
 
   const topicsByLevel = useMemo(() => {
     if (level === "all") return [];
@@ -85,7 +93,7 @@ const Courses = () => {
             <Button
               variant="outline"
               className="w-full mt-5"
-              onClick={() => setLevel(c.level)}
+              onClick={() => openLevel(c.level)}
             >
               {c.progress > 0 ? "Продовжити" : "Почати"}
               <ArrowRight className="ml-1.5 h-4 w-4" />
@@ -95,7 +103,7 @@ const Courses = () => {
       </div>
 
       {level !== "all" && (
-        <section className="mt-12">
+        <section ref={lessonsRef} className="mt-12 scroll-mt-24">
           <div className="flex items-end justify-between flex-wrap gap-3">
             <div>
               <h2 className="font-display text-2xl md:text-3xl font-extrabold">
