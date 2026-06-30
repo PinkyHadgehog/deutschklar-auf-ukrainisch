@@ -145,9 +145,57 @@ const Courses = () => {
             </Button>
           </div>
 
+          <div className="mt-5 flex flex-col md:flex-row gap-3 md:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Пошук теми чи підкатегорії… (напр. Präsens, артиклі, Konjunktiv)"
+                className="pl-9 pr-9 h-11 rounded-xl"
+              />
+              {query && (
+                <button
+                  onClick={() => setQuery("")}
+                  aria-label="Очистити пошук"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-muted"
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setCategoryId("all")}
+                className={`px-3 h-9 rounded-full text-xs font-semibold border transition ${
+                  categoryId === "all"
+                    ? "bg-gradient-primary text-primary-foreground border-transparent"
+                    : "bg-background hover:bg-muted border-input"
+                }`}
+              >
+                Усі категорії
+              </button>
+              {availableCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategoryId(cat.id)}
+                  className={`px-3 h-9 rounded-full text-xs font-semibold border transition ${
+                    categoryId === cat.id
+                      ? "bg-gradient-primary text-primary-foreground border-transparent"
+                      : "bg-background hover:bg-muted border-input"
+                  }`}
+                >
+                  {cat.title}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {topicsByLevel.length === 0 ? (
             <Card className="mt-6 p-8 rounded-2xl border-0 shadow-soft text-center text-muted-foreground">
-              Для рівня {level} ще немає опублікованих тем. Зазирни пізніше.
+              {q || categoryId !== "all"
+                ? `Нічого не знайдено для «${query}» на рівні ${level}. Спробуй інший запит чи категорію.`
+                : `Для рівня ${level} ще немає опублікованих тем. Зазирни пізніше.`}
             </Card>
           ) : (
             <div className="mt-6 grid md:grid-cols-2 gap-5">
