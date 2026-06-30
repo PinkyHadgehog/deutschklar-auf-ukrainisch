@@ -17,7 +17,15 @@ const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"]
 
 const Courses = () => {
   const [level, setLevel] = useState<"all" | Level>("all");
+  const lessonsRef = useRef<HTMLElement | null>(null);
   const filteredCourses = level === "all" ? courses : courses.filter((c) => c.level === level);
+
+  const openLevel = (l: Level) => {
+    setLevel(l);
+    requestAnimationFrame(() => {
+      lessonsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
 
   const topicsByLevel = useMemo(() => {
     if (level === "all") return [];
