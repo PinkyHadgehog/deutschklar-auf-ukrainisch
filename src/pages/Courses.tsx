@@ -93,7 +93,7 @@ const Courses = () => {
             <Button
               variant="outline"
               className="w-full mt-5"
-              onClick={() => setLevel(c.level)}
+              onClick={() => openLevel(c.level)}
             >
               {c.progress > 0 ? "Продовжити" : "Почати"}
               <ArrowRight className="ml-1.5 h-4 w-4" />
