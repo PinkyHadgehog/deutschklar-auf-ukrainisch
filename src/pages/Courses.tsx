@@ -10,13 +10,18 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Input } from "@/components/ui/input";
 import { courses, grammarCategories, type Level } from "@/data/mock";
-import { Lock, ArrowRight, BookOpen } from "lucide-react";
+import { Lock, ArrowRight, BookOpen, Search, X } from "lucide-react";
 
 const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"];
 
+const norm = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+
 const Courses = () => {
   const [level, setLevel] = useState<"all" | Level>("all");
+  const [query, setQuery] = useState("");
+  const [categoryId, setCategoryId] = useState<"all" | string>("all");
   const lessonsRef = useRef<HTMLElement | null>(null);
   const filteredCourses = level === "all" ? courses : courses.filter((c) => c.level === level);
 
@@ -27,14 +32,36 @@ const Courses = () => {
     });
   };
 
+  const q = norm(query.trim());
+
   const topicsByLevel = useMemo(() => {
     if (level === "all") return [];
     return grammarCategories
-      .map((cat) => ({
-        ...cat,
-        topics: cat.topics.filter((t) => t.level === level),
-      }))
-      .filter((cat) => cat.topics.length > 0);
+      .map((cat) => {
+        const topics = cat.topics
+          .filter((t) => t.level === level)
+          .map((t) => {
+            const sub = t.sub?.filter((s) => !q || norm(s.title).includes(q)) ?? undefined;
+            const topicMatches =
+              !q || norm(t.title).includes(q) || norm(t.titleDe).includes(q);
+            const hasSubMatch = q && t.sub && sub && sub.length > 0;
+            if (!q || topicMatches || hasSubMatch) {
+              return { ...t, sub: topicMatches ? t.sub : sub };
+            }
+            return null;
+          })
+          .filter(Boolean) as typeof cat.topics;
+        return { ...cat, topics };
+      })
+      .filter((cat) => cat.topics.length > 0)
+      .filter((cat) => categoryId === "all" || cat.id === categoryId);
+  }, [level, q, categoryId]);
+
+  const availableCategories = useMemo(() => {
+    if (level === "all") return [];
+    return grammarCategories.filter((cat) =>
+      cat.topics.some((t) => t.level === level),
+    );
   }, [level]);
 
   const totalLessons = topicsByLevel.reduce(
