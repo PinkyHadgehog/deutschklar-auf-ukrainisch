@@ -10,13 +10,18 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Input } from "@/components/ui/input";
 import { courses, grammarCategories, type Level } from "@/data/mock";
-import { Lock, ArrowRight, BookOpen } from "lucide-react";
+import { Lock, ArrowRight, BookOpen, Search, X } from "lucide-react";
 
 const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"];
 
+const norm = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+
 const Courses = () => {
   const [level, setLevel] = useState<"all" | Level>("all");
+  const [query, setQuery] = useState("");
+  const [categoryId, setCategoryId] = useState<"all" | string>("all");
   const lessonsRef = useRef<HTMLElement | null>(null);
   const filteredCourses = level === "all" ? courses : courses.filter((c) => c.level === level);
 
@@ -27,14 +32,36 @@ const Courses = () => {
     });
   };
 
+  const q = norm(query.trim());
+
   const topicsByLevel = useMemo(() => {
     if (level === "all") return [];
     return grammarCategories
-      .map((cat) => ({
-        ...cat,
-        topics: cat.topics.filter((t) => t.level === level),
-      }))
-      .filter((cat) => cat.topics.length > 0);
+      .map((cat) => {
+        const topics = cat.topics
+          .filter((t) => t.level === level)
+          .map((t) => {
+            const sub = t.sub?.filter((s) => !q || norm(s.title).includes(q)) ?? undefined;
+            const topicMatches =
+              !q || norm(t.title).includes(q) || norm(t.titleDe).includes(q);
+            const hasSubMatch = q && t.sub && sub && sub.length > 0;
+            if (!q || topicMatches || hasSubMatch) {
+              return { ...t, sub: topicMatches ? t.sub : sub };
+            }
+            return null;
+          })
+          .filter(Boolean) as typeof cat.topics;
+        return { ...cat, topics };
+      })
+      .filter((cat) => cat.topics.length > 0)
+      .filter((cat) => categoryId === "all" || cat.id === categoryId);
+  }, [level, q, categoryId]);
+
+  const availableCategories = useMemo(() => {
+    if (level === "all") return [];
+    return grammarCategories.filter((cat) =>
+      cat.topics.some((t) => t.level === level),
+    );
   }, [level]);
 
   const totalLessons = topicsByLevel.reduce(
@@ -118,9 +145,57 @@ const Courses = () => {
             </Button>
           </div>
 
+          <div className="mt-5 flex flex-col md:flex-row gap-3 md:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Пошук теми чи підкатегорії… (напр. Präsens, артиклі, Konjunktiv)"
+                className="pl-9 pr-9 h-11 rounded-xl"
+              />
+              {query && (
+                <button
+                  onClick={() => setQuery("")}
+                  aria-label="Очистити пошук"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-muted"
+                >
+                  <X className="h-4 w-4 text-muted-foreground" />
+                </button>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setCategoryId("all")}
+                className={`px-3 h-9 rounded-full text-xs font-semibold border transition ${
+                  categoryId === "all"
+                    ? "bg-gradient-primary text-primary-foreground border-transparent"
+                    : "bg-background hover:bg-muted border-input"
+                }`}
+              >
+                Усі категорії
+              </button>
+              {availableCategories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => setCategoryId(cat.id)}
+                  className={`px-3 h-9 rounded-full text-xs font-semibold border transition ${
+                    categoryId === cat.id
+                      ? "bg-gradient-primary text-primary-foreground border-transparent"
+                      : "bg-background hover:bg-muted border-input"
+                  }`}
+                >
+                  {cat.title}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {topicsByLevel.length === 0 ? (
             <Card className="mt-6 p-8 rounded-2xl border-0 shadow-soft text-center text-muted-foreground">
-              Для рівня {level} ще немає опублікованих тем. Зазирни пізніше.
+              {q || categoryId !== "all"
+                ? `Нічого не знайдено для «${query}» на рівні ${level}. Спробуй інший запит чи категорію.`
+                : `Для рівня ${level} ще немає опублікованих тем. Зазирни пізніше.`}
             </Card>
           ) : (
             <div className="mt-6 grid md:grid-cols-2 gap-5">
@@ -136,7 +211,12 @@ const Courses = () => {
                     </div>
                   </div>
 
-                  <Accordion type="multiple" className="w-full">
+                  <Accordion
+                    key={q ? `q-${q}` : "noq"}
+                    type="multiple"
+                    className="w-full"
+                    defaultValue={q ? cat.topics.map((t) => t.slug) : []}
+                  >
                     {cat.topics.map((topic) => (
                       <AccordionItem key={topic.slug} value={topic.slug}>
                         <AccordionTrigger className="hover:no-underline">
