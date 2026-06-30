@@ -211,7 +211,11 @@ const Courses = () => {
                     </div>
                   </div>
 
-                  <Accordion type="multiple" className="w-full">
+                  <Accordion
+                    type="multiple"
+                    className="w-full"
+                    {...(q ? { value: cat.topics.map((t) => t.slug) } : {})}
+                  >
                     {cat.topics.map((topic) => (
                       <AccordionItem key={topic.slug} value={topic.slug}>
                         <AccordionTrigger className="hover:no-underline">
