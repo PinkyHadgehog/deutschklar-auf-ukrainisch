@@ -9,6 +9,7 @@ import { a1ExtraLessons, a1Extras, a1Exercises15 } from "./a1";
 import { a2ExtraLessons, a2Extras, a2Exercises15 } from "./a2";
 import { b1ExtraLessons, b1Extras, b1Exercises15 } from "./b1";
 import { b2ExtraLessons, b2Extras, b2Exercises15 } from "./b2";
+import { c1ExtraLessons, c1Extras, c1Exercises15 } from "./c1";
 
 export interface RuleBoxData {
   title?: string;
@@ -261,8 +262,9 @@ const lessonExercises15Base: Record<string, ExerciseItem[]> = {
   ],
 };
 
-// ============== ЗВЕДЕНІ ЕКСПОРТИ (база + A1 + A2 + B1 + B2 модулі) ==============
-// B2 > B1 > A2 > A1 > база за пріоритетом, якщо slug збігається.
-export const lessonExtras: Record<string, LessonExtras> = { ...lessonExtrasBase, ...a1Extras, ...a2Extras, ...b1Extras, ...b2Extras };
-export const extraLessons: Record<string, LessonContent> = { ...extraLessonsBase, ...a1ExtraLessons, ...a2ExtraLessons, ...b1ExtraLessons, ...b2ExtraLessons };
-export const lessonExercises15: Record<string, ExerciseItem[]> = { ...lessonExercises15Base, ...a1Exercises15, ...a2Exercises15, ...b1Exercises15, ...b2Exercises15 };
+// ============== ЗВЕДЕНІ ЕКСПОРТИ (база + A1 + A2 + B1 + B2 + C1 модулі) ==============
+// C1 > B2 > B1 > A2 > A1 > база за пріоритетом, якщо slug збігається.
+export const lessonExtras: Record<string, LessonExtras> = { ...lessonExtrasBase, ...a1Extras, ...a2Extras, ...b1Extras, ...b2Extras, ...c1Extras };
+export const extraLessons: Record<string, LessonContent> = { ...extraLessonsBase, ...a1ExtraLessons, ...a2ExtraLessons, ...b1ExtraLessons, ...b2ExtraLessons, ...c1ExtraLessons };
+export const lessonExercises15: Record<string, ExerciseItem[]> = { ...lessonExercises15Base, ...a1Exercises15, ...a2Exercises15, ...b1Exercises15, ...b2Exercises15, ...c1Exercises15 };
+
