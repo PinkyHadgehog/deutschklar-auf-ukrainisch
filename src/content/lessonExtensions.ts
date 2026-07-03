@@ -10,6 +10,7 @@ import { a2ExtraLessons, a2Extras, a2Exercises15 } from "./a2";
 import { b1ExtraLessons, b1Extras, b1Exercises15 } from "./b1";
 import { b2ExtraLessons, b2Extras, b2Exercises15 } from "./b2";
 import { c1ExtraLessons, c1Extras, c1Exercises15 } from "./c1";
+import { c2ExtraLessons, c2Extras, c2Exercises15 } from "./c2";
 
 export interface RuleBoxData {
   title?: string;
