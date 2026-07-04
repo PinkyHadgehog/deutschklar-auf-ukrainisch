@@ -4,7 +4,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { vocabThemes, vocabWords } from "@/data/mock";
-import { Heart, RotateCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2 } from "lucide-react";
+
+const speakDe = (text: string, rate = 0.75) => {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "de-DE";
+  u.rate = rate;
+  const voices = window.speechSynthesis.getVoices();
+  const de = voices.find((v) => v.lang?.toLowerCase().startsWith("de"));
+  if (de) u.voice = de;
+  window.speechSynthesis.speak(u);
+};
 
 const Vocab = () => {
   const [theme, setTheme] = useState<string>(vocabThemes[0].id);
@@ -84,7 +96,23 @@ const Vocab = () => {
                   <div className="text-xs uppercase tracking-wider opacity-80">Deutsch</div>
                   <div className="font-display text-4xl font-extrabold mt-2">{current.artikel} {current.de}</div>
                   <div className="opacity-80 mt-2">Pl.: {current.plural}</div>
-                  <div className="text-xs opacity-70 mt-6">Натисни, щоб перевернути</div>
+                  <div className="mt-5 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={(e) => { e.stopPropagation(); speakDe(`${current.artikel ?? ""} ${current.de}`.trim(), 0.85); }}
+                    >
+                      <Volume2 className="h-4 w-4 mr-1" /> Прослухати
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => { e.stopPropagation(); speakDe(`${current.artikel ?? ""} ${current.de}`.trim(), 0.55); }}
+                    >
+                      <Volume2 className="h-4 w-4 mr-1" /> Повільно
+                    </Button>
+                  </div>
+                  <div className="text-xs opacity-70 mt-4">Натисни картку, щоб перевернути</div>
                 </>
               ) : (
                 <>
