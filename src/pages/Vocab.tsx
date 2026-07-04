@@ -4,7 +4,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { vocabThemes, vocabWords } from "@/data/mock";
-import { Heart, RotateCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2 } from "lucide-react";
+
+const speakDe = (text: string, rate = 0.75) => {
+  if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "de-DE";
+  u.rate = rate;
+  const voices = window.speechSynthesis.getVoices();
+  const de = voices.find((v) => v.lang?.toLowerCase().startsWith("de"));
+  if (de) u.voice = de;
+  window.speechSynthesis.speak(u);
+};
 
 const Vocab = () => {
   const [theme, setTheme] = useState<string>(vocabThemes[0].id);
