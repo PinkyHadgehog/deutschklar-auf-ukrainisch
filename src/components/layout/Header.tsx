@@ -11,7 +11,6 @@ import {
 const navItemsPublic = [
   { to: "/", key: "nav.home" },
   { to: "/courses", key: "nav.courses" },
-  { to: "/grammar", key: "nav.grammar" },
   { to: "/vocab", key: "nav.vocab" },
   { to: "/test", key: "nav.test" },
   { to: "/pricing", key: "nav.pricing" },
@@ -20,7 +19,6 @@ const navItemsPublic = [
 const navItemsAuthed = [
   { to: "/dashboard", key: "nav.dashboard" },
   { to: "/courses", key: "nav.courses" },
-  { to: "/grammar", key: "nav.grammar" },
   { to: "/vocab", key: "nav.vocab" },
   { to: "/progress", key: "nav.progress" },
 ];
