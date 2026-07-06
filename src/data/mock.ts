@@ -303,7 +303,7 @@ export const grammarCategories: { id: string; title: string; titleDe: string; to
 
 export interface VocabTheme { id: string; title: string; titleDe: string; emoji: string; count: number; }
 export const vocabThemes: VocabTheme[] = [
-  { id: "arbeit", title: "Робота і професія", titleDe: "Arbeit und Beruf", emoji: "💼", count: 124 },
+  { id: "arbeit", title: "Робота і професія", titleDe: "Arbeit und Beruf", emoji: "💼", count: 71 },
   { id: "wohnen", title: "Житло", titleDe: "Wohnen", emoji: "🏠", count: 110 },
   { id: "reisen", title: "Подорожі", titleDe: "Reisen", emoji: "✈️", count: 92 },
   { id: "gesundheit", title: "Здоров'я", titleDe: "Gesundheit", emoji: "🩺", count: 78 },
