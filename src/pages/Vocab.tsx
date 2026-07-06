@@ -102,7 +102,7 @@ const Vocab = () => {
                       variant="outline"
                       onClick={(e) => { e.stopPropagation(); speakDe(`${current.artikel ?? ""} ${current.de}`.trim(), 0.55); }}
                     >
-                      <Volume2 className="h-4 w-4 mr-1" /> Прослухати
+                      <Volume2 className="h-4 w-4 mr-1" /> Повільно
                     </Button>
                   </div>
                   <div className="text-xs opacity-70 mt-4">Натисни картку, щоб перевернути</div>
