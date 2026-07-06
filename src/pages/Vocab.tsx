@@ -96,20 +96,13 @@ const Vocab = () => {
                   <div className="text-xs uppercase tracking-wider opacity-80">Deutsch</div>
                   <div className="font-display text-4xl font-extrabold mt-2">{current.artikel} {current.de}</div>
                   <div className="opacity-80 mt-2">Pl.: {current.plural}</div>
-                  <div className="mt-5 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={(e) => { e.stopPropagation(); speakDe(`${current.artikel ?? ""} ${current.de}`.trim(), 0.85); }}
-                    >
-                      <Volume2 className="h-4 w-4 mr-1" /> Прослухати
-                    </Button>
+                  <div className="mt-5" onClick={(e) => e.stopPropagation()}>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={(e) => { e.stopPropagation(); speakDe(`${current.artikel ?? ""} ${current.de}`.trim(), 0.55); }}
                     >
-                      <Volume2 className="h-4 w-4 mr-1" /> Повільно
+                      <Volume2 className="h-4 w-4 mr-1" /> Прослухати
                     </Button>
                   </div>
                   <div className="text-xs opacity-70 mt-4">Натисни картку, щоб перевернути</div>
