@@ -99,10 +99,10 @@ const Vocab = () => {
                   <div className="mt-5" onClick={(e) => e.stopPropagation()}>
                     <Button
                       size="sm"
-                      variant="outline"
+                      className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-500 hover:border-yellow-500 active:bg-yellow-600 active:border-yellow-600"
                       onClick={(e) => { e.stopPropagation(); speakDe(`${current.artikel ?? ""} ${current.de}`.trim(), 0.55); }}
                     >
-                      <Volume2 className="h-4 w-4 mr-1" /> Повільно
+                      <Volume2 className="h-4 w-4 mr-1" /> Прослухати
                     </Button>
                   </div>
                   <div className="text-xs opacity-70 mt-4">Натисни картку, щоб перевернути</div>
