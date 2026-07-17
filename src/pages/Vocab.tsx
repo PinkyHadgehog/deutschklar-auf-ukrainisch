@@ -18,6 +18,12 @@ const speakDe = (text: string, rate = 0.75) => {
   window.speechSynthesis.speak(u);
 };
 
+const stripArtikel = (de: string, artikel?: string) => {
+  if (!artikel) return de;
+  const re = new RegExp(`^\\s*(der|die|das)\\s+`, "i");
+  return de.replace(re, "");
+};
+
 const Vocab = () => {
   const [theme, setTheme] = useState<string>(vocabThemes[0].id);
   const [favs, setFavs] = useState<Set<string>>(new Set());
