@@ -307,7 +307,7 @@ export const vocabThemes: VocabTheme[] = [
   { id: "wohnen", title: "Житло", titleDe: "Wohnen", emoji: "🏠", count: 110 },
   { id: "reisen", title: "Подорожі", titleDe: "Reisen", emoji: "✈️", count: 255 },
   { id: "gesundheit", title: "Здоров'я", titleDe: "Gesundheit", emoji: "🩺", count: 195 },
-  { id: "alltag", title: "Повсякдення", titleDe: "Alltag", emoji: "☕", count: 140 },
+  { id: "alltag", title: "Повсякдення", titleDe: "Alltag", emoji: "☕", count: 214 },
   { id: "behoerde", title: "Установи", titleDe: "Behörde", emoji: "🏛️", count: 64 },
   { id: "bewerbung", title: "Працевлаштування", titleDe: "Bewerbung", emoji: "📄", count: 58 },
   { id: "beziehungen", title: "Стосунки", titleDe: "Beziehungen", emoji: "❤️", count: 70 },
