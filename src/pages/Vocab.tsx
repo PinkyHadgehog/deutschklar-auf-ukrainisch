@@ -74,7 +74,7 @@ const Vocab = () => {
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="font-display text-xl font-extrabold">
-                      <span className={`mr-1.5 ${artikelColor(w.artikel)}`}>{w.artikel}</span>{w.de}
+                      <span className={`mr-1.5 ${artikelColor(w.artikel)}`}>{w.artikel}</span>{stripArtikel(w.de, w.artikel)}
                     </div>
                     <div className="text-sm text-muted-foreground">Pl.: {w.plural}</div>
                   </div>
@@ -100,7 +100,7 @@ const Vocab = () => {
               {!flipped ? (
                 <>
                   <div className="text-xs uppercase tracking-wider opacity-80">Deutsch</div>
-                  <div className="font-display text-4xl font-extrabold mt-2">{current.artikel} {current.de}</div>
+                  <div className="font-display text-4xl font-extrabold mt-2">{current.artikel} {stripArtikel(current.de, current.artikel)}</div>
                   <div className="opacity-80 mt-2">Pl.: {current.plural}</div>
                   <div className="mt-5" onClick={(e) => e.stopPropagation()}>
                     <Button
