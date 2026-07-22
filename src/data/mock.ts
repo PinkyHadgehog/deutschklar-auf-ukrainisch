@@ -1351,7 +1351,7 @@ export const vocabWords: VocabWord[] = [
   { de: "Die Bearbeitung dauert zwei Wochen.", uk: "Розгляд триває два тижні.", sample: "Ich lerne: Die Bearbeitung dauert zwei Wochen..", sampleUk: "Я вивчаю: Розгляд триває два тижні..", theme: "behoerde" },
   { de: "Der Antrag wurde genehmigt.", uk: "Заяву схвалено.", sample: "Ich lerne: Der Antrag wurde genehmigt..", sampleUk: "Я вивчаю: Заяву схвалено..", theme: "behoerde" },
   { de: "Der Antrag wurde abgelehnt.", uk: "У заяві відмовлено.", sample: "Ich lerne: Der Antrag wurde abgelehnt..", sampleUk: "Я вивчаю: У заяві відмовлено..", theme: "behoerde" },
-];
+  // --- bewerbung entries continue below ---
   { de: "Bewerbung", artikel: "die", plural: "Bewerbungen", uk: "заявка на роботу, резюме", sample: "Das ist Bewerbung.", sampleUk: "Це — заявка на роботу, резюме.", theme: "bewerbung" },
   { de: "sich bewerben", artikel: "", plural: "—", uk: "подавати заявку на роботу", sample: "Ich lerne: sich bewerben.", sampleUk: "Я вивчаю: подавати заявку на роботу.", theme: "bewerbung" },
   { de: "Bewerber", artikel: "der", plural: "Bewerber", uk: "кандидат", sample: "Das ist Bewerber.", sampleUk: "Це — кандидат.", theme: "bewerbung" },
@@ -1488,6 +1488,7 @@ export const vocabWords: VocabWord[] = [
   { de: "Vielen Dank für Ihre Einladung.", artikel: "", plural: "—", uk: "Дякую за запрошення.", sample: "Vielen Dank für Ihre Einladung.", sampleUk: "Дякую за запрошення.", theme: "bewerbung" },
   { de: "Vielen Dank für das Gespräch.", artikel: "", plural: "—", uk: "Дякую за співбесіду.", sample: "Vielen Dank für das Gespräch.", sampleUk: "Дякую за співбесіду.", theme: "bewerbung" },
   { de: "Ich freue mich auf die Zusammenarbeit.", artikel: "", plural: "—", uk: "Я з нетерпінням чекаю на співпрацю.", sample: "Ich freue mich auf die Zusammenarbeit.", sampleUk: "Я з нетерпінням чекаю на співпрацю.", theme: "bewerbung" },
+];
 
 export interface QuizQuestion {
   q: string; qUk?: string; options: string[]; correct: number; explain: string;
