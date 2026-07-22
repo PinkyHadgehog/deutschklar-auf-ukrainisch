@@ -2,9 +2,10 @@ import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { vocabThemes, vocabWords } from "@/data/mock";
-import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2 } from "lucide-react";
+import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2, Search, X } from "lucide-react";
 
 const speakDe = (text: string, rate = 0.75) => {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -29,9 +30,23 @@ const Vocab = () => {
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [flipIdx, setFlipIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const [query, setQuery] = useState("");
 
-  const words = useMemo(() => vocabWords.filter((w) => w.theme === theme).length ? vocabWords.filter((w) => w.theme === theme) : vocabWords, [theme]);
-  const current = words[flipIdx % words.length];
+  const words = useMemo(() => {
+    const base = vocabWords.filter((w) => w.theme === theme).length
+      ? vocabWords.filter((w) => w.theme === theme)
+      : vocabWords;
+    const q = query.trim().toLowerCase();
+    if (!q) return base;
+    return base.filter(
+      (w) =>
+        w.de.toLowerCase().includes(q) ||
+        w.uk.toLowerCase().includes(q) ||
+        (w.artikel?.toLowerCase().includes(q) ?? false) ||
+        (w.plural?.toLowerCase().includes(q) ?? false)
+    );
+  }, [theme, query]);
+  const current = words.length ? words[flipIdx % words.length] : null;
 
   const toggleFav = (de: string) => {
     const n = new Set(favs);
@@ -55,6 +70,26 @@ const Vocab = () => {
         </TabsList>
 
         <TabsContent value="browse" className="mt-6">
+          <div className="mb-6 relative max-w-xl">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setFlipIdx(0); }}
+              placeholder="Пошук слова німецькою або українською…"
+              className="pl-9 pr-9 rounded-2xl"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label="Очистити пошук"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
           <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
             {vocabThemes.map((th) => (
               <button key={th.id} onClick={() => { setTheme(th.id); setFlipIdx(0); setFlipped(false); }}
@@ -69,6 +104,11 @@ const Vocab = () => {
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {words.length === 0 && (
+              <div className="col-span-full text-muted-foreground text-sm">
+                Нічого не знайдено за запитом «{query}».
+              </div>
+            )}
             {words.map((w) => (
               <Card key={w.de} className="p-5 rounded-2xl border-0 shadow-soft">
                 <div className="flex items-start justify-between">
@@ -95,9 +135,11 @@ const Vocab = () => {
         <TabsContent value="flash" className="mt-6">
           <div className="max-w-xl mx-auto">
             <Badge className="mb-3">{vocabThemes.find((t) => t.id === theme)?.title}</Badge>
-            <Card onClick={() => setFlipped(!flipped)}
+            <Card onClick={() => current && setFlipped(!flipped)}
               className="p-10 rounded-3xl border-0 shadow-elevated cursor-pointer min-h-[260px] flex flex-col items-center justify-center text-center bg-gradient-primary text-primary-foreground">
-              {!flipped ? (
+              {!current ? (
+                <div className="opacity-90">Немає слів за цим запитом.</div>
+              ) : !flipped ? (
                 <>
                   <div className="text-xs uppercase tracking-wider opacity-80">Deutsch</div>
                   <div className="font-display text-4xl font-extrabold mt-2">{current.artikel} {stripArtikel(current.de, current.artikel)}</div>
