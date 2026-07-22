@@ -29,9 +29,23 @@ const Vocab = () => {
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [flipIdx, setFlipIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
+  const [query, setQuery] = useState("");
 
-  const words = useMemo(() => vocabWords.filter((w) => w.theme === theme).length ? vocabWords.filter((w) => w.theme === theme) : vocabWords, [theme]);
-  const current = words[flipIdx % words.length];
+  const words = useMemo(() => {
+    const base = vocabWords.filter((w) => w.theme === theme).length
+      ? vocabWords.filter((w) => w.theme === theme)
+      : vocabWords;
+    const q = query.trim().toLowerCase();
+    if (!q) return base;
+    return base.filter(
+      (w) =>
+        w.de.toLowerCase().includes(q) ||
+        w.uk.toLowerCase().includes(q) ||
+        (w.artikel?.toLowerCase().includes(q) ?? false) ||
+        (w.plural?.toLowerCase().includes(q) ?? false)
+    );
+  }, [theme, query]);
+  const current = words.length ? words[flipIdx % words.length] : null;
 
   const toggleFav = (de: string) => {
     const n = new Set(favs);
