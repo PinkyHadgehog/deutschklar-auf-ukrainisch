@@ -2,9 +2,10 @@ import { useMemo, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { vocabThemes, vocabWords } from "@/data/mock";
-import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2 } from "lucide-react";
+import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2, Search, X } from "lucide-react";
 
 const speakDe = (text: string, rate = 0.75) => {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -69,6 +70,26 @@ const Vocab = () => {
         </TabsList>
 
         <TabsContent value="browse" className="mt-6">
+          <div className="mb-6 relative max-w-xl">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setFlipIdx(0); }}
+              placeholder="Пошук слова німецькою або українською…"
+              className="pl-9 pr-9 rounded-2xl"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label="Очистити пошук"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+
           <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
             {vocabThemes.map((th) => (
               <button key={th.id} onClick={() => { setTheme(th.id); setFlipIdx(0); setFlipped(false); }}
@@ -83,6 +104,11 @@ const Vocab = () => {
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {words.length === 0 && (
+              <div className="col-span-full text-muted-foreground text-sm">
+                Нічого не знайдено за запитом «{query}».
+              </div>
+            )}
             {words.map((w) => (
               <Card key={w.de} className="p-5 rounded-2xl border-0 shadow-soft">
                 <div className="flex items-start justify-between">
