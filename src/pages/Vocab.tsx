@@ -135,9 +135,11 @@ const Vocab = () => {
         <TabsContent value="flash" className="mt-6">
           <div className="max-w-xl mx-auto">
             <Badge className="mb-3">{vocabThemes.find((t) => t.id === theme)?.title}</Badge>
-            <Card onClick={() => setFlipped(!flipped)}
+            <Card onClick={() => current && setFlipped(!flipped)}
               className="p-10 rounded-3xl border-0 shadow-elevated cursor-pointer min-h-[260px] flex flex-col items-center justify-center text-center bg-gradient-primary text-primary-foreground">
-              {!flipped ? (
+              {!current ? (
+                <div className="opacity-90">Немає слів за цим запитом.</div>
+              ) : !flipped ? (
                 <>
                   <div className="text-xs uppercase tracking-wider opacity-80">Deutsch</div>
                   <div className="font-display text-4xl font-extrabold mt-2">{current.artikel} {stripArtikel(current.de, current.artikel)}</div>
