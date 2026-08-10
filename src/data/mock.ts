@@ -1488,50 +1488,6 @@ export const vocabWords: VocabWord[] = [
   { de: "Vielen Dank für Ihre Einladung.", plural: "—", uk: "Дякую за запрошення.", sample: "Vielen Dank für Ihre Einladung.", sampleUk: "Дякую за запрошення.", theme: "bewerbung" },
   { de: "Vielen Dank für das Gespräch.", plural: "—", uk: "Дякую за співбесіду.", sample: "Vielen Dank für das Gespräch.", sampleUk: "Дякую за співбесіду.", theme: "bewerbung" },
   { de: "Ich freue mich auf die Zusammenarbeit.", plural: "—", uk: "Я з нетерпінням чекаю на співпрацю.", sample: "Ich freue mich auf die Zusammenarbeit.", sampleUk: "Я з нетерпінням чекаю на співпрацю.", theme: "bewerbung" },
-];
-
-export interface QuizQuestion {
-  q: string; qUk?: string; options: string[]; correct: number; explain: string;
-}
-export const placementQuiz: QuizQuestion[] = [
-  { q: "Wie ___ du?", options: ["heißt", "heißen", "heiße", "heißst"], correct: 0, explain: "Друга особа однини: du heißt." },
-  { q: "Ich ___ aus der Ukraine.", options: ["bin", "ist", "bist", "sind"], correct: 0, explain: "1 особа однини sein → ich bin." },
-  { q: "Ich trinke ___ Kaffee.", options: ["der", "den", "ein", "einen"], correct: 3, explain: "Akkusativ, чоловічий рід → einen." },
-  { q: "___ Wohnung ist sehr schön.", options: ["Der", "Die", "Das", "Den"], correct: 1, explain: "die Wohnung — жіночий рід, Nominativ." },
-  { q: "Gestern ___ ich ins Kino gegangen.", options: ["habe", "bin", "war", "hatte"], correct: 1, explain: "Perfekt з gehen утворюється з sein → ich bin gegangen." },
-  { q: "Wenn ich Zeit ___, würde ich reisen.", options: ["habe", "hätte", "hatte", "haben"], correct: 1, explain: "Konjunktiv II: hätte." },
-  { q: "Er interessiert sich ___ Musik.", options: ["an", "auf", "für", "über"], correct: 2, explain: "sich interessieren für + Akk." },
-  { q: "Das ist der Mann, ___ ich gestern gesehen habe.", options: ["der", "den", "dem", "dessen"], correct: 1, explain: "Akkusativ → den." },
-  { q: "Ich gehe ___ Schule.", options: ["in der", "in die", "zur", "nach"], correct: 1, explain: "Напрямок (Wohin?) → Akkusativ: in die Schule." },
-  { q: "Trotz ___ Regens gehen wir spazieren.", options: ["der", "den", "des", "dem"], correct: 2, explain: "trotz + Genitiv → des Regens." },
-];
-
-export interface Testimonial { name: string; level: Level; text: string; }
-export const testimonials: Testimonial[] = [
-  { name: "Олена, Мюнхен", level: "B1", text: "За пів року з А1 дійшла до B1. Пояснення українською — це справжній порятунок!" },
-  { name: "Марʼяна, Гамбург", level: "A2", text: "Нарешті розумію артиклі та відмінки. Уроки короткі, але дуже логічні." },
-  { name: "Андрій, Берлін", level: "B2", text: "Готувався до Bewerbung — і отримав роботу. Дякую Оксі за зрозумілий курс!" },
-];
-
-export interface Plan {
-  id: "free" | "plus" | "premium";
-  name: string;
-  priceM: number;
-  priceY: number;
-  features: string[];
-  highlight?: boolean;
-}
-export const plans: Plan[] = [
-  { id: "free", name: "Безкоштовно", priceM: 0, priceY: 0, features: [
-    "Базові лекції A1", "Тест на визначення рівня", "Декілька вправ", "Доступ до словника",
-  ]},
-  { id: "plus", name: "Klar Plus", priceM: 12.90, priceY: 119, highlight: true, features: [
-    "Усі матеріали A1–B2", "Усі вправи та квізи", "Тренажер словника", "Збереження прогресу", "Без реклами",
-  ]},
-  { id: "premium", name: "Klar Premium", priceM: 19.90, priceY: 179, features: [
-    "Усі матеріали A1–C2", "Ексклюзивні відеоуроки", "PDF-завантаження", "Персональні рекомендації", "Сертифікати про завершення",
-  ]},
-
   // ===== Стосунки (Beziehungen) =====
   { de: "Beziehung", artikel: "die", plural: "Beziehungen", uk: "стосунки", sample: "Wir haben eine gute Beziehung.", sampleUk: "У нас гарні стосунки.", theme: "beziehungen" },
   { de: "Partnerschaft", artikel: "die", plural: "Partnerschaften", uk: "партнерство", sample: "Ihre Partnerschaft ist stabil.", sampleUk: "Їхнє партнерство стабільне.", theme: "beziehungen" },
@@ -1642,4 +1598,48 @@ export const plans: Plan[] = [
   { de: "Kein Problem.", plural: "—", uk: "Немає проблем.", sample: "Kein Problem, wir machen das später.", sampleUk: "Немає проблем, зробимо це пізніше.", theme: "beziehungen" },
   { de: "Ich verstehe dich.", plural: "—", uk: "Я тебе розумію.", sample: "Ich verstehe dich sehr gut.", sampleUk: "Я тебе дуже добре розумію.", theme: "beziehungen" },
   { de: "Danke für deine Unterstützung.", plural: "—", uk: "Дякую за твою підтримку.", sample: "Danke für deine Unterstützung in dieser Zeit.", sampleUk: "Дякую за твою підтримку в цей час.", theme: "beziehungen" },
+];
+
+export interface QuizQuestion {
+  q: string; qUk?: string; options: string[]; correct: number; explain: string;
+}
+export const placementQuiz: QuizQuestion[] = [
+  { q: "Wie ___ du?", options: ["heißt", "heißen", "heiße", "heißst"], correct: 0, explain: "Друга особа однини: du heißt." },
+  { q: "Ich ___ aus der Ukraine.", options: ["bin", "ist", "bist", "sind"], correct: 0, explain: "1 особа однини sein → ich bin." },
+  { q: "Ich trinke ___ Kaffee.", options: ["der", "den", "ein", "einen"], correct: 3, explain: "Akkusativ, чоловічий рід → einen." },
+  { q: "___ Wohnung ist sehr schön.", options: ["Der", "Die", "Das", "Den"], correct: 1, explain: "die Wohnung — жіночий рід, Nominativ." },
+  { q: "Gestern ___ ich ins Kino gegangen.", options: ["habe", "bin", "war", "hatte"], correct: 1, explain: "Perfekt з gehen утворюється з sein → ich bin gegangen." },
+  { q: "Wenn ich Zeit ___, würde ich reisen.", options: ["habe", "hätte", "hatte", "haben"], correct: 1, explain: "Konjunktiv II: hätte." },
+  { q: "Er interessiert sich ___ Musik.", options: ["an", "auf", "für", "über"], correct: 2, explain: "sich interessieren für + Akk." },
+  { q: "Das ist der Mann, ___ ich gestern gesehen habe.", options: ["der", "den", "dem", "dessen"], correct: 1, explain: "Akkusativ → den." },
+  { q: "Ich gehe ___ Schule.", options: ["in der", "in die", "zur", "nach"], correct: 1, explain: "Напрямок (Wohin?) → Akkusativ: in die Schule." },
+  { q: "Trotz ___ Regens gehen wir spazieren.", options: ["der", "den", "des", "dem"], correct: 2, explain: "trotz + Genitiv → des Regens." },
+];
+
+export interface Testimonial { name: string; level: Level; text: string; }
+export const testimonials: Testimonial[] = [
+  { name: "Олена, Мюнхен", level: "B1", text: "За пів року з А1 дійшла до B1. Пояснення українською — це справжній порятунок!" },
+  { name: "Марʼяна, Гамбург", level: "A2", text: "Нарешті розумію артиклі та відмінки. Уроки короткі, але дуже логічні." },
+  { name: "Андрій, Берлін", level: "B2", text: "Готувався до Bewerbung — і отримав роботу. Дякую Оксі за зрозумілий курс!" },
+];
+
+export interface Plan {
+  id: "free" | "plus" | "premium";
+  name: string;
+  priceM: number;
+  priceY: number;
+  features: string[];
+  highlight?: boolean;
+}
+export const plans: Plan[] = [
+  { id: "free", name: "Безкоштовно", priceM: 0, priceY: 0, features: [
+    "Базові лекції A1", "Тест на визначення рівня", "Декілька вправ", "Доступ до словника",
+  ]},
+  { id: "plus", name: "Klar Plus", priceM: 12.90, priceY: 119, highlight: true, features: [
+    "Усі матеріали A1–B2", "Усі вправи та квізи", "Тренажер словника", "Збереження прогресу", "Без реклами",
+  ]},
+  { id: "premium", name: "Klar Premium", priceM: 19.90, priceY: 179, features: [
+    "Усі матеріали A1–C2", "Ексклюзивні відеоуроки", "PDF-завантаження", "Персональні рекомендації", "Сертифікати про завершення",
+  ]},
+
 ];
