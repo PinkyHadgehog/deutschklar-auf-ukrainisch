@@ -43,7 +43,6 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
     setPicked(null);
     setLocked(false);
     setCanContinue(false);
-    setCanContinue(false);
     setAnswers([]);
     setRound((r) => r + 1);
   };
@@ -143,14 +142,11 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
     setAnswers((a) => [...a, { questionId: q.id, word: q.word, correct }]);
     setCanContinue(false);
     setTimeout(() => setCanContinue(true), 900);
-    setCanContinue(false);
-    setTimeout(() => setCanContinue(true), 900);
   };
 
   const next = () => {
     setPicked(null);
     setLocked(false);
-    setCanContinue(false);
     setCanContinue(false);
     setIdx((i) => i + 1);
   };
