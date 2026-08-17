@@ -28,14 +28,13 @@ export interface QuizAnswerRecord {
 }
 
 export const XP = {
-  perCorrect: 2,
-  completion: 5,
-  bonus80: 5,
-  bonusPerfect: 10,
+  perCorrect: 1,
+  bonus80: 3,
+  bonusPerfect: 5,
 };
 
 export const DEFAULT_SESSION_SIZE = 20;
-export const DEFAULT_QUIZ_LENGTH = 10;
+export const DEFAULT_QUIZ_LENGTH = 20;
 
 export const shuffle = <T,>(arr: T[]): T[] => {
   const a = [...arr];
@@ -153,16 +152,24 @@ export interface QuizScore {
   breakdown: { label: string; xp: number }[];
 }
 
-export const scoreQuiz = (answers: QuizAnswerRecord[]): QuizScore => {
+export const scoreQuiz = (answers: QuizAnswerRecord[], isRepeat = false): QuizScore => {
   const total = answers.length;
   const correct = answers.filter((a) => a.correct).length;
   const percent = total ? Math.round((correct / total) * 100) : 0;
+  if (isRepeat) {
+    return {
+      correct,
+      total,
+      percent,
+      xp: 0,
+      breakdown: [{ label: "Режим повторення — без XP", xp: 0 }],
+    };
+  }
   const breakdown: { label: string; xp: number }[] = [
-    { label: `${correct} правильних × ${XP.perCorrect} XP`, xp: correct * XP.perCorrect },
-    { label: "Квіз завершено", xp: XP.completion },
+    { label: "правильні відповіді", xp: correct * XP.perCorrect },
   ];
-  if (percent >= 80) breakdown.push({ label: "Бонус за 80%+", xp: XP.bonus80 });
-  if (total > 0 && correct === total) breakdown.push({ label: "Ідеальний результат", xp: XP.bonusPerfect });
+  if (percent >= 80) breakdown.push({ label: "результат 80%+", xp: XP.bonus80 });
+  if (total > 0 && correct === total) breakdown.push({ label: "ідеальний результат", xp: XP.bonusPerfect });
   return { correct, total, percent, xp: breakdown.reduce((s, b) => s + b.xp, 0), breakdown };
 };
 

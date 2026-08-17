@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,8 +33,20 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
   const [answers, setAnswers] = useState<QuizAnswerRecord[]>([]);
   const [totalXp, setTotalXp] = useState(0);
   const [canContinue, setCanContinue] = useState(false);
+  const [isRepeat, setIsRepeat] = useState(false);
 
   const questions = useMemo(() => buildQuiz(pool, length), [pool, length, round]);
+  const score = useMemo(() => scoreQuiz(answers, isRepeat), [answers, isRepeat]);
+  const finished = idx >= questions.length;
+
+  useEffect(() => {
+    if (finished && !isRepeat) {
+      const bonus = score.xp - score.correct * XP.perCorrect;
+      if (bonus > 0) {
+        setTotalXp((x) => x + bonus);
+      }
+    }
+  }, [finished, isRepeat, score]);
 
   const restart = (nextPool: VocabWord[], nextLength: number) => {
     setPool(nextPool);
@@ -57,10 +69,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
     );
   }
 
-  const finished = idx >= questions.length;
-
   if (finished) {
-    const score = scoreQuiz(answers);
     const wrong = answers.filter((a) => !a.correct).map((a) => a.word);
     const gained = score.xp;
     return (
@@ -72,12 +81,12 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
           </div>
           <div className="text-muted-foreground mt-1">{score.percent} %</div>
           <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-primary text-primary-foreground font-bold">
-            <Sparkles className="h-4 w-4" /> +{gained} XP
+            <Sparkles className="h-4 w-4" /> {isRepeat ? "0 XP" : `+${gained} XP`} {score.percent === 100 && !isRepeat && "🏆"}
           </div>
           <div className="mt-4 text-sm text-muted-foreground space-y-0.5">
-            {score.breakdown.map((b) => (
+            {score.breakdown.map((b, i) => (
               <div key={b.label}>
-                {b.label} · +{b.xp} XP
+                {i === 0 ? `${b.xp} XP` : `+${b.xp} XP`} · {b.label}
               </div>
             ))}
           </div>
@@ -104,8 +113,8 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
             <Button
               className="bg-gradient-primary"
               onClick={() => {
-                setTotalXp((x) => x + gained);
-                saveProgress({ topicId: themeId, xp: gained, wrongWords: wrong.map((w) => w.de) });
+                saveProgress({ topicId: themeId, xp: 0, wrongWords: wrong.map((w) => w.de) });
+                setIsRepeat(true);
                 restart(wrong, Math.min(wrong.length, DEFAULT_QUIZ_LENGTH));
               }}
             >
@@ -115,8 +124,8 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
           <Button
             variant="outline"
             onClick={() => {
-              setTotalXp((x) => x + gained);
               saveProgress({ topicId: themeId, xp: gained, wrongWords: wrong.map((w) => w.de) });
+              setIsRepeat(false);
               restart(words, DEFAULT_QUIZ_LENGTH);
             }}
           >
@@ -140,6 +149,9 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
     const correct = i === q.correctIndex;
     submitAnswer({ questionId: q.id, correct });
     setAnswers((a) => [...a, { questionId: q.id, word: q.word, correct }]);
+    if (correct && !isRepeat) {
+      setTotalXp((x) => x + XP.perCorrect);
+    }
     setCanContinue(false);
     setTimeout(() => setCanContinue(true), 900);
   };
@@ -202,7 +214,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
           >
             {isCorrect ? (
               <>
-                <Check className="h-4 w-4" /> Правильно! +{XP.perCorrect} XP
+                <Check className="h-4 w-4" /> Правильно! {isRepeat ? "" : `+${XP.perCorrect} XP`}
               </>
             ) : (
               <>
