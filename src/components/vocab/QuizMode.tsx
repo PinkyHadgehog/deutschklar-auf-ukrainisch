@@ -113,8 +113,8 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
             <Button
               className="bg-gradient-primary"
               onClick={() => {
-                setTotalXp((x) => x + gained);
-                saveProgress({ topicId: themeId, xp: gained, wrongWords: wrong.map((w) => w.de) });
+                saveProgress({ topicId: themeId, xp: 0, wrongWords: wrong.map((w) => w.de) });
+                setIsRepeat(true);
                 restart(wrong, Math.min(wrong.length, DEFAULT_QUIZ_LENGTH));
               }}
             >
@@ -124,8 +124,8 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
           <Button
             variant="outline"
             onClick={() => {
-              setTotalXp((x) => x + gained);
               saveProgress({ topicId: themeId, xp: gained, wrongWords: wrong.map((w) => w.de) });
+              setIsRepeat(false);
               restart(words, DEFAULT_QUIZ_LENGTH);
             }}
           >
