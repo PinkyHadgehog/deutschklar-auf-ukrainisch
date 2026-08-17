@@ -96,23 +96,25 @@ const makeQuestion = (word: VocabWord, pool: VocabWord[], kind: QuizKind, idx: n
   if (kind === "plural") {
     if (!hasPlural(word)) return null;
     const correct = `die ${stripArtikel(word.plural!)}`;
-    const d = [
+    const raw = [
       `die ${base}s`,
       `die ${base}`,
       ...pickDistinct(pool, 3, (w) => !hasPlural(w) || w.de === word.de).map((w) => `die ${stripArtikel(w.plural!)}`),
     ];
-    const { options, correctIndex } = buildOptions(correct, d.slice(0, 5));
-    if (options.length < 3) return null;
+    const distractors = Array.from(new Set(raw.filter((o) => o !== correct))).slice(0, 3);
+    if (distractors.length < 2) return null;
+    const { options, correctIndex } = buildOptions(correct, distractors);
     return {
       id: `q${idx}`,
       kind,
       prompt: "Яка правильна форма множини?",
       sub: `${fullGerman(word)} →`,
-      options: options.slice(0, 4).includes(correct) ? options.slice(0, 4) : [correct, ...options.filter((o) => o !== correct)].slice(0, 4),
-      correctIndex: 0,
+      options,
+      correctIndex,
       word,
     };
   }
+
 
   // context
   if (!word.sample || !word.sample.includes(base)) return null;
