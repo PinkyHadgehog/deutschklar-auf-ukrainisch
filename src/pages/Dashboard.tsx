@@ -63,11 +63,34 @@ const Dashboard = () => {
               <div className="text-2xl font-bold">{user.goalMinutes} хв</div>
               <div className="text-xs opacity-80">ціль на день</div>
             </div>
-            <div className="rounded-xl bg-white/15 p-3 backdrop-blur">
-              <Trophy className="h-5 w-5 mb-1.5" />
-              <div className="text-2xl font-bold">{128 + user.points}</div>
-              <div className="text-xs opacity-80">балів</div>
-            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="rounded-xl bg-white/15 p-3 backdrop-blur text-left hover:bg-white/25 transition">
+                  <Trophy className="h-5 w-5 mb-1.5" />
+                  <div className="text-2xl font-bold">{dailyXp} XP</div>
+                  <div className="text-xs opacity-80">XP сьогодні</div>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64">
+                <div className="font-display font-bold mb-2">Сьогодні</div>
+                {breakdown.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Сьогодні ще немає активності. Пройди Quiz або вправи уроку.</p>
+                ) : (
+                  <ul className="space-y-1 text-sm">
+                    {breakdown.map((b, i) => (
+                      <li key={i} className="flex items-center justify-between gap-3">
+                        <span className="text-muted-foreground">{b.label}</span>
+                        <span className="font-semibold">+{b.xp} XP</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="mt-3 pt-2 border-t flex items-center justify-between text-sm font-bold">
+                  <span>Разом</span><span>{dailyXp} XP</span>
+                </div>
+              </PopoverContent>
+            </Popover>
+
           </div>
         </Card>
 
