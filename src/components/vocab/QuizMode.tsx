@@ -81,12 +81,12 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
           </div>
           <div className="text-muted-foreground mt-1">{score.percent} %</div>
           <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-primary text-primary-foreground font-bold">
-            <Sparkles className="h-4 w-4" /> +{gained} XP
+            <Sparkles className="h-4 w-4" /> {isRepeat ? "0 XP" : `+${gained} XP`} {score.percent === 100 && !isRepeat && "🏆"}
           </div>
           <div className="mt-4 text-sm text-muted-foreground space-y-0.5">
-            {score.breakdown.map((b) => (
+            {score.breakdown.map((b, i) => (
               <div key={b.label}>
-                {b.label} · +{b.xp} XP
+                {i === 0 ? `${b.xp} XP` : `+${b.xp} XP`} · {b.label}
               </div>
             ))}
           </div>
