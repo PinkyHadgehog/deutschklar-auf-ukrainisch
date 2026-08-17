@@ -433,27 +433,62 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
 
 interface BlockProps {
   items: ExerciseItem[];
+  lessonId?: string;
   onFinish?: () => void;
   onNext?: () => void;
   onPrev?: () => void;
 }
 
-const ExerciseBlock = ({ items, onFinish, onNext, onPrev }: BlockProps) => {
+const ExerciseBlock = ({ items, lessonId, onFinish, onNext, onPrev }: BlockProps) => {
   const [results, setResults] = useState<Record<number, boolean>>({});
+  const [round, setRound] = useState(0);
+  // indices (into `items`) of the current run; null = full set
+  const [subset, setSubset] = useState<number[] | null>(null);
+  const [xpEarned, setXpEarned] = useState(0);
+  const awardedRef = useRef(false);
 
-  if (!items || items.length === 0) return null;
-  const total = items.length;
+  const isRepeat = subset !== null;
+  const activeIdx = subset ?? items.map((_, i) => i);
+  const total = activeIdx.length;
   const answered = Object.keys(results).length;
   const correctCount = Object.values(results).filter(Boolean).length;
-  const allDone = answered >= total;
+  const allDone = total > 0 && answered >= total;
   const percent = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+  const wrongIdx = activeIdx.filter((i) => results[i] === false);
+
+  // award XP once, after the full set is completed
+  useEffect(() => {
+    if (!allDone || isRepeat || awardedRef.current) return;
+    awardedRef.current = true;
+    const id = lessonId ?? "lesson";
+    const already = hasAwardedXp("lesson_exercises", id);
+    const xp = already ? 0 : lessonExerciseXp(correctCount, total);
+    if (xp > 0) addLearningEvent("lesson_exercises", id, xp);
+    setXpEarned(xp);
+    submitLessonExerciseResult({
+      lesson_id: id,
+      correct: correctCount,
+      total,
+      percentage: percent,
+      xp_earned: xp,
+    });
+  }, [allDone, isRepeat, lessonId, correctCount, total, percent]);
+
+  if (!items || items.length === 0) return null;
 
   let message = "Чудовий результат! Ти добре засвоїв / засвоїла цю тему.";
   let suggestRepeat = false;
   if (percent < 50) { message = "Раджу повторити теорію — ти зрозумієш матеріал краще на другому колі."; suggestRepeat = true; }
   else if (percent < 80) { message = "Гарний результат! Кілька тем варто повторити."; }
 
-  const restart = () => { setResults({}); };
+  const restart = (only: number[] | null) => {
+    setResults({});
+    setSubset(only);
+    setXpEarned(0);
+    awardedRef.current = only === null; // repeated full set: XP already handled by hasAwardedXp
+    if (only === null) awardedRef.current = false;
+    setRound((r) => r + 1);
+  };
 
   return (
     <section className="mt-10">
@@ -461,17 +496,25 @@ const ExerciseBlock = ({ items, onFinish, onNext, onPrev }: BlockProps) => {
         <h2 className="font-display text-2xl font-bold flex items-center gap-2">
           <BookOpen className="h-5 w-5 text-primary"/> Вправи
         </h2>
-        <span className="text-sm text-muted-foreground">{total} завдань · від простіших до складніших</span>
+        <span className="text-sm text-muted-foreground">
+          {total} завдань · від простіших до складніших
+          {!isRepeat && (
+            <span className="ml-2 inline-flex items-center gap-1 text-primary font-medium">
+              <Sparkles className="h-3.5 w-3.5" /> до {LESSON_EXERCISE_MAX_XP} XP
+            </span>
+          )}
+        </span>
       </div>
       <p className="text-sm text-muted-foreground mb-4">
-        Виконуй по черзі та перевіряй себе одразу. Прогрес: <b>{answered}/{total}</b> · правильно: <b>{correctCount}</b>.
+        {isRepeat ? "Режим повторення помилок — без XP. " : "Виконуй по черзі та перевіряй себе одразу. "}
+        Прогрес: <b>{answered}/{total}</b> · правильно: <b>{correctCount}</b>.
       </p>
       <div>
-        {items.map((it, i) => (
+        {activeIdx.map((i, pos) => (
           <ExerciseCard
-            key={i}
-            item={it}
-            idx={i}
+            key={`${round}-${i}`}
+            item={items[i]}
+            idx={pos}
             onResult={(ok) => setResults(prev => prev[i] === undefined ? { ...prev, [i]: ok } : prev)}
           />
         ))}
@@ -482,16 +525,33 @@ const ExerciseBlock = ({ items, onFinish, onNext, onPrev }: BlockProps) => {
           <div className="flex items-start gap-4">
             <Trophy className="h-10 w-10 shrink-0" />
             <div className="flex-1">
-              <div className="font-display text-xl font-extrabold">
-                {correctCount} із {total} правильно · {percent}%
+              <div className="font-display text-xl font-extrabold">🎉 Вправи завершено!</div>
+              <div className="font-display text-lg font-bold mt-1">
+                {correctCount} / {total} правильно · {percent}%
               </div>
-              <p className="text-sm opacity-90 mt-1">{message}</p>
+              <div className="mt-1 inline-flex items-center gap-1 text-sm font-semibold">
+                <Sparkles className="h-4 w-4" /> {isRepeat || xpEarned === 0 ? "0 XP" : `+${xpEarned} XP`}
+              </div>
+              {!isRepeat && xpEarned === 0 && (
+                <div className="text-xs opacity-80 mt-1">XP за ці вправи вже нараховано раніше.</div>
+              )}
+              <p className="text-sm opacity-90 mt-2">{message}</p>
+              {wrongIdx.length > 0 && (
+                <div className="text-sm opacity-90 mt-1">
+                  {wrongIdx.length} {wrongIdx.length === 1 ? "помилка варта" : "помилки варто"} повторити
+                </div>
+              )}
               <div className="mt-4 flex flex-wrap gap-2">
-                <Button variant="secondary" size="sm" onClick={restart}>
+                {wrongIdx.length > 0 && (
+                  <Button variant="secondary" size="sm" onClick={() => restart(wrongIdx)}>
+                    <RotateCcw className="h-4 w-4 mr-1" /> Повторити помилки
+                  </Button>
+                )}
+                <Button variant="secondary" size="sm" onClick={() => restart(null)}>
                   <RotateCcw className="h-4 w-4 mr-1" /> Повторити вправи
                 </Button>
                 {onPrev && (
-                  <Button variant="secondary" size="sm" onClick={onPrev}>Повернутися до правила</Button>
+                  <Button variant="secondary" size="sm" onClick={onPrev}>До уроку</Button>
                 )}
                 {onFinish && (
                   <Button size="sm" className="bg-white text-primary hover:bg-white/90" onClick={onFinish}>
@@ -511,5 +571,6 @@ const ExerciseBlock = ({ items, onFinish, onNext, onPrev }: BlockProps) => {
     </section>
   );
 };
+
 
 export default ExerciseBlock;
