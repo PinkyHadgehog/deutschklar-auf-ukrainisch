@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { vocabThemes, vocabWords } from "@/data/mock";
 import QuizMode from "@/components/vocab/QuizMode";
+import QuizTopicSelect from "@/components/vocab/QuizTopicSelect";
 import { shuffle, DEFAULT_SESSION_SIZE } from "@/lib/quiz";
 import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2, Search, X } from "lucide-react";
 
@@ -38,6 +39,18 @@ const Vocab = () => {
   const [sessionSeed, setSessionSeed] = useState(0);
   const [seen, setSeen] = useState(1);
   const [sessionDone, setSessionDone] = useState(false);
+  const [selectedQuizTopic, setSelectedQuizTopic] = useState<string | null>(null);
+  const [quizStarted, setQuizStarted] = useState(false);
+  const [quizRun, setQuizRun] = useState(0);
+
+  const quizWords = useMemo(
+    () => (selectedQuizTopic ? vocabWords.filter((w) => w.theme === selectedQuizTopic) : []),
+    [selectedQuizTopic]
+  );
+
+  const openQuizTab = () => {
+    if (!quizStarted) setSelectedQuizTopic((cur) => cur ?? theme);
+  };
 
   const words = useMemo(() => {
     const base = vocabWords.filter((w) => w.theme === theme).length
@@ -83,7 +96,7 @@ const Vocab = () => {
         <p className="text-muted-foreground mt-2">Вивчай слова в контексті — з артиклями, множиною та прикладами.</p>
       </div>
 
-      <Tabs value={tab} onValueChange={setTab} className="mt-8">
+      <Tabs value={tab} onValueChange={(v) => { setTab(v); if (v === "quiz") openQuizTab(); }} className="mt-8">
         <TabsList>
           <TabsTrigger value="browse">Перегляд</TabsTrigger>
           <TabsTrigger value="flash">Flashcards</TabsTrigger>
@@ -164,7 +177,7 @@ const Vocab = () => {
                   Ти пройшла {sessionWords.length} слів. Готова перевірити себе?
                 </div>
                 <div className="mt-6 flex flex-wrap gap-2 justify-center">
-                  <Button className="bg-gradient-primary" onClick={() => { setSessionDone(false); setTab("quiz"); }}>
+                  <Button className="bg-gradient-primary" onClick={() => { setSessionDone(false); setTab("quiz"); openQuizTab(); }}>
                     Почати Quiz
                   </Button>
                   <Button variant="outline" onClick={resetSession}>
@@ -228,14 +241,23 @@ const Vocab = () => {
         </TabsContent>
 
         <TabsContent value="quiz" className="mt-6">
-          <div className="max-w-xl mx-auto">
-            <QuizMode
-              key={`${theme}-${sessionSeed}`}
-              words={sessionWords}
-              themeId={theme}
-              themeTitle={vocabThemes.find((t) => t.id === theme)?.title ?? ""}
-              onBackToVocab={() => setTab("browse")}
-            />
+          <div className="max-w-2xl mx-auto">
+            {!quizStarted || !selectedQuizTopic ? (
+              <QuizTopicSelect
+                selected={selectedQuizTopic}
+                onSelect={setSelectedQuizTopic}
+                onStart={() => { setQuizRun((r) => r + 1); setQuizStarted(true); }}
+              />
+            ) : (
+              <QuizMode
+                key={`${selectedQuizTopic}-${quizRun}`}
+                words={quizWords}
+                themeId={selectedQuizTopic}
+                themeTitle={vocabThemes.find((t) => t.id === selectedQuizTopic)?.title ?? ""}
+                onBackToVocab={() => { setQuizStarted(false); setTab("browse"); }}
+                onChangeTopic={() => setQuizStarted(false)}
+              />
+            )}
           </div>
         </TabsContent>
 

@@ -3,7 +3,17 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Check, X, ArrowRight, RotateCcw, Sparkles, BookOpen } from "lucide-react";
+import { Check, X, ArrowRight, RotateCcw, Sparkles, BookOpen, Shuffle } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { VocabWord } from "@/data/mock";
 import {
   buildQuiz,
@@ -21,9 +31,10 @@ interface QuizModeProps {
   themeId: string;
   themeTitle: string;
   onBackToVocab: () => void;
+  onChangeTopic: () => void;
 }
 
-const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) => {
+const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: QuizModeProps) => {
   const [round, setRound] = useState(0);
   const [pool, setPool] = useState<VocabWord[]>(words);
   const [length, setLength] = useState(DEFAULT_QUIZ_LENGTH);
@@ -34,6 +45,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
   const [totalXp, setTotalXp] = useState(0);
   const [canContinue, setCanContinue] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
+  const [confirmChange, setConfirmChange] = useState(false);
 
   const questions = useMemo(() => buildQuiz(pool, length), [pool, length, round]);
   const score = useMemo(() => scoreQuiz(answers, isRepeat), [answers, isRepeat]);
@@ -129,7 +141,10 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
               restart(words, DEFAULT_QUIZ_LENGTH);
             }}
           >
-            Новий квіз
+            Новий Quiz
+          </Button>
+          <Button variant="outline" onClick={onChangeTopic}>
+            <Shuffle className="h-4 w-4 mr-1" /> Обрати іншу тему
           </Button>
           <Button variant="ghost" onClick={onBackToVocab}>
             <BookOpen className="h-4 w-4 mr-1" /> До словника
@@ -173,6 +188,24 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
         </span>
       </div>
       <Progress value={((idx + (locked ? 1 : 0)) / questions.length) * 100} className="mt-3 h-2" />
+      <div className="mt-2 flex justify-end">
+        <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => setConfirmChange(true)}>
+          Змінити тему
+        </Button>
+      </div>
+
+      <AlertDialog open={confirmChange} onOpenChange={setConfirmChange}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Змінити тему?</AlertDialogTitle>
+            <AlertDialogDescription>Поточний Quiz буде завершено. Змінити тему?</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Скасувати</AlertDialogCancel>
+            <AlertDialogAction onClick={onChangeTopic}>Змінити тему</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <div className="mt-6 font-display text-xl md:text-2xl font-extrabold">{q.prompt}</div>
       {q.sub && <div className="mt-2 text-lg text-muted-foreground">{q.sub}</div>}
