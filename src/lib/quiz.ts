@@ -28,14 +28,13 @@ export interface QuizAnswerRecord {
 }
 
 export const XP = {
-  perCorrect: 2,
-  completion: 5,
-  bonus80: 5,
-  bonusPerfect: 10,
+  perCorrect: 1,
+  bonus80: 3,
+  bonusPerfect: 5,
 };
 
 export const DEFAULT_SESSION_SIZE = 20;
-export const DEFAULT_QUIZ_LENGTH = 10;
+export const DEFAULT_QUIZ_LENGTH = 20;
 
 export const shuffle = <T,>(arr: T[]): T[] => {
   const a = [...arr];
