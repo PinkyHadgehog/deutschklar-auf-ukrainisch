@@ -1,15 +1,28 @@
+import { useEffect, useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/context/AuthContext";
 import { courses } from "@/data/mock";
+import { getDailyXp, getDailyBreakdown, subscribeLearningEvents } from "@/lib/xp";
 import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles } from "lucide-react";
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const [dailyXp, setDailyXp] = useState(0);
+  const [breakdown, setBreakdown] = useState<{ label: string; xp: number }[]>([]);
+
+  useEffect(() => {
+    const sync = () => { setDailyXp(getDailyXp()); setBreakdown(getDailyBreakdown()); };
+    sync();
+    return subscribeLearningEvents(sync);
+  }, []);
+
   if (!user) return <Navigate to="/login" replace />;
+
 
   const myCourse = courses.find((c) => c.level === user.level) ?? courses[1];
   const completedCount = user.completedLessons.length;
