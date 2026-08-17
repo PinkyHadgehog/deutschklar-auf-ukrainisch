@@ -4,7 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { vocabThemes, vocabWords } from "@/data/mock";
+import QuizMode from "@/components/vocab/QuizMode";
+import { shuffle, DEFAULT_SESSION_SIZE } from "@/lib/quiz";
 import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2, Search, X } from "lucide-react";
 
 const speakDe = (text: string, rate = 0.75) => {
@@ -31,6 +34,10 @@ const Vocab = () => {
   const [flipIdx, setFlipIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [query, setQuery] = useState("");
+  const [tab, setTab] = useState("browse");
+  const [sessionSeed, setSessionSeed] = useState(0);
+  const [seen, setSeen] = useState(1);
+  const [sessionDone, setSessionDone] = useState(false);
 
   const words = useMemo(() => {
     const base = vocabWords.filter((w) => w.theme === theme).length
@@ -46,7 +53,20 @@ const Vocab = () => {
         (w.plural?.toLowerCase().includes(q) ?? false)
     );
   }, [theme, query]);
-  const current = words.length ? words[flipIdx % words.length] : null;
+  const sessionWords = useMemo(
+    () => shuffle(words).slice(0, DEFAULT_SESSION_SIZE),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [words, sessionSeed]
+  );
+  const current = sessionWords.length ? sessionWords[flipIdx % sessionWords.length] : null;
+
+  const resetSession = () => {
+    setSessionSeed((s) => s + 1);
+    setFlipIdx(0);
+    setFlipped(false);
+    setSeen(1);
+    setSessionDone(false);
+  };
 
   const toggleFav = (de: string) => {
     const n = new Set(favs);
@@ -63,10 +83,11 @@ const Vocab = () => {
         <p className="text-muted-foreground mt-2">Вивчай слова в контексті — з артиклями, множиною та прикладами.</p>
       </div>
 
-      <Tabs defaultValue="browse" className="mt-8">
+      <Tabs value={tab} onValueChange={setTab} className="mt-8">
         <TabsList>
           <TabsTrigger value="browse">Перегляд</TabsTrigger>
           <TabsTrigger value="flash">Flashcards</TabsTrigger>
+          <TabsTrigger value="quiz">Quiz</TabsTrigger>
         </TabsList>
 
         <TabsContent value="browse" className="mt-6">
@@ -92,7 +113,7 @@ const Vocab = () => {
 
           <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
             {vocabThemes.map((th) => (
-              <button key={th.id} onClick={() => { setTheme(th.id); setFlipIdx(0); setFlipped(false); }}
+              <button key={th.id} onClick={() => { setTheme(th.id); setFlipIdx(0); setFlipped(false); setSeen(1); setSessionDone(false); }}
                 className={`p-4 rounded-2xl border text-left transition ${
                   theme === th.id ? "bg-gradient-primary text-primary-foreground border-transparent shadow-soft" : "bg-card hover:border-primary/40"
                 }`}>
@@ -135,45 +156,89 @@ const Vocab = () => {
         <TabsContent value="flash" className="mt-6">
           <div className="max-w-xl mx-auto">
             <Badge className="mb-3">{vocabThemes.find((t) => t.id === theme)?.title}</Badge>
-            <Card onClick={() => current && setFlipped(!flipped)}
-              className="p-10 rounded-3xl border-0 shadow-elevated cursor-pointer min-h-[260px] flex flex-col items-center justify-center text-center bg-gradient-primary text-primary-foreground">
-              {!current ? (
-                <div className="opacity-90">Немає слів за цим запитом.</div>
-              ) : !flipped ? (
-                <>
-                  <div className="text-xs uppercase tracking-wider opacity-80">Deutsch</div>
-                  <div className="font-display text-4xl font-extrabold mt-2">{current.artikel} {stripArtikel(current.de, current.artikel)}</div>
-                  <div className="opacity-80 mt-2">Pl.: {current.plural}</div>
-                  <div className="mt-5" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      size="sm"
-                      className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-500 hover:border-yellow-500 active:bg-yellow-600 active:border-yellow-600"
-                      onClick={(e) => { e.stopPropagation(); speakDe(`${current.artikel ?? ""} ${current.de}`.trim(), 0.55); }}
-                    >
-                      <Volume2 className="h-4 w-4 mr-1" /> Прослухати
-                    </Button>
+
+            {sessionDone ? (
+              <Card className="p-10 rounded-3xl border-0 shadow-elevated text-center">
+                <div className="font-display text-3xl font-extrabold">🎉 Lernrunde abgeschlossen</div>
+                <div className="mt-3 text-muted-foreground">
+                  Ти пройшла {sessionWords.length} слів. Готова перевірити себе?
+                </div>
+                <div className="mt-6 flex flex-wrap gap-2 justify-center">
+                  <Button className="bg-gradient-primary" onClick={() => { setSessionDone(false); setTab("quiz"); }}>
+                    Почати Quiz
+                  </Button>
+                  <Button variant="outline" onClick={resetSession}>
+                    <RotateCw className="h-4 w-4 mr-1" /> Ще раз повторити
+                  </Button>
+                </div>
+              </Card>
+            ) : (
+              <>
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+                    <span>{Math.min(seen, sessionWords.length)} / {sessionWords.length} Wörter</span>
                   </div>
-                  <div className="text-xs opacity-70 mt-4">Натисни картку, щоб перевернути</div>
-                </>
-              ) : (
-                <>
-                  <div className="text-xs uppercase tracking-wider opacity-80">Українською</div>
-                  <div className="font-display text-3xl font-extrabold mt-2">{current.uk}</div>
-                  <div className="mt-4 opacity-90 italic">«{current.sample}»</div>
-                </>
-              )}
-            </Card>
-            <div className="mt-5 flex items-center justify-between">
-              <Button variant="outline" onClick={() => { setFlipIdx((flipIdx - 1 + words.length) % words.length); setFlipped(false); }}>
-                <ChevronLeft className="h-4 w-4 mr-1"/> Назад
-              </Button>
-              <Button variant="ghost" onClick={() => setFlipped(!flipped)}><RotateCw className="h-4 w-4 mr-1"/> Перевернути</Button>
-              <Button className="bg-gradient-primary" onClick={() => { setFlipIdx((flipIdx + 1) % words.length); setFlipped(false); }}>
-                Далі <ChevronRight className="h-4 w-4 ml-1"/>
-              </Button>
-            </div>
+                  <Progress value={sessionWords.length ? (Math.min(seen, sessionWords.length) / sessionWords.length) * 100 : 0} className="h-2" />
+                </div>
+                <Card onClick={() => current && setFlipped(!flipped)}
+                  className="p-10 rounded-3xl border-0 shadow-elevated cursor-pointer min-h-[260px] flex flex-col items-center justify-center text-center bg-gradient-primary text-primary-foreground">
+                  {!current ? (
+                    <div className="opacity-90">Немає слів за цим запитом.</div>
+                  ) : !flipped ? (
+                    <>
+                      <div className="text-xs uppercase tracking-wider opacity-80">Deutsch</div>
+                      <div className="font-display text-4xl font-extrabold mt-2">{current.artikel} {stripArtikel(current.de, current.artikel)}</div>
+                      <div className="opacity-80 mt-2">Pl.: {current.plural}</div>
+                      <div className="mt-5" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          size="sm"
+                          className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-500 hover:border-yellow-500 active:bg-yellow-600 active:border-yellow-600"
+                          onClick={(e) => { e.stopPropagation(); speakDe(`${current.artikel ?? ""} ${current.de}`.trim(), 0.55); }}
+                        >
+                          <Volume2 className="h-4 w-4 mr-1" /> Прослухати
+                        </Button>
+                      </div>
+                      <div className="text-xs opacity-70 mt-4">Натисни картку, щоб перевернути</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-xs uppercase tracking-wider opacity-80">Українською</div>
+                      <div className="font-display text-3xl font-extrabold mt-2">{current.uk}</div>
+                      <div className="mt-4 opacity-90 italic">«{current.sample}»</div>
+                    </>
+                  )}
+                </Card>
+                <div className="mt-5 flex items-center justify-between">
+                  <Button variant="outline" disabled={flipIdx === 0} onClick={() => { setFlipIdx(Math.max(0, flipIdx - 1)); setFlipped(false); }}>
+                    <ChevronLeft className="h-4 w-4 mr-1"/> Назад
+                  </Button>
+                  <Button variant="ghost" onClick={() => setFlipped(!flipped)}><RotateCw className="h-4 w-4 mr-1"/> Перевернути</Button>
+                  <Button className="bg-gradient-primary" onClick={() => {
+                    if (flipIdx + 1 >= sessionWords.length) { setSessionDone(true); return; }
+                    setFlipIdx(flipIdx + 1);
+                    setSeen((s) => Math.max(s, flipIdx + 2));
+                    setFlipped(false);
+                  }}>
+                    Далі <ChevronRight className="h-4 w-4 ml-1"/>
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </TabsContent>
+
+        <TabsContent value="quiz" className="mt-6">
+          <div className="max-w-xl mx-auto">
+            <QuizMode
+              key={`${theme}-${sessionSeed}`}
+              words={sessionWords}
+              themeId={theme}
+              themeTitle={vocabThemes.find((t) => t.id === theme)?.title ?? ""}
+              onBackToVocab={() => setTab("browse")}
+            />
+          </div>
+        </TabsContent>
+
       </Tabs>
     </div>
   );
