@@ -32,6 +32,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
   const [locked, setLocked] = useState(false);
   const [answers, setAnswers] = useState<QuizAnswerRecord[]>([]);
   const [totalXp, setTotalXp] = useState(0);
+  const [canContinue, setCanContinue] = useState(false);
 
   const questions = useMemo(() => buildQuiz(pool, length), [pool, length, round]);
 
@@ -41,6 +42,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
     setIdx(0);
     setPicked(null);
     setLocked(false);
+    setCanContinue(false);
     setAnswers([]);
     setRound((r) => r + 1);
   };
@@ -61,9 +63,6 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
     const score = scoreQuiz(answers);
     const wrong = answers.filter((a) => !a.correct).map((a) => a.word);
     const gained = score.xp;
-    if (totalXp === 0 || round >= 0) {
-      // XP is accumulated once per finished round
-    }
     return (
       <Card className="p-8 rounded-3xl border-0 shadow-elevated">
         <div className="text-center">
@@ -141,11 +140,14 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
     const correct = i === q.correctIndex;
     submitAnswer({ questionId: q.id, correct });
     setAnswers((a) => [...a, { questionId: q.id, word: q.word, correct }]);
+    setCanContinue(false);
+    setTimeout(() => setCanContinue(true), 900);
   };
 
   const next = () => {
     setPicked(null);
     setLocked(false);
+    setCanContinue(false);
     setIdx((i) => i + 1);
   };
 
@@ -153,6 +155,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
     <Card className="p-6 md:p-8 rounded-3xl border-0 shadow-elevated">
       <div className="flex items-center justify-between">
         <Badge>Quiz · {themeTitle}</Badge>
+        {totalXp > 0 && <span className="text-xs font-semibold text-primary">{totalXp} XP</span>}
         <span className="text-xs text-muted-foreground">
           Питання {idx + 1} з {questions.length}
         </span>
@@ -212,7 +215,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
               Правильна відповідь: <span className="font-semibold text-foreground">{q.options[q.correctIndex]}</span>
             </div>
           )}
-          <Button className="mt-4 bg-gradient-primary" onClick={next}>
+          <Button className="mt-4 bg-gradient-primary" disabled={!canContinue} onClick={next}>
             Далі <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
