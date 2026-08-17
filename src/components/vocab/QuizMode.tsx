@@ -69,10 +69,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
     );
   }
 
-  const finished = idx >= questions.length;
-
   if (finished) {
-    const score = scoreQuiz(answers);
     const wrong = answers.filter((a) => !a.correct).map((a) => a.word);
     const gained = score.xp;
     return (
