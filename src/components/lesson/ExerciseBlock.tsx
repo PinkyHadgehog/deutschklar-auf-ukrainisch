@@ -38,7 +38,6 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
   const [checked, setChecked] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [reported, setReported] = useState(false);
 
   // ORDER state
   const [orderWords, setOrderWords] = useState<string[]>(item.type === "order" ? item.words : []);
@@ -127,14 +126,16 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
     if (item.type === "multi") setMultiPicks(new Set());
   };
 
-  // report result to parent — only first time we settle (correct OR showAnswer)
-  const reportIfNeeded = (val: boolean) => {
-    if (!reported) {
-      setReported(true);
-      onResult(val);
-    }
-  };
-  if (checked && correct && !reported) reportIfNeeded(true);
+  // report result to parent — ONLY the first submitted answer counts for the score.
+  // A wrong first attempt stays wrong even if the learner retries or reveals the answer.
+  const reportedRef = useRef(false);
+  useEffect(() => {
+    if (!checked || reportedRef.current) return;
+    reportedRef.current = true;
+    onResult(correct);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checked]);
+
 
   const expectedAnswerText = (() => {
     switch (item.type) {
@@ -420,7 +421,7 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
         {checked && !correct && (
           <>
             {canShowAnswer && !showAnswer && (
-              <Button variant="outline" size="sm" onClick={() => { setShowAnswer(true); reportIfNeeded(false); }}>
+              <Button variant="outline" size="sm" onClick={() => setShowAnswer(true)}>
                 <Eye className="h-4 w-4 mr-1" /> Показати відповідь
               </Button>
             )}
