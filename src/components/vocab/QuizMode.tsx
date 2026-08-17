@@ -141,7 +141,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
               restart(words, DEFAULT_QUIZ_LENGTH);
             }}
           >
-            Новий квіз
+            Новий Quiz
           </Button>
           <Button variant="outline" onClick={onChangeTopic}>
             <Shuffle className="h-4 w-4 mr-1" /> Обрати іншу тему
