@@ -1,8 +1,16 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check, X, GripHorizontal, BookOpen, RotateCcw, Trophy, ArrowRight, Eye } from "lucide-react";
+import { Check, X, GripHorizontal, BookOpen, RotateCcw, Trophy, ArrowRight, Eye, Sparkles } from "lucide-react";
 import type { ExerciseItem } from "@/content/exerciseSets";
+import {
+  addLearningEvent,
+  hasAwardedXp,
+  lessonExerciseXp,
+  submitLessonExerciseResult,
+  LESSON_EXERCISE_MAX_XP,
+} from "@/lib/xp";
+
 
 const norm = (s: string) =>
   s.toLowerCase().replace(/[.,!?;:„"""'’()\s]+/g, " ").trim();
