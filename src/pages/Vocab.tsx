@@ -4,7 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { vocabThemes, vocabWords } from "@/data/mock";
+import QuizMode from "@/components/vocab/QuizMode";
+import { shuffle, DEFAULT_SESSION_SIZE } from "@/lib/quiz";
 import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2, Search, X } from "lucide-react";
 
 const speakDe = (text: string, rate = 0.75) => {
@@ -31,6 +34,10 @@ const Vocab = () => {
   const [flipIdx, setFlipIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [query, setQuery] = useState("");
+  const [tab, setTab] = useState("browse");
+  const [sessionSeed, setSessionSeed] = useState(0);
+  const [seen, setSeen] = useState(1);
+  const [sessionDone, setSessionDone] = useState(false);
 
   const words = useMemo(() => {
     const base = vocabWords.filter((w) => w.theme === theme).length
@@ -46,7 +53,20 @@ const Vocab = () => {
         (w.plural?.toLowerCase().includes(q) ?? false)
     );
   }, [theme, query]);
-  const current = words.length ? words[flipIdx % words.length] : null;
+  const sessionWords = useMemo(
+    () => shuffle(words).slice(0, DEFAULT_SESSION_SIZE),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [words, sessionSeed]
+  );
+  const current = sessionWords.length ? sessionWords[flipIdx % sessionWords.length] : null;
+
+  const resetSession = () => {
+    setSessionSeed((s) => s + 1);
+    setFlipIdx(0);
+    setFlipped(false);
+    setSeen(1);
+    setSessionDone(false);
+  };
 
   const toggleFav = (de: string) => {
     const n = new Set(favs);
@@ -63,10 +83,11 @@ const Vocab = () => {
         <p className="text-muted-foreground mt-2">Вивчай слова в контексті — з артиклями, множиною та прикладами.</p>
       </div>
 
-      <Tabs defaultValue="browse" className="mt-8">
+      <Tabs value={tab} onValueChange={setTab} className="mt-8">
         <TabsList>
           <TabsTrigger value="browse">Перегляд</TabsTrigger>
           <TabsTrigger value="flash">Flashcards</TabsTrigger>
+          <TabsTrigger value="quiz">Quiz</TabsTrigger>
         </TabsList>
 
         <TabsContent value="browse" className="mt-6">
@@ -92,7 +113,7 @@ const Vocab = () => {
 
           <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
             {vocabThemes.map((th) => (
-              <button key={th.id} onClick={() => { setTheme(th.id); setFlipIdx(0); setFlipped(false); }}
+              <button key={th.id} onClick={() => { setTheme(th.id); setFlipIdx(0); setFlipped(false); setSeen(1); setSessionDone(false); }}
                 className={`p-4 rounded-2xl border text-left transition ${
                   theme === th.id ? "bg-gradient-primary text-primary-foreground border-transparent shadow-soft" : "bg-card hover:border-primary/40"
                 }`}>
