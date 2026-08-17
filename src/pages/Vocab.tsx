@@ -156,45 +156,89 @@ const Vocab = () => {
         <TabsContent value="flash" className="mt-6">
           <div className="max-w-xl mx-auto">
             <Badge className="mb-3">{vocabThemes.find((t) => t.id === theme)?.title}</Badge>
-            <Card onClick={() => current && setFlipped(!flipped)}
-              className="p-10 rounded-3xl border-0 shadow-elevated cursor-pointer min-h-[260px] flex flex-col items-center justify-center text-center bg-gradient-primary text-primary-foreground">
-              {!current ? (
-                <div className="opacity-90">Немає слів за цим запитом.</div>
-              ) : !flipped ? (
-                <>
-                  <div className="text-xs uppercase tracking-wider opacity-80">Deutsch</div>
-                  <div className="font-display text-4xl font-extrabold mt-2">{current.artikel} {stripArtikel(current.de, current.artikel)}</div>
-                  <div className="opacity-80 mt-2">Pl.: {current.plural}</div>
-                  <div className="mt-5" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      size="sm"
-                      className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-500 hover:border-yellow-500 active:bg-yellow-600 active:border-yellow-600"
-                      onClick={(e) => { e.stopPropagation(); speakDe(`${current.artikel ?? ""} ${current.de}`.trim(), 0.55); }}
-                    >
-                      <Volume2 className="h-4 w-4 mr-1" /> Прослухати
-                    </Button>
+
+            {sessionDone ? (
+              <Card className="p-10 rounded-3xl border-0 shadow-elevated text-center">
+                <div className="font-display text-3xl font-extrabold">🎉 Lernrunde abgeschlossen</div>
+                <div className="mt-3 text-muted-foreground">
+                  Ти пройшла {sessionWords.length} слів. Готова перевірити себе?
+                </div>
+                <div className="mt-6 flex flex-wrap gap-2 justify-center">
+                  <Button className="bg-gradient-primary" onClick={() => { setSessionDone(false); setTab("quiz"); }}>
+                    Почати Quiz
+                  </Button>
+                  <Button variant="outline" onClick={resetSession}>
+                    <RotateCw className="h-4 w-4 mr-1" /> Ще раз повторити
+                  </Button>
+                </div>
+              </Card>
+            ) : (
+              <>
+                <div className="mb-3">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
+                    <span>{Math.min(seen, sessionWords.length)} / {sessionWords.length} Wörter</span>
                   </div>
-                  <div className="text-xs opacity-70 mt-4">Натисни картку, щоб перевернути</div>
-                </>
-              ) : (
-                <>
-                  <div className="text-xs uppercase tracking-wider opacity-80">Українською</div>
-                  <div className="font-display text-3xl font-extrabold mt-2">{current.uk}</div>
-                  <div className="mt-4 opacity-90 italic">«{current.sample}»</div>
-                </>
-              )}
-            </Card>
-            <div className="mt-5 flex items-center justify-between">
-              <Button variant="outline" onClick={() => { setFlipIdx((flipIdx - 1 + words.length) % words.length); setFlipped(false); }}>
-                <ChevronLeft className="h-4 w-4 mr-1"/> Назад
-              </Button>
-              <Button variant="ghost" onClick={() => setFlipped(!flipped)}><RotateCw className="h-4 w-4 mr-1"/> Перевернути</Button>
-              <Button className="bg-gradient-primary" onClick={() => { setFlipIdx((flipIdx + 1) % words.length); setFlipped(false); }}>
-                Далі <ChevronRight className="h-4 w-4 ml-1"/>
-              </Button>
-            </div>
+                  <Progress value={sessionWords.length ? (Math.min(seen, sessionWords.length) / sessionWords.length) * 100 : 0} className="h-2" />
+                </div>
+                <Card onClick={() => current && setFlipped(!flipped)}
+                  className="p-10 rounded-3xl border-0 shadow-elevated cursor-pointer min-h-[260px] flex flex-col items-center justify-center text-center bg-gradient-primary text-primary-foreground">
+                  {!current ? (
+                    <div className="opacity-90">Немає слів за цим запитом.</div>
+                  ) : !flipped ? (
+                    <>
+                      <div className="text-xs uppercase tracking-wider opacity-80">Deutsch</div>
+                      <div className="font-display text-4xl font-extrabold mt-2">{current.artikel} {stripArtikel(current.de, current.artikel)}</div>
+                      <div className="opacity-80 mt-2">Pl.: {current.plural}</div>
+                      <div className="mt-5" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          size="sm"
+                          className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-500 hover:border-yellow-500 active:bg-yellow-600 active:border-yellow-600"
+                          onClick={(e) => { e.stopPropagation(); speakDe(`${current.artikel ?? ""} ${current.de}`.trim(), 0.55); }}
+                        >
+                          <Volume2 className="h-4 w-4 mr-1" /> Прослухати
+                        </Button>
+                      </div>
+                      <div className="text-xs opacity-70 mt-4">Натисни картку, щоб перевернути</div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="text-xs uppercase tracking-wider opacity-80">Українською</div>
+                      <div className="font-display text-3xl font-extrabold mt-2">{current.uk}</div>
+                      <div className="mt-4 opacity-90 italic">«{current.sample}»</div>
+                    </>
+                  )}
+                </Card>
+                <div className="mt-5 flex items-center justify-between">
+                  <Button variant="outline" disabled={flipIdx === 0} onClick={() => { setFlipIdx(Math.max(0, flipIdx - 1)); setFlipped(false); }}>
+                    <ChevronLeft className="h-4 w-4 mr-1"/> Назад
+                  </Button>
+                  <Button variant="ghost" onClick={() => setFlipped(!flipped)}><RotateCw className="h-4 w-4 mr-1"/> Перевернути</Button>
+                  <Button className="bg-gradient-primary" onClick={() => {
+                    if (flipIdx + 1 >= sessionWords.length) { setSessionDone(true); return; }
+                    setFlipIdx(flipIdx + 1);
+                    setSeen((s) => Math.max(s, flipIdx + 2));
+                    setFlipped(false);
+                  }}>
+                    Далі <ChevronRight className="h-4 w-4 ml-1"/>
+                  </Button>
+                </div>
+              </>
+            )}
           </div>
         </TabsContent>
+
+        <TabsContent value="quiz" className="mt-6">
+          <div className="max-w-xl mx-auto">
+            <QuizMode
+              key={`${theme}-${sessionSeed}`}
+              words={sessionWords}
+              themeId={theme}
+              themeTitle={vocabThemes.find((t) => t.id === theme)?.title ?? ""}
+              onBackToVocab={() => setTab("browse")}
+            />
+          </div>
+        </TabsContent>
+
       </Tabs>
     </div>
   );
