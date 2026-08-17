@@ -149,6 +149,9 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
     const correct = i === q.correctIndex;
     submitAnswer({ questionId: q.id, correct });
     setAnswers((a) => [...a, { questionId: q.id, word: q.word, correct }]);
+    if (correct && !isRepeat) {
+      setTotalXp((x) => x + XP.perCorrect);
+    }
     setCanContinue(false);
     setTimeout(() => setCanContinue(true), 900);
   };
