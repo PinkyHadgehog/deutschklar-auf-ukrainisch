@@ -1,4 +1,6 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
+import { addLearningEvent } from "@/lib/xp";
+
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -51,14 +53,20 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
   const score = useMemo(() => scoreQuiz(answers, isRepeat), [answers, isRepeat]);
   const finished = idx >= questions.length;
 
+  const loggedRound = useRef<number | null>(null);
   useEffect(() => {
     if (finished && !isRepeat) {
       const bonus = score.xp - score.correct * XP.perCorrect;
       if (bonus > 0) {
         setTotalXp((x) => x + bonus);
       }
+      if (loggedRound.current !== round) {
+        loggedRound.current = round;
+        if (score.xp > 0) addLearningEvent("vocabulary_quiz", themeId, score.xp);
+      }
     }
-  }, [finished, isRepeat, score]);
+  }, [finished, isRepeat, score, round, themeId]);
+
 
   const restart = (nextPool: VocabWord[], nextLength: number) => {
     setPool(nextPool);

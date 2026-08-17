@@ -188,7 +188,9 @@ const Lesson = () => {
       {/* EXERCISES (з підсумковим екраном) */}
       <ExerciseBlock
         items={allExercises}
+        lessonId={lesson.slug}
         onFinish={finish}
+
         onNext={lesson.nextSlug ? () => navigate(`/lesson/${lesson.nextSlug}`) : undefined}
         onPrev={lesson.prevSlug ? () => navigate(`/lesson/${lesson.prevSlug}`) : undefined}
       />
