@@ -38,7 +38,6 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
   const [checked, setChecked] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const [reported, setReported] = useState(false);
 
   // ORDER state
   const [orderWords, setOrderWords] = useState<string[]>(item.type === "order" ? item.words : []);
@@ -133,11 +132,9 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
   useEffect(() => {
     if (!checked || reportedRef.current) return;
     reportedRef.current = true;
-    setReported(true);
     onResult(correct);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [checked]);
-  const reportIfNeeded = (_val: boolean) => { /* first attempt already reported */ };
 
 
   const expectedAnswerText = (() => {
@@ -424,7 +421,7 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
         {checked && !correct && (
           <>
             {canShowAnswer && !showAnswer && (
-              <Button variant="outline" size="sm" onClick={() => { setShowAnswer(true); reportIfNeeded(false); }}>
+              <Button variant="outline" size="sm" onClick={() => setShowAnswer(true)}>
                 <Eye className="h-4 w-4 mr-1" /> Показати відповідь
               </Button>
             )}
