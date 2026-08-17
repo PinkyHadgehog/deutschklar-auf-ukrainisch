@@ -127,14 +127,18 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
     if (item.type === "multi") setMultiPicks(new Set());
   };
 
-  // report result to parent — only first time we settle (correct OR showAnswer)
-  const reportIfNeeded = (val: boolean) => {
-    if (!reported) {
-      setReported(true);
-      onResult(val);
-    }
-  };
-  if (checked && correct && !reported) reportIfNeeded(true);
+  // report result to parent — ONLY the first submitted answer counts for the score.
+  // A wrong first attempt stays wrong even if the learner retries or reveals the answer.
+  const reportedRef = useRef(false);
+  useEffect(() => {
+    if (!checked || reportedRef.current) return;
+    reportedRef.current = true;
+    setReported(true);
+    onResult(correct);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [checked]);
+  const reportIfNeeded = (_val: boolean) => { /* first attempt already reported */ };
+
 
   const expectedAnswerText = (() => {
     switch (item.type) {
