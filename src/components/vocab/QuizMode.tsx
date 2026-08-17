@@ -33,8 +33,20 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab }: QuizModeProps) 
   const [answers, setAnswers] = useState<QuizAnswerRecord[]>([]);
   const [totalXp, setTotalXp] = useState(0);
   const [canContinue, setCanContinue] = useState(false);
+  const [isRepeat, setIsRepeat] = useState(false);
 
   const questions = useMemo(() => buildQuiz(pool, length), [pool, length, round]);
+  const score = useMemo(() => scoreQuiz(answers, isRepeat), [answers, isRepeat]);
+  const finished = idx >= questions.length;
+
+  useEffect(() => {
+    if (finished && !isRepeat) {
+      const bonus = score.xp - score.correct * XP.perCorrect;
+      if (bonus > 0) {
+        setTotalXp((x) => x + bonus);
+      }
+    }
+  }, [finished, isRepeat, score]);
 
   const restart = (nextPool: VocabWord[], nextLength: number) => {
     setPool(nextPool);
