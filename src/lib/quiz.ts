@@ -25,7 +25,48 @@ export interface QuizAnswerRecord {
   questionId: string;
   word: VocabWord;
   correct: boolean;
+  kind?: QuizKind;
+  userAnswer?: string;
+  correctAnswer?: string;
 }
+
+export interface MistakeGroup {
+  key: QuizKind;
+  label: string;
+  hint: string;
+  count: number;
+}
+
+const KIND_META: Record<QuizKind, { label: string; hint: string; short: string }> = {
+  artikel: { label: "Артиклі", hint: "Повтори рід іменників: der / die / das.", short: "артиклі" },
+  "de-uk": { label: "Переклад DE → UA", hint: "Повтори значення цих німецьких слів.", short: "переклад з німецької" },
+  "uk-de": { label: "Переклад UA → DE", hint: "Зверни увагу на точний німецький відповідник.", short: "переклад українською→німецькою" },
+  plural: { label: "Множина", hint: "Повтори форми множини цих слів.", short: "множина" },
+  context: { label: "Контекст речення", hint: "Читай усе речення — слово має підходити за змістом.", short: "контекст речення" },
+};
+
+export const groupMistakes = (answers: QuizAnswerRecord[]): MistakeGroup[] => {
+  const counts = new Map<QuizKind, number>();
+  answers
+    .filter((a) => !a.correct)
+    .forEach((a) => {
+      const k = (a.kind ?? "de-uk") as QuizKind;
+      counts.set(k, (counts.get(k) ?? 0) + 1);
+    });
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([key, count]) => ({ key, count, label: KIND_META[key].label, hint: KIND_META[key].hint }));
+};
+
+const plural = (n: number) => (n === 1 ? "помилка" : n < 5 ? "помилки" : "помилок");
+export const mistakeCountLabel = (n: number) => `${n} ${plural(n)}`;
+
+export const focusMessage = (groups: MistakeGroup[]): string => {
+  if (groups.length === 0) return "";
+  const top = groups.slice(0, 2).map((g) => KIND_META[g.key].short);
+  const joined = top.length === 2 ? `${top[0]} та ${top[1]}` : top[0];
+  return `${joined.charAt(0).toUpperCase()}${joined.slice(1)}. Перед повторним Quiz переглянь ці слова ще раз.`;
+};
 
 export const XP = {
   perCorrect: 1,

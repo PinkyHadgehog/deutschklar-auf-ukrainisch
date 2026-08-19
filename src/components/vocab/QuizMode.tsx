@@ -23,6 +23,9 @@ import {
   scoreQuiz,
   submitAnswer,
   saveProgress,
+  groupMistakes,
+  mistakeCountLabel,
+  focusMessage,
   XP,
   DEFAULT_QUIZ_LENGTH,
   type QuizAnswerRecord,
@@ -90,7 +93,10 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
   }
 
   if (finished) {
-    const wrong = answers.filter((a) => !a.correct).map((a) => a.word);
+    const wrongRecords = answers.filter((a) => !a.correct);
+    const wrong = wrongRecords.map((a) => a.word);
+    const groups = groupMistakes(answers);
+    const focus = focusMessage(groups);
     const gained = score.xp;
     return (
       <Card className="p-8 rounded-3xl border-0 shadow-elevated">
@@ -112,19 +118,52 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
           </div>
         </div>
 
-        {wrong.length > 0 && (
-          <div className="mt-6">
-            <div className="font-display font-bold mb-2">
-              {wrong.length} {wrong.length === 1 ? "слово варто повторити" : "слів варто повторити"}
+        {wrongRecords.length === 0 ? (
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            <div className="font-display font-bold text-foreground">🎉 Ідеальний результат!</div>
+            <div className="mt-1">У тебе немає помилок для повторення.</div>
+          </div>
+        ) : (
+          <div className="mt-6 space-y-5">
+            <div>
+              <div className="font-display font-bold mb-2">На що варто звернути увагу</div>
+              <div className="space-y-2">
+                {groups.map((g) => (
+                  <div key={g.key} className="p-3 rounded-xl bg-secondary/60 text-sm">
+                    <div className="font-semibold">
+                      {g.label} · {mistakeCountLabel(g.count)}
+                    </div>
+                    <div className="text-muted-foreground">{g.hint}</div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="grid sm:grid-cols-2 gap-2">
-              {wrong.map((w, i) => (
-                <div key={`${w.de}-${i}`} className="p-3 rounded-xl bg-secondary/60 text-sm">
-                  <span className="font-semibold">{fullGerman(w)}</span>
-                  <span className="text-muted-foreground"> — {w.uk}</span>
-                </div>
-              ))}
+
+            <div>
+              <div className="font-display font-bold mb-2">Повтори ці слова</div>
+              <div className="grid sm:grid-cols-2 gap-2">
+                {wrongRecords.map((a, i) => (
+                  <div key={`${a.questionId}-${i}`} className="p-3 rounded-xl bg-secondary/60 text-sm">
+                    <div className="font-semibold">{fullGerman(a.word)}</div>
+                    <div className="text-muted-foreground"> — {a.word.uk}</div>
+                    {a.userAnswer && a.correctAnswer && (
+                      <div className="mt-1 text-xs">
+                        <span className="text-destructive">твоя відповідь: {a.userAnswer}</span>
+                        <br />
+                        <span className="text-success">правильно: {a.correctAnswer}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
+
+            {focus && (
+              <div className="p-3 rounded-xl border-2 border-primary/30 text-sm">
+                <span className="font-semibold">Фокус для повторення: </span>
+                <span className="text-muted-foreground">{focus}</span>
+              </div>
+            )}
           </div>
         )}
 
@@ -171,7 +210,17 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
     setLocked(true);
     const correct = i === q.correctIndex;
     submitAnswer({ questionId: q.id, correct });
-    setAnswers((a) => [...a, { questionId: q.id, word: q.word, correct }]);
+    setAnswers((a) => [
+      ...a,
+      {
+        questionId: q.id,
+        word: q.word,
+        correct,
+        kind: q.kind,
+        userAnswer: q.options[i],
+        correctAnswer: q.options[q.correctIndex],
+      },
+    ]);
     if (correct && !isRepeat) {
       setTotalXp((x) => x + XP.perCorrect);
     }
