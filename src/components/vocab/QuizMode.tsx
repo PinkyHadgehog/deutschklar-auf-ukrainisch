@@ -93,7 +93,10 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
   }
 
   if (finished) {
-    const wrong = answers.filter((a) => !a.correct).map((a) => a.word);
+    const wrongRecords = answers.filter((a) => !a.correct);
+    const wrong = wrongRecords.map((a) => a.word);
+    const groups = groupMistakes(answers);
+    const focus = focusMessage(groups);
     const gained = score.xp;
     return (
       <Card className="p-8 rounded-3xl border-0 shadow-elevated">
