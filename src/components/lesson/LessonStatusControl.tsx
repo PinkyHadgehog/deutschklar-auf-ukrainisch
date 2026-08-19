@@ -1,4 +1,4 @@
-import { Check, Circle, CircleDashed } from "lucide-react";
+import { Check, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LessonStatus } from "@/lib/lessonProgress";
 import { statusLabel } from "@/lib/lessonProgress";
@@ -25,19 +25,6 @@ const LessonStatusControl = ({ status, onComplete, className }: Props) => {
 
   return (
     <div className={cn("inline-flex items-center gap-2 flex-wrap", className)}>
-      <span
-        className={cn(
-          "inline-flex items-center gap-1.5 text-xs",
-          status === "in_progress" ? "text-primary" : "text-muted-foreground",
-        )}
-      >
-        {status === "in_progress" ? (
-          <CircleDashed className="h-3.5 w-3.5" />
-        ) : (
-          <Circle className="h-3.5 w-3.5" />
-        )}
-        {statusLabel[status]}
-      </span>
       <button
         type="button"
         onClick={onComplete}

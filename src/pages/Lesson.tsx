@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -16,7 +16,7 @@ import {
 } from "@/components/lesson/LessonSections";
 import AlphabetAudio from "@/components/lesson/AlphabetAudio";
 import LessonStatusControl from "@/components/lesson/LessonStatusControl";
-import { markLessonOpened, useLessonProgress } from "@/lib/lessonProgress";
+import { useLessonProgress } from "@/lib/lessonProgress";
 
 const Html = ({ html }: { html: string }) => (
   <span dangerouslySetInnerHTML={{ __html: html.replace(/class='hl'/g, 'class="text-primary font-semibold"') }} />
@@ -33,10 +33,6 @@ const Lesson = () => {
 
   const alreadyDone = useMemo(() => (slug ? isLessonCompleted(slug) : false), [slug, isLessonCompleted]);
   const { status, progress, markCompleted } = useLessonProgress(slug);
-
-  useEffect(() => {
-    if (slug) markLessonOpened(slug);
-  }, [slug]);
 
   if (!lesson) {
     return (

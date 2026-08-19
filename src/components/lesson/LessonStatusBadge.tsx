@@ -10,7 +10,7 @@ const LessonStatusBadge = ({ lessonId, className }: { lessonId: string; classNam
     <span
       className={cn(
         "text-[11px] font-medium whitespace-nowrap",
-        status === "completed" ? "text-success" : "text-primary",
+        "text-success",
         className,
       )}
     >
