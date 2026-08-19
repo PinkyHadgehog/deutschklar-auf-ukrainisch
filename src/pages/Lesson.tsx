@@ -17,6 +17,7 @@ import {
 import AlphabetAudio from "@/components/lesson/AlphabetAudio";
 import LessonStatusControl from "@/components/lesson/LessonStatusControl";
 import { useLessonProgress } from "@/lib/lessonProgress";
+import { useStudySession } from "@/hooks/use-study-session";
 
 const Html = ({ html }: { html: string }) => (
   <span dangerouslySetInnerHTML={{ __html: html.replace(/class='hl'/g, 'class="text-primary font-semibold"') }} />
@@ -33,6 +34,8 @@ const Lesson = () => {
 
   const alreadyDone = useMemo(() => (slug ? isLessonCompleted(slug) : false), [slug, isLessonCompleted]);
   const { status, progress, markCompleted, setStatus } = useLessonProgress(slug);
+
+  useStudySession("lesson", slug ?? "", { enabled: !!slug, priority: 1 });
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });

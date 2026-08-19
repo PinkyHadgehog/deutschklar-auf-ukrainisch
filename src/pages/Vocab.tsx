@@ -9,6 +9,7 @@ import { vocabThemes, vocabWords } from "@/data/mock";
 import QuizMode from "@/components/vocab/QuizMode";
 import QuizTopicSelect from "@/components/vocab/QuizTopicSelect";
 import { shuffle, DEFAULT_SESSION_SIZE } from "@/lib/quiz";
+import { useStudySession } from "@/hooks/use-study-session";
 import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2, Search, X } from "lucide-react";
 
 const speakDe = (text: string, rate = 0.75) => {
@@ -47,6 +48,10 @@ const Vocab = () => {
     () => (selectedQuizTopic ? vocabWords.filter((w) => w.theme === selectedQuizTopic) : []),
     [selectedQuizTopic]
   );
+
+  const studyType = tab === "flash" ? "flashcards" : tab === "quiz" ? "vocabulary_quiz" : "vocabulary";
+  const studySource = tab === "quiz" ? selectedQuizTopic ?? theme : theme;
+  useStudySession(studyType, studySource, { priority: 1 });
 
   const openQuizTab = () => {
     if (!quizStarted) setSelectedQuizTopic((cur) => cur ?? theme);

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useStudySession } from "@/hooks/use-study-session";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, X, GripHorizontal, BookOpen, RotateCcw, Trophy, ArrowRight, Eye, Sparkles } from "lucide-react";
@@ -464,6 +465,12 @@ const ExerciseBlock = ({ items, lessonId, onFinish, onNext, onPrev }: BlockProps
   const allDone = total > 0 && answered >= total;
   const percent = total > 0 ? Math.round((correctCount / total) * 100) : 0;
   const wrongIdx = activeIdx.filter((i) => results[i] === false);
+
+  // active study time: exercises take over from the lesson timer (higher priority)
+  useStudySession(isRepeat ? "mistake_review" : "lesson_exercises", lessonId ?? "lesson", {
+    enabled: answered > 0 || isRepeat,
+    priority: 2,
+  });
 
   // award XP once, after the full set is completed
   useEffect(() => {
