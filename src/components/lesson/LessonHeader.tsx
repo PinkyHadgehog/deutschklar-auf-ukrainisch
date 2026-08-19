@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -9,9 +10,10 @@ interface Props {
   progress: number;
   duration?: number;
   premium?: boolean;
+  statusControl?: ReactNode;
 }
 
-const LessonHeader = ({ lesson, progress, duration, premium }: Props) => (
+const LessonHeader = ({ lesson, progress, duration, premium, statusControl }: Props) => (
   <div>
     <Link to="/grammar" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
       <ArrowLeft className="h-4 w-4 mr-1" /> До граматики
@@ -46,7 +48,10 @@ const LessonHeader = ({ lesson, progress, duration, premium }: Props) => (
     <p className="text-muted-foreground mt-1">{lesson.titleUk}</p>
 
     <Progress value={progress} className="h-2 mt-5" />
-    <div className="text-xs text-muted-foreground mt-1.5">Прогрес лекції: {progress}%</div>
+    <div className="mt-1.5 flex items-center justify-between gap-3 flex-wrap">
+      <div className="text-xs text-muted-foreground">Прогрес уроку: {progress}%</div>
+      {statusControl}
+    </div>
   </div>
 );
 

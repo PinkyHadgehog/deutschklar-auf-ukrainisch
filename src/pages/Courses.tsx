@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from "react";
+import LessonStatusBadge from "@/components/lesson/LessonStatusBadge";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -248,7 +249,10 @@ const Courses = () => {
                                     className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm hover:bg-muted transition"
                                   >
                                     <span className="truncate">{s.title}</span>
-                                    <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                    <span className="flex items-center gap-2 shrink-0">
+                                      <LessonStatusBadge lessonId={s.slug} />
+                                      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
+                                    </span>
                                   </Link>
                                 </li>
                               ))}
