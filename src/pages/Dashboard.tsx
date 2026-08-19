@@ -10,6 +10,8 @@ import { courses } from "@/data/mock";
 import { getDailyXp, getDailyBreakdown, subscribeLearningEvents, getWeeklyXp, getWeeklyXpByDay } from "@/lib/xp";
 import { getWeeklyXpGoal, subscribeUserSettings } from "@/lib/userSettings";
 import { getWeeklyCompletedLessons, getWeeklyCompletedQuizzes, subscribeCompletionEvents, getCurrentWeekRange } from "@/lib/weeklyStats";
+import { getRecommendations, type Recommendation } from "@/lib/recommendations";
+import { subscribeLessonProgress } from "@/lib/lessonProgress";
 import { getWeeklyStudySeconds, formatStudyTime, subscribeStudyTime } from "@/lib/studyTime";
 import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles } from "lucide-react";
 
@@ -23,6 +25,7 @@ const Dashboard = () => {
   const [weeklySeconds, setWeeklySeconds] = useState(0);
   const [weeklyLessons, setWeeklyLessons] = useState(0);
   const [weeklyQuizzes, setWeeklyQuizzes] = useState(0);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
 
   useEffect(() => {
     const sync = () => {
@@ -34,14 +37,16 @@ const Dashboard = () => {
       setWeeklySeconds(getWeeklyStudySeconds());
       setWeeklyLessons(getWeeklyCompletedLessons());
       setWeeklyQuizzes(getWeeklyCompletedQuizzes());
+      setRecommendations(getRecommendations({ level: user?.level ?? "A1", completedLessonSlugs: (user?.completedLessons ?? []).map((l) => l.slug) }));
     };
     sync();
     const un1 = subscribeLearningEvents(sync);
     const un2 = subscribeUserSettings(sync);
     const un3 = subscribeStudyTime(sync);
     const un4 = subscribeCompletionEvents(sync);
-    return () => { un1(); un2(); un3(); un4(); };
-  }, []);
+    const un5 = subscribeLessonProgress(sync);
+    return () => { un1(); un2(); un3(); un4(); un5(); };
+  }, [user?.level, user?.completedLessons]);
 
   if (!user) return <Navigate to="/login" replace />;
 
