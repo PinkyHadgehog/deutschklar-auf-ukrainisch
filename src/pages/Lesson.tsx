@@ -202,7 +202,7 @@ const Lesson = () => {
       <ExerciseBlock
         items={allExercises}
         lessonId={lesson.slug}
-        onFinish={finish}
+        onFinish={handleComplete}
 
         onNext={lesson.nextSlug ? () => navigate(`/lesson/${lesson.nextSlug}`) : undefined}
         onPrev={lesson.prevSlug ? () => navigate(`/lesson/${lesson.prevSlug}`) : undefined}
