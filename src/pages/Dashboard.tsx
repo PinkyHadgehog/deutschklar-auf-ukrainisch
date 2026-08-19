@@ -10,10 +10,18 @@ import { courses } from "@/data/mock";
 import { getDailyXp, getDailyBreakdown, subscribeLearningEvents, getWeeklyXp, getWeeklyXpByDay } from "@/lib/xp";
 import { getWeeklyXpGoal, subscribeUserSettings } from "@/lib/userSettings";
 import { getWeeklyCompletedLessons, getWeeklyCompletedQuizzes, subscribeCompletionEvents, getCurrentWeekRange } from "@/lib/weeklyStats";
-import { getRecommendations, type Recommendation } from "@/lib/recommendations";
+import { getRecommendations, type Recommendation, type RecommendationType } from "@/lib/recommendations";
+import { subscribeVocabMistakes } from "@/lib/vocabMistakes";
 import { subscribeLessonProgress } from "@/lib/lessonProgress";
 import { getWeeklyStudySeconds, formatStudyTime, subscribeStudyTime } from "@/lib/studyTime";
-import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles } from "lucide-react";
+import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles, Play, RotateCw, AlertTriangle, ArrowRight } from "lucide-react";
+
+const recIcon: Record<RecommendationType, typeof Play> = {
+  continue_lesson: Play,
+  vocabulary_review: RotateCw,
+  weak_quiz: AlertTriangle,
+  next_lesson: ArrowRight,
+};
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -37,7 +45,11 @@ const Dashboard = () => {
       setWeeklySeconds(getWeeklyStudySeconds());
       setWeeklyLessons(getWeeklyCompletedLessons());
       setWeeklyQuizzes(getWeeklyCompletedQuizzes());
-      setRecommendations(getRecommendations({ level: user?.level ?? "A1", completedLessonSlugs: (user?.completedLessons ?? []).map((l) => l.slug) }));
+      setRecommendations(getRecommendations({
+        level: user?.level ?? "A1",
+        completedLessonSlugs: (user?.completedLessons ?? []).map((l) => l.slug),
+        excludeIds: user?.completedLessons?.[0]?.slug ? [user.completedLessons[0].slug] : [],
+      }));
     };
     sync();
     const un1 = subscribeLearningEvents(sync);
@@ -45,7 +57,8 @@ const Dashboard = () => {
     const un3 = subscribeStudyTime(sync);
     const un4 = subscribeCompletionEvents(sync);
     const un5 = subscribeLessonProgress(sync);
-    return () => { un1(); un2(); un3(); un4(); un5(); };
+    const un6 = subscribeVocabMistakes(sync);
+    return () => { un1(); un2(); un3(); un4(); un5(); un6(); };
   }, [user?.level, user?.completedLessons]);
 
   if (!user) return <Navigate to="/login" replace />;
@@ -234,17 +247,23 @@ const Dashboard = () => {
         <Card className="p-6 rounded-2xl border-0 shadow-soft">
           <div className="font-display font-bold mb-3 flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Рекомендовано вам</div>
           <ul className="space-y-2">
-            {recommendations.map((r) => (
-              <li key={`${r.type}-${r.id}`}>
-                <Link to={r.href} className="flex items-center justify-between gap-3 p-3 rounded-xl hover:bg-secondary/60 transition">
-                  <span className="min-w-0">
-                    <span className="block text-sm font-medium truncate">{r.title}</span>
-                    <span className="block text-xs text-muted-foreground">{r.context}</span>
-                  </span>
-                  <Badge variant="outline" className="text-xs shrink-0">{r.level}</Badge>
-                </Link>
-              </li>
-            ))}
+            {recommendations.map((r) => {
+              const Icon = recIcon[r.type];
+              return (
+                <li key={`${r.type}-${r.id}`}>
+                  <Link to={r.href} className="flex items-start gap-3 p-3 rounded-xl hover:bg-secondary/60 transition">
+                    <span className="mt-0.5 h-7 w-7 rounded-lg bg-primary-soft grid place-items-center shrink-0">
+                      <Icon className="h-3.5 w-3.5 text-primary" />
+                    </span>
+                    <span className="flex-1 min-w-0">
+                      <span className="block text-sm font-medium truncate">{r.title}</span>
+                      <span className="block text-xs text-muted-foreground mt-0.5">{r.context}</span>
+                    </span>
+                    <Badge variant="outline" className="text-xs shrink-0">{r.level}</Badge>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </Card>
 
