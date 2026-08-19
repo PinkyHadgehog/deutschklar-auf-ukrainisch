@@ -1,8 +1,8 @@
 /**
  * Simple frontend-only lesson progress store.
  *
- * Three states only:
- *   not_started = 0%  ·  in_progress = 50%  ·  completed = 100%
+ * Two states only:
+ *   not_started = 0%  ·  completed = 100%
  *
  * Later this maps 1:1 to a Python backend:
  *   PATCH /api/lessons/{lessonId}/progress  { status, progress }
@@ -10,29 +10,26 @@
 
 import { useEffect, useState } from "react";
 
-export type LessonStatus = "not_started" | "in_progress" | "completed";
+export type LessonStatus = "not_started" | "completed";
 
 export interface LessonProgress {
   lessonId: string;
   status: LessonStatus;
-  progress: 0 | 50 | 100;
+  progress: 0 | 100;
 }
 
-export const statusProgress: Record<LessonStatus, 0 | 50 | 100> = {
+export const statusProgress: Record<LessonStatus, 0 | 100> = {
   not_started: 0,
-  in_progress: 50,
   completed: 100,
 };
 
 export const statusLabel: Record<LessonStatus, string> = {
   not_started: "Ще не розпочато",
-  in_progress: "У процесі",
   completed: "Урок завершено",
 };
 
 export const statusShortLabel: Record<LessonStatus, string> = {
   not_started: "Не розпочато",
-  in_progress: "У процесі",
   completed: "Завершено",
 };
 
@@ -67,12 +64,6 @@ export const setLessonStatus = (lessonId: string, status: LessonStatus): LessonP
   const entry: LessonProgress = { lessonId, status, progress: statusProgress[status] };
   write({ ...read(), [lessonId]: entry });
   return entry;
-};
-
-/** Marks a lesson as in_progress unless it is already completed. */
-export const markLessonOpened = (lessonId: string) => {
-  const current = getLessonProgress(lessonId);
-  if (current.status === "not_started") setLessonStatus(lessonId, "in_progress");
 };
 
 export const subscribeLessonProgress = (fn: () => void) => {
