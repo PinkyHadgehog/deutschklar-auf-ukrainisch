@@ -127,7 +127,13 @@ const Dashboard = () => {
             <div className="font-display font-bold">Тижнева ціль</div>
             <Badge className="bg-accent text-accent-foreground">{weekDone}%</Badge>
           </div>
-          <Progress value={weekDone} className="h-2 mb-5" />
+          <Progress value={weekDone} className="h-2 mb-2" />
+          <div className="flex items-center justify-between text-xs mb-4">
+            <span className="text-muted-foreground">
+              <span className="font-semibold text-foreground">{weeklyXp}</span> / {weeklyGoal} XP
+            </span>
+            {goalReached && <span className="font-semibold text-accent-foreground">🎉 Тижнева ціль досягнута!</span>}
+          </div>
           <div className="flex items-end gap-1.5 h-24">
             {weekly.map((v, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
