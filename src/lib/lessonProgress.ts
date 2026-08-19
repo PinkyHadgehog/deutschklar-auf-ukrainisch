@@ -9,6 +9,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { recordLessonCompletion, removeLessonCompletion } from "@/lib/weeklyStats";
 
 export type LessonStatus = "not_started" | "started" | "completed";
 
@@ -73,6 +74,9 @@ export const getLessonProgress = (lessonId: string): LessonProgress => {
 
 /** Placeholder for PATCH /api/lessons/{lessonId}/progress */
 export const setLessonStatus = (lessonId: string, status: LessonStatus): LessonProgress => {
+  const previous = getLessonProgress(lessonId).status;
+  if (status === "completed") recordLessonCompletion(lessonId);
+  else if (previous === "completed") removeLessonCompletion(lessonId);
   const entry: LessonProgress = { lessonId, status, progress: statusProgress[status] };
   write({ ...read(), [lessonId]: entry });
   return entry;

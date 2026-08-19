@@ -10,6 +10,8 @@
  *   GET  /api/progress/daily
  */
 
+import { getCurrentWeekRange } from "@/lib/weeklyStats";
+
 export type LearningEventType = "vocabulary_quiz" | "lesson_exercises";
 
 export interface LearningEvent {
@@ -70,13 +72,7 @@ const isToday = (iso: string) => {
 export const getTodayEvents = (): LearningEvent[] => read().filter((e) => isToday(e.timestamp));
 
 /** Monday 00:00 of the current week (local time). */
-export const getWeekStart = (ref = new Date()): Date => {
-  const d = new Date(ref);
-  const day = (d.getDay() + 6) % 7; // Mon = 0
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - day);
-  return d;
-};
+export const getWeekStart = (ref = new Date()): Date => getCurrentWeekRange(ref).start;
 
 /** Events from Monday 00:00 through Sunday 23:59 of the current week. */
 export const getWeekEvents = (): LearningEvent[] => {

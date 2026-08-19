@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { courses } from "@/data/mock";
 import { getDailyXp, getDailyBreakdown, subscribeLearningEvents, getWeeklyXp, getWeeklyXpByDay } from "@/lib/xp";
 import { getWeeklyXpGoal, subscribeUserSettings } from "@/lib/userSettings";
+import { getWeeklyCompletedLessons, getWeeklyCompletedQuizzes, subscribeCompletionEvents } from "@/lib/weeklyStats";
 import { getWeeklyStudySeconds, formatStudyTime, subscribeStudyTime } from "@/lib/studyTime";
 import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles } from "lucide-react";
 
@@ -20,6 +21,8 @@ const Dashboard = () => {
   const [weeklyByDay, setWeeklyByDay] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [weeklyGoal, setWeeklyGoal] = useState(100);
   const [weeklySeconds, setWeeklySeconds] = useState(0);
+  const [weeklyLessons, setWeeklyLessons] = useState(0);
+  const [weeklyQuizzes, setWeeklyQuizzes] = useState(0);
 
   useEffect(() => {
     const sync = () => {
@@ -29,12 +32,15 @@ const Dashboard = () => {
       setWeeklyByDay(getWeeklyXpByDay());
       setWeeklyGoal(getWeeklyXpGoal());
       setWeeklySeconds(getWeeklyStudySeconds());
+      setWeeklyLessons(getWeeklyCompletedLessons());
+      setWeeklyQuizzes(getWeeklyCompletedQuizzes());
     };
     sync();
     const un1 = subscribeLearningEvents(sync);
     const un2 = subscribeUserSettings(sync);
     const un3 = subscribeStudyTime(sync);
-    return () => { un1(); un2(); un3(); };
+    const un4 = subscribeCompletionEvents(sync);
+    return () => { un1(); un2(); un3(); un4(); };
   }, []);
 
   if (!user) return <Navigate to="/login" replace />;
@@ -176,8 +182,8 @@ const Dashboard = () => {
 
           <div className="mt-6 grid sm:grid-cols-3 gap-3">
             {[
-              { i: BookOpen, n: 47 + completedCount, l: "Лекцій пройдено" },
-              { i: Sparkles, n: 12, l: "Квізів складено" },
+              { i: BookOpen, n: weeklyLessons, l: "Уроків цього тижня" },
+              { i: Sparkles, n: weeklyQuizzes, l: "Квізів цього тижня" },
               { i: Clock, n: formatStudyTime(weeklySeconds), l: "Часу за тиждень" },
             ].map((s, idx) => (
               <div key={idx} className="rounded-xl border bg-card p-4 flex items-center gap-3">

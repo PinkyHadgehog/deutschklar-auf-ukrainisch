@@ -13,6 +13,8 @@
  *   GET  /api/progress/weekly-study-time
  */
 
+import { getCurrentWeekRange, isInCurrentWeek } from "@/lib/weeklyStats";
+
 export type StudyActivityType =
   | "lesson"
   | "lesson_exercises"
@@ -207,19 +209,9 @@ export const getPendingSeconds = (): number => (active ? active.seconds : 0);
 /* ---------------- weekly aggregation ---------------- */
 
 /** Monday 00:00 of the current week (local time). */
-export const getStudyWeekStart = (ref = new Date()): Date => {
-  const d = new Date(ref);
-  const day = (d.getDay() + 6) % 7;
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - day);
-  return d;
-};
+export const getStudyWeekStart = (ref = new Date()): Date => getCurrentWeekRange(ref).start;
 
-const inCurrentWeek = (iso: string) => {
-  const start = getStudyWeekStart().getTime();
-  const t = new Date(iso).getTime();
-  return t >= start && t < start + 7 * 24 * 60 * 60 * 1000;
-};
+const inCurrentWeek = (iso: string) => isInCurrentWeek(iso);
 
 export const getWeekStudySessions = (): StudySession[] => read().filter((s) => inCurrentWeek(s.startedAt));
 
