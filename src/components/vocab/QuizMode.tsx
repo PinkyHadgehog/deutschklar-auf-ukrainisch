@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { addLearningEvent } from "@/lib/xp";
 import { recordQuizCompletion } from "@/lib/weeklyStats";
+import { recordVocabSession } from "@/lib/vocabMistakes";
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -71,6 +72,15 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
       }
     }
   }, [finished, isRepeat, score, round, themeId]);
+
+  const loggedMistakes = useRef<number | null>(null);
+  useEffect(() => {
+    if (!finished || loggedMistakes.current === round) return;
+    loggedMistakes.current = round;
+    const wrong = Array.from(new Set(answers.filter((a) => !a.correct).map((a) => a.word.de)));
+    const right = Array.from(new Set(answers.filter((a) => a.correct).map((a) => a.word.de)));
+    recordVocabSession(themeId, wrong, right.filter((w) => !wrong.includes(w)));
+  }, [finished, round, answers, themeId]);
 
 
   const restart = (nextPool: VocabWord[], nextLength: number) => {

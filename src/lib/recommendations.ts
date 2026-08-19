@@ -10,11 +10,12 @@
 import { grammarCategories, vocabThemes, type Level } from "@/data/mock";
 import { getAllLessonProgress } from "@/lib/lessonProgress";
 import { getCompletionEvents } from "@/lib/weeklyStats";
+import { getReviewCounts, wordsToReviewLabel } from "@/lib/vocabMistakes";
 
 export type RecommendationType =
   | "continue_lesson"
-  | "repeat_quiz"
   | "vocabulary_review"
+  | "weak_quiz"
   | "next_lesson";
 
 export type RecommendationReason =
@@ -33,7 +34,7 @@ export interface Recommendation {
   context: string;
   href: string;
   score?: number;
-  mistakes?: number;
+  mistakeCount?: number;
 }
 
 export interface LessonRef {
@@ -104,25 +105,37 @@ const themeById = (id: string) => vocabThemes.find((t) => t.id === id);
 export interface RecommendationInput {
   level: Level;
   completedLessonSlugs?: string[];
+  /** Items already shown elsewhere on the Dashboard (e.g. Остання лекція). */
+  excludeIds?: string[];
 }
 
 export const getRecommendations = (input: RecommendationInput): Recommendation[] => {
   const { level } = input;
-  const recs: Recommendation[] = [];
+  const exclude = new Set(input.excludeIds ?? []);
   const progress = getAllLessonProgress();
   const completed = new Set<string>(input.completedLessonSlugs ?? []);
   Object.values(progress).forEach((p) => {
     if (p.status === "completed") completed.add(p.lessonId);
   });
 
-  // 1. Started but unfinished lessons — most recent first.
+  const stats = quizStats();
+  const reviewCounts = getReviewCounts();
+
+  const byType: Record<RecommendationType, Recommendation[]> = {
+    continue_lesson: [],
+    vocabulary_review: [],
+    weak_quiz: [],
+    next_lesson: [],
+  };
+
+  // A. Started but unfinished lessons — most recently started first.
   Object.values(progress)
     .filter((p) => p.status === "started")
     .map((p) => ({ p, lesson: findLesson(p.lessonId) }))
-    .filter((x) => !!x.lesson)
+    .filter((x) => !!x.lesson && !exclude.has(x.lesson!.slug))
     .sort((a, b) => (b.p.updatedAt ?? 0) - (a.p.updatedAt ?? 0))
     .forEach(({ lesson }, i) => {
-      recs.push({
+      byType.continue_lesson.push({
         id: lesson!.slug,
         type: "continue_lesson",
         title: lesson!.title,
@@ -134,100 +147,101 @@ export const getRecommendations = (input: RecommendationInput): Recommendation[]
       });
     });
 
-  const stats = quizStats();
+  // B. Vocabulary topics with distinct words waiting for review.
+  Object.entries(reviewCounts)
+    .filter(([, n]) => n >= 3)
+    .sort((a, b) => b[1] - a[1])
+    .forEach(([topicId, n], i) => {
+      const theme = themeById(topicId);
+      if (!theme) return;
+      byType.vocabulary_review.push({
+        id: `vocab-${topicId}`,
+        type: "vocabulary_review",
+        title: `Wortschatz: ${theme.titleDe}`,
+        level,
+        priority: 90 - i,
+        reason: "vocabulary_mistakes",
+        context: wordsToReviewLabel(n),
+        href: `/vocab?tab=flash&topic=${topicId}`,
+        mistakeCount: n,
+      });
+    });
 
-  // 2. Weak quiz results (latest result below 70%).
+  // C. Weak quiz results (latest result below 70%).
   stats
     .filter((s) => s.latestScorePct < 70)
-    .forEach((s) => {
+    .sort((a, b) => a.latestScorePct - b.latestScorePct)
+    .forEach((s, i) => {
       const theme = themeById(s.topicId);
       if (!theme) return;
-      recs.push({
+      byType.weak_quiz.push({
         id: `quiz-${s.topicId}`,
-        type: "repeat_quiz",
+        type: "weak_quiz",
         title: theme.titleDe,
         level,
-        priority: 90 - Math.floor(s.latestScorePct / 10),
+        priority: 80 - i,
         reason: "low_quiz_score",
-        context: `Повторити Quiz · ${s.latestScorePct}%`,
+        context: `Quiz: ${s.latestScorePct}% · повторити`,
         href: `/vocab?tab=quiz&topic=${s.topicId}`,
         score: s.latestScorePct,
       });
     });
 
-  // 3. Vocabulary topics with repeated recent mistakes.
-  stats
-    .filter((s) => s.recentMistakes >= 3)
-    .forEach((s) => {
-      const theme = themeById(s.topicId);
-      if (!theme) return;
-      recs.push({
-        id: `vocab-${s.topicId}`,
-        type: "vocabulary_review",
-        title: `Wortschatz: ${theme.titleDe}`,
-        level,
-        priority: 80 + Math.min(s.recentMistakes, 10),
-        reason: "vocabulary_mistakes",
-        context: `Повторити слова · ${s.recentMistakes} помилок`,
-        href: `/vocab?tab=flash&topic=${s.topicId}`,
-        mistakes: s.recentMistakes,
-      });
-    });
-
-  // 4. Fallback: next suitable lessons for the learner's level.
+  // D. Next suitable lessons in the learner's level sequence.
   const levelIdx = Math.max(0, LEVELS.indexOf(level));
-  const alreadySuggested = new Set(recs.map((r) => r.id));
-  const nextLessons = lessonIndex
-    .filter((l) => l.level === level && !completed.has(l.slug) && !alreadySuggested.has(l.slug))
-    .sort((a, b) => a.order - b.order);
-  const fallbackLessons = nextLessons.length
-    ? nextLessons
-    : lessonIndex
-        .filter(
-          (l) =>
-            LEVELS.indexOf(l.level) === levelIdx + 1 &&
-            !completed.has(l.slug) &&
-            !alreadySuggested.has(l.slug),
-        )
-        .sort((a, b) => a.order - b.order);
-
-  fallbackLessons.slice(0, 4).forEach((l, i) => {
-    recs.push({
+  const startedIds = new Set(byType.continue_lesson.map((r) => r.id));
+  const pickNext = (lvl: Level) =>
+    lessonIndex
+      .filter(
+        (l) =>
+          l.level === lvl &&
+          !completed.has(l.slug) &&
+          !startedIds.has(l.slug) &&
+          !exclude.has(l.slug),
+      )
+      .sort((a, b) => a.order - b.order);
+  const nextLessons = pickNext(level).length
+    ? pickNext(level)
+    : LEVELS[levelIdx + 1]
+      ? pickNext(LEVELS[levelIdx + 1])
+      : [];
+  nextLessons.slice(0, 4).forEach((l, i) => {
+    byType.next_lesson.push({
       id: l.slug,
       type: "next_lesson",
       title: l.title,
       level: l.level,
       priority: 50 - i,
       reason: "next_in_sequence",
-      context: "Наступний урок",
+      context: i === 0 ? "Наступний урок" : "Рекомендований урок",
       href: `/lesson/${l.slug}`,
     });
   });
 
-  // Fallback vocabulary topic for brand-new learners (no activity at all).
-  if (stats.length === 0 && vocabThemes.length) {
-    const theme = vocabThemes[0];
-    recs.push({
-      id: `vocab-start-${theme.id}`,
-      type: "vocabulary_review",
-      title: `Wortschatz: ${theme.titleDe}`,
-      level,
-      priority: 45,
-      reason: "next_in_sequence",
-      context: "Словник для твого рівня",
-      href: `/vocab?tab=flash&topic=${theme.id}`,
-    });
+  // Diversity first: at most one item per type, in priority order.
+  const order: RecommendationType[] = [
+    "continue_lesson",
+    "vocabulary_review",
+    "weak_quiz",
+    "next_lesson",
+  ];
+  const out: Recommendation[] = [];
+  const usedIds = new Set<string>();
+  const push = (r?: Recommendation) => {
+    if (!r || usedIds.has(r.id) || out.length >= 4) return;
+    usedIds.add(r.id);
+    out.push(r);
+  };
+  order.forEach((t) => push(byType[t][0]));
+
+  // Fill remaining slots only with genuinely different items (no fake problems):
+  // extra personalized items first, generic next lessons last.
+  if (out.length < 4) {
+    order.forEach((t) => byType[t].slice(1).forEach((r) => t !== "next_lesson" && push(r)));
+  }
+  if (out.length < 4 && out.filter((r) => r.type === "next_lesson").length === 0) {
+    byType.next_lesson.forEach((r) => push(r));
   }
 
-  // De-duplicate: unique learning action per row.
-  const seen = new Set<string>();
-  return recs
-    .sort((a, b) => b.priority - a.priority)
-    .filter((r) => {
-      const key = `${r.type === "next_lesson" || r.type === "continue_lesson" ? "lesson" : r.type}:${r.id}`;
-      if (seen.has(key) || seen.has(`lesson:${r.id}`)) return false;
-      seen.add(key);
-      return true;
-    })
-    .slice(0, 4);
+  return out;
 };
