@@ -90,7 +90,13 @@ const Lesson = () => {
         progress={progress}
         duration={extras?.duration}
         premium={extras?.premium}
-        statusControl={<LessonStatusControl status={status} onComplete={markCompleted} />}
+        statusControl={
+          <LessonStatusControl
+            status={status}
+            onComplete={handleComplete}
+            onUndo={handleUndo}
+          />
+        }
       />
 
       {extras?.premium && <PremiumNotice />}
