@@ -7,18 +7,30 @@ import { Progress } from "@/components/ui/progress";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/context/AuthContext";
 import { courses } from "@/data/mock";
-import { getDailyXp, getDailyBreakdown, subscribeLearningEvents } from "@/lib/xp";
+import { getDailyXp, getDailyBreakdown, subscribeLearningEvents, getWeeklyXp, getWeeklyXpByDay } from "@/lib/xp";
+import { getWeeklyXpGoal, subscribeUserSettings } from "@/lib/userSettings";
 import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles } from "lucide-react";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [dailyXp, setDailyXp] = useState(0);
   const [breakdown, setBreakdown] = useState<{ label: string; xp: number }[]>([]);
+  const [weeklyXp, setWeeklyXp] = useState(0);
+  const [weeklyByDay, setWeeklyByDay] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  const [weeklyGoal, setWeeklyGoal] = useState(100);
 
   useEffect(() => {
-    const sync = () => { setDailyXp(getDailyXp()); setBreakdown(getDailyBreakdown()); };
+    const sync = () => {
+      setDailyXp(getDailyXp());
+      setBreakdown(getDailyBreakdown());
+      setWeeklyXp(getWeeklyXp());
+      setWeeklyByDay(getWeeklyXpByDay());
+      setWeeklyGoal(getWeeklyXpGoal());
+    };
     sync();
-    return subscribeLearningEvents(sync);
+    const un1 = subscribeLearningEvents(sync);
+    const un2 = subscribeUserSettings(sync);
+    return () => { un1(); un2(); };
   }, []);
 
   if (!user) return <Navigate to="/login" replace />;
