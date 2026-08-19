@@ -42,8 +42,10 @@ const Dashboard = () => {
   const courseProgress = Math.min(100, Math.round((completedCount / Math.max(1, myCourse.lessons)) * 100) + myCourse.progress);
   const displayedProgress = Math.min(100, completedCount > 0 ? courseProgress : myCourse.progress);
   const lastLesson = user.completedLessons[0];
-  const weekDone = Math.min(100, 60 + completedCount * 8);
-  const weekly = [40, 60, 30, 80, 45, 70, 55];
+  const weekDone = Math.min(100, Math.round((weeklyXp / Math.max(1, weeklyGoal)) * 100));
+  const goalReached = weeklyXp >= weeklyGoal;
+  const maxDay = Math.max(1, ...weeklyByDay);
+  const weekly = weeklyByDay.map((xp) => Math.round((xp / maxDay) * 100));
 
   return (
     <div className="container py-8 md:py-12">
