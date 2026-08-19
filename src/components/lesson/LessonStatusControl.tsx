@@ -1,4 +1,4 @@
-import { Check, Circle, RotateCcw } from "lucide-react";
+import { Check, Circle, CircleDot, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LessonStatus } from "@/lib/lessonProgress";
 import { statusLabel } from "@/lib/lessonProgress";
@@ -14,16 +14,10 @@ const LessonStatusControl = ({ status, onComplete, onUndo, className }: Props) =
   if (status === "completed") {
     return (
       <div className={cn("flex flex-col items-start gap-2", className)}>
-        <div
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs font-medium text-success",
-          )}
-        >
+        <div className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs font-medium text-success">
           <Check className="h-3.5 w-3.5" /> {statusLabel.completed}
         </div>
-        <p className="text-xs text-muted-foreground">
-          Ти позначила цей урок як завершений.
-        </p>
+        <p className="text-xs text-muted-foreground">Ти позначила цей урок як завершений.</p>
         <button
           type="button"
           onClick={onUndo}
@@ -37,7 +31,18 @@ const LessonStatusControl = ({ status, onComplete, onUndo, className }: Props) =
   }
 
   return (
-    <div className={cn("inline-flex items-center gap-2 flex-wrap", className)}>
+    <div className={cn("flex flex-col items-start gap-2", className)}>
+      <div
+        className={cn(
+          "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium",
+          status === "started"
+            ? "border-primary/30 bg-primary/10 text-primary"
+            : "border-border bg-muted/40 text-muted-foreground",
+        )}
+      >
+        {status === "started" ? <CircleDot className="h-3.5 w-3.5" /> : <Circle className="h-3.5 w-3.5" />}
+        {statusLabel[status]}
+      </div>
       <button
         type="button"
         onClick={onComplete}

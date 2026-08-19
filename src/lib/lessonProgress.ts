@@ -1,8 +1,8 @@
 /**
  * Simple frontend-only lesson progress store.
  *
- * Two states only:
- *   not_started = 0%  ·  completed = 100%
+ * Three states:
+ *   not_started = 0%  ·  started = 0%  ·  completed = 100%
  *
  * Later this maps 1:1 to a Python backend:
  *   PATCH /api/lessons/{lessonId}/progress  { status, progress }
@@ -10,7 +10,7 @@
 
 import { useEffect, useState } from "react";
 
-export type LessonStatus = "not_started" | "completed";
+export type LessonStatus = "not_started" | "started" | "completed";
 
 export interface LessonProgress {
   lessonId: string;
@@ -20,16 +20,19 @@ export interface LessonProgress {
 
 export const statusProgress: Record<LessonStatus, 0 | 100> = {
   not_started: 0,
+  started: 0,
   completed: 100,
 };
 
 export const statusLabel: Record<LessonStatus, string> = {
   not_started: "Ще не розпочато",
+  started: "Урок розпочато",
   completed: "Урок завершено",
 };
 
 export const statusShortLabel: Record<LessonStatus, string> = {
   not_started: "Не розпочато",
+  started: "Розпочато",
   completed: "Завершено",
 };
 
@@ -56,10 +59,15 @@ const write = (all: Record<string, LessonProgress>) => {
   listeners.forEach((l) => l());
 };
 
+const normalize = (raw: unknown): LessonStatus => {
+  // Legacy "in_progress" entries map to "started".
+  if (raw === "completed") return "completed";
+  if (raw === "started" || raw === "in_progress") return "started";
+  return "not_started";
+};
+
 export const getLessonProgress = (lessonId: string): LessonProgress => {
-  const entry = read()[lessonId];
-  // Normalize legacy entries (e.g. the removed "in_progress" state).
-  const status: LessonStatus = entry?.status === "completed" ? "completed" : "not_started";
+  const status = normalize(read()[lessonId]?.status);
   return { lessonId, status, progress: statusProgress[status] };
 };
 
@@ -68,6 +76,13 @@ export const setLessonStatus = (lessonId: string, status: LessonStatus): LessonP
   const entry: LessonProgress = { lessonId, status, progress: statusProgress[status] };
   write({ ...read(), [lessonId]: entry });
   return entry;
+};
+
+/** Called once when a lesson page opens: not_started → started. Never downgrades. */
+export const markLessonStarted = (lessonId: string): LessonProgress => {
+  const current = getLessonProgress(lessonId);
+  if (current.status !== "not_started") return current;
+  return setLessonStatus(lessonId, "started");
 };
 
 export const subscribeLessonProgress = (fn: () => void) => {
@@ -92,6 +107,7 @@ export const useLessonProgress = (lessonId?: string) => {
   return {
     ...state,
     setStatus: (s: LessonStatus) => lessonId && setLessonStatus(lessonId, s),
+    markStarted: () => lessonId && markLessonStarted(lessonId),
     markCompleted: () => lessonId && setLessonStatus(lessonId, "completed"),
     markNotStarted: () => lessonId && setLessonStatus(lessonId, "not_started"),
   };
