@@ -32,7 +32,7 @@ const Lesson = () => {
   const extras = slug ? lessonExtras[slug] : undefined;
 
   const alreadyDone = useMemo(() => (slug ? isLessonCompleted(slug) : false), [slug, isLessonCompleted]);
-  const { status, progress, markCompleted } = useLessonProgress(slug);
+  const { status, progress, markCompleted, markNotStarted } = useLessonProgress(slug);
 
   if (!lesson) {
     return (
@@ -70,12 +70,17 @@ const Lesson = () => {
     ? full15
     : [...legacyItems, ...((slug && exerciseSets[slug]) || [])];
 
-  const finish = () => {
+  const handleComplete = () => {
     markCompleted();
     if (!user) { toast("Увійдіть, щоб зберегти прогрес"); navigate("/login"); return; }
     if (alreadyDone) { toast.success("Лекцію вже зараховано раніше ✓"); return; }
     completeLesson({ slug: lesson.slug, title: lesson.titleDe, level: lesson.level, points: 10 });
     toast.success("Лекцію завершено! +10 балів — прогрес збережено в профілі 🎉");
+  };
+
+  const handleUndo = () => {
+    markNotStarted();
+    toast("Позначку знято");
   };
 
   return (
@@ -85,7 +90,13 @@ const Lesson = () => {
         progress={progress}
         duration={extras?.duration}
         premium={extras?.premium}
-        statusControl={<LessonStatusControl status={status} onComplete={markCompleted} />}
+        statusControl={
+          <LessonStatusControl
+            status={status}
+            onComplete={handleComplete}
+            onUndo={handleUndo}
+          />
+        }
       />
 
       {extras?.premium && <PremiumNotice />}
@@ -197,7 +208,7 @@ const Lesson = () => {
       <ExerciseBlock
         items={allExercises}
         lessonId={lesson.slug}
-        onFinish={finish}
+        onFinish={handleComplete}
 
         onNext={lesson.nextSlug ? () => navigate(`/lesson/${lesson.nextSlug}`) : undefined}
         onPrev={lesson.prevSlug ? () => navigate(`/lesson/${lesson.prevSlug}`) : undefined}
@@ -210,7 +221,7 @@ const Lesson = () => {
         ) : (
           <Button variant="outline" asChild><Link to="/grammar"><ArrowLeft className="h-4 w-4 mr-1"/> До бібліотеки</Link></Button>
         )}
-        <Button className="bg-gradient-primary" onClick={finish}>
+        <Button className="bg-gradient-primary" onClick={handleComplete}>
           {alreadyDone || status === "completed" ? "Завершено ✓" : "Завершити урок"}
         </Button>
         {lesson.nextSlug ? (

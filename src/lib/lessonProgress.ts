@@ -93,5 +93,6 @@ export const useLessonProgress = (lessonId?: string) => {
     ...state,
     setStatus: (s: LessonStatus) => lessonId && setLessonStatus(lessonId, s),
     markCompleted: () => lessonId && setLessonStatus(lessonId, "completed"),
+    markNotStarted: () => lessonId && setLessonStatus(lessonId, "not_started"),
   };
 };
