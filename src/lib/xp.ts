@@ -69,6 +69,39 @@ const isToday = (iso: string) => {
 
 export const getTodayEvents = (): LearningEvent[] => read().filter((e) => isToday(e.timestamp));
 
+/** Monday 00:00 of the current week (local time). */
+export const getWeekStart = (ref = new Date()): Date => {
+  const d = new Date(ref);
+  const day = (d.getDay() + 6) % 7; // Mon = 0
+  d.setHours(0, 0, 0, 0);
+  d.setDate(d.getDate() - day);
+  return d;
+};
+
+/** Events from Monday 00:00 through Sunday 23:59 of the current week. */
+export const getWeekEvents = (): LearningEvent[] => {
+  const start = getWeekStart().getTime();
+  const end = start + 7 * 24 * 60 * 60 * 1000;
+  return read().filter((e) => {
+    const t = new Date(e.timestamp).getTime();
+    return t >= start && t < end;
+  });
+};
+
+/** Total XP earned during the current week (Mon–Sun). */
+export const getWeeklyXp = (): number => getWeekEvents().reduce((s, e) => s + e.xp, 0);
+
+/** XP per weekday of the current week, index 0 = Monday. */
+export const getWeeklyXpByDay = (): number[] => {
+  const start = getWeekStart().getTime();
+  const days = [0, 0, 0, 0, 0, 0, 0];
+  getWeekEvents().forEach((e) => {
+    const idx = Math.floor((new Date(e.timestamp).getTime() - start) / (24 * 60 * 60 * 1000));
+    if (idx >= 0 && idx < 7) days[idx] += e.xp;
+  });
+  return days;
+};
+
 export const getDailyXp = (): number => getTodayEvents().reduce((s, e) => s + e.xp, 0);
 
 /** Breakdown items for the Dashboard XP card, newest last. */
