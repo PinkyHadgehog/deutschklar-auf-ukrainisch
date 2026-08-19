@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { useLang } from "@/context/LanguageContext";
+import WeeklyGoalCard from "@/components/profile/WeeklyGoalCard";
 import { Trophy, LogOut, Heart, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
