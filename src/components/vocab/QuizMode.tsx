@@ -66,6 +66,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
       if (loggedRound.current !== round) {
         loggedRound.current = round;
         if (score.xp > 0) addLearningEvent("vocabulary_quiz", themeId, score.xp);
+        recordQuizCompletion(themeId, score.correct, score.total);
       }
     }
   }, [finished, isRepeat, score, round, themeId]);
