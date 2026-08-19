@@ -34,6 +34,10 @@ const Lesson = () => {
   const alreadyDone = useMemo(() => (slug ? isLessonCompleted(slug) : false), [slug, isLessonCompleted]);
   const { status, progress, markCompleted, setStatus } = useLessonProgress(slug);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+  }, [slug]);
+
   if (!lesson) {
     return (
       <div className="container max-w-3xl py-16 text-center">
