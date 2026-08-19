@@ -32,7 +32,7 @@ const Lesson = () => {
   const extras = slug ? lessonExtras[slug] : undefined;
 
   const alreadyDone = useMemo(() => (slug ? isLessonCompleted(slug) : false), [slug, isLessonCompleted]);
-  const { status, progress, markCompleted } = useLessonProgress(slug);
+  const { status, progress, markCompleted, markNotStarted } = useLessonProgress(slug);
 
   if (!lesson) {
     return (
