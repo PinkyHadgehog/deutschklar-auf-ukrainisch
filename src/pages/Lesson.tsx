@@ -83,6 +83,16 @@ const Lesson = () => {
     toast("Позначку знято");
   };
 
+  const handleStart = () => {
+    setStatus("started");
+    toast("Урок розпочато");
+  };
+
+  const handleCancelStart = () => {
+    setStatus("not_started");
+    toast("Початок скасовано");
+  };
+
   return (
     <div className="container max-w-4xl py-8 md:py-12">
       <LessonHeader
@@ -93,6 +103,8 @@ const Lesson = () => {
         statusControl={
           <LessonStatusControl
             status={status}
+            onStart={handleStart}
+            onCancelStart={handleCancelStart}
             onComplete={handleComplete}
             onUndo={handleUndo}
           />
