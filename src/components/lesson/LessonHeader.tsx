@@ -48,9 +48,9 @@ const LessonHeader = ({ lesson, progress, duration, premium, statusControl }: Pr
     <p className="text-muted-foreground mt-1">{lesson.titleUk}</p>
 
     <Progress value={progress} className="h-2 mt-5" />
-    <div className="mt-1.5 flex items-center justify-between gap-3 flex-wrap">
-      <div className="text-xs text-muted-foreground">Прогрес уроку: {progress}%</div>
-      {statusControl}
+    <div className="mt-2 flex items-start justify-between gap-3 flex-wrap">
+      <div className="min-w-0">{statusControl}</div>
+      <div className="ml-auto shrink-0 text-sm font-semibold text-foreground">{progress}%</div>
     </div>
   </div>
 );
