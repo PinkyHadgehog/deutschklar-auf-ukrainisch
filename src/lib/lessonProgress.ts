@@ -56,8 +56,12 @@ const write = (all: Record<string, LessonProgress>) => {
   listeners.forEach((l) => l());
 };
 
-export const getLessonProgress = (lessonId: string): LessonProgress =>
-  read()[lessonId] ?? { lessonId, status: "not_started", progress: 0 };
+export const getLessonProgress = (lessonId: string): LessonProgress => {
+  const entry = read()[lessonId];
+  // Normalize legacy entries (e.g. the removed "in_progress" state).
+  const status: LessonStatus = entry?.status === "completed" ? "completed" : "not_started";
+  return { lessonId, status, progress: statusProgress[status] };
+};
 
 /** Placeholder for PATCH /api/lessons/{lessonId}/progress */
 export const setLessonStatus = (lessonId: string, status: LessonStatus): LessonProgress => {
