@@ -15,12 +15,12 @@ export type LessonStatus = "not_started" | "started" | "completed";
 export interface LessonProgress {
   lessonId: string;
   status: LessonStatus;
-  progress: 0 | 100;
+  progress: 0 | 25 | 100;
 }
 
-export const statusProgress: Record<LessonStatus, 0 | 100> = {
+export const statusProgress: Record<LessonStatus, 0 | 25 | 100> = {
   not_started: 0,
-  started: 0,
+  started: 25,
   completed: 100,
 };
 

@@ -43,14 +43,9 @@ const LessonStatusControl = ({
     return (
       <div className={cn("flex flex-col items-start gap-2", className)}>
         <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={onCancelStart}
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary transition hover:bg-primary/20"
-            aria-label="Скасувати початок уроку"
-          >
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
             <CircleDot className="h-3.5 w-3.5" /> {statusLabel.started}
-          </button>
+          </div>
           <button
             type="button"
             onClick={onComplete}
