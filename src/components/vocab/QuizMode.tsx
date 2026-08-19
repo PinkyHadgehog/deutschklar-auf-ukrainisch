@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { addLearningEvent } from "@/lib/xp";
+import { recordQuizCompletion } from "@/lib/weeklyStats";
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
