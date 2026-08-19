@@ -229,21 +229,20 @@ const Dashboard = () => {
         <Card className="p-6 rounded-2xl border-0 shadow-soft">
           <div className="font-display font-bold mb-3 flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Рекомендовано вам</div>
           <ul className="space-y-2">
-            {[
-              { t: "Perfekt — sein чи haben?", lvl: "A2" },
-              { t: "Modalverben у Präteritum", lvl: "B1" },
-              { t: "Wortschatz: Bewerbung", lvl: "B1" },
-              { t: "Trennbare Verben — практика", lvl: "A2" },
-            ].map((r, i) => (
-              <li key={i}>
-                <Link to="/grammar" className="flex items-center justify-between p-3 rounded-xl hover:bg-secondary/60 transition">
-                  <span className="text-sm font-medium">{r.t}</span>
-                  <Badge variant="outline" className="text-xs">{r.lvl}</Badge>
+            {recommendations.map((r) => (
+              <li key={`${r.type}-${r.id}`}>
+                <Link to={r.href} className="flex items-center justify-between gap-3 p-3 rounded-xl hover:bg-secondary/60 transition">
+                  <span className="min-w-0">
+                    <span className="block text-sm font-medium truncate">{r.title}</span>
+                    <span className="block text-xs text-muted-foreground">{r.context}</span>
+                  </span>
+                  <Badge variant="outline" className="text-xs shrink-0">{r.level}</Badge>
                 </Link>
               </li>
             ))}
           </ul>
         </Card>
+
       </div>
     </div>
   );
