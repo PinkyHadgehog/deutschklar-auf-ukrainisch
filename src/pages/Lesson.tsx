@@ -215,7 +215,7 @@ const Lesson = () => {
         ) : (
           <Button variant="outline" asChild><Link to="/grammar"><ArrowLeft className="h-4 w-4 mr-1"/> До бібліотеки</Link></Button>
         )}
-        <Button className="bg-gradient-primary" onClick={finish}>
+        <Button className="bg-gradient-primary" onClick={handleComplete}>
           {alreadyDone || status === "completed" ? "Завершено ✓" : "Завершити урок"}
         </Button>
         {lesson.nextSlug ? (
