@@ -156,17 +156,55 @@ const Dashboard = () => {
           </div>
         </Card>
 
+        {/* Weekly activity */}
+        <section className="lg:col-span-3 mt-3">
+          <div className="mb-4">
+            <h2 className="font-display text-xl md:text-2xl font-extrabold">Цього тижня</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">{weekRangeLabel}</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { i: BookOpen, v: weeklyLessons, l: "Уроків завершено", s: "📖 цього тижня" },
+              { i: Sparkles, v: weeklyQuizzes, l: "Квізів складено", s: "✨ цього тижня" },
+              { i: Clock, v: formatStudyTime(weeklySeconds), l: "Активного навчання", s: "⏱ цього тижня" },
+            ].map((s, idx) => (
+              <Card key={idx} className="p-5 rounded-2xl border-0 shadow-soft">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary-soft grid place-items-center shrink-0">
+                    <s.i className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-xs text-muted-foreground">{s.l}</div>
+                    <div className="font-display font-extrabold text-2xl leading-tight mt-0.5">{s.v}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{s.s}</div>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+          {weekEmpty && (
+            <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+              <span>Цього тижня ще немає навчальної активності.</span>
+              <Link to="/courses" className="font-semibold text-primary hover:underline">Почати навчання</Link>
+            </div>
+          )}
+          <div className="border-t mt-8" />
+        </section>
+
         {/* Last lesson */}
         <Card className="p-6 rounded-2xl border-0 shadow-soft lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <div className="font-display font-bold text-lg">Остання лекція</div>
+          <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
+            <div>
+              <div className="font-display font-bold text-lg">Остання лекція</div>
+              <p className="text-sm text-muted-foreground">Продовжуй з того місця, де зупинилася</p>
+            </div>
             <Badge variant="secondary" className="bg-primary-soft text-primary">B1 · Граматика</Badge>
           </div>
-          <div className="flex items-center gap-4 p-4 rounded-xl bg-secondary/60">
+          <div className="flex flex-wrap items-center gap-4 p-4 rounded-xl bg-secondary/60">
             <div className="h-14 w-14 rounded-xl bg-gradient-primary grid place-items-center shrink-0">
               <BookOpen className="h-6 w-6 text-primary-foreground" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-[12rem]">
               <div className="font-semibold truncate">{lastLesson?.title ?? "Adjektivdeklination nach dem bestimmten Artikel"}</div>
               <div className="text-sm text-muted-foreground">
                 {lastLesson
@@ -176,26 +214,11 @@ const Dashboard = () => {
               <Progress value={lastLesson ? 100 : 62} className="h-1.5 mt-2" />
             </div>
             <Button asChild size="sm" className="bg-gradient-primary">
-              <Link to={`/lesson/${lastLesson?.slug ?? "adjektivdeklination-bestimmter"}`}>{lastLesson ? "Повторити" : "Далі"}</Link>
+              <Link to={`/lesson/${lastLesson?.slug ?? "adjektivdeklination-bestimmter"}`}>{lastLesson ? "Повторити" : "Продовжити"}</Link>
             </Button>
           </div>
-
-          <div className="mt-6 grid sm:grid-cols-3 gap-3">
-            {[
-              { i: BookOpen, n: weeklyLessons, l: "Уроків цього тижня" },
-              { i: Sparkles, n: weeklyQuizzes, l: "Квізів цього тижня" },
-              { i: Clock, n: formatStudyTime(weeklySeconds), l: "Часу за тиждень" },
-            ].map((s, idx) => (
-              <div key={idx} className="rounded-xl border bg-card p-4 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary-soft grid place-items-center"><s.i className="h-5 w-5 text-primary" /></div>
-                <div>
-                  <div className="font-display font-bold text-xl">{s.n}</div>
-                  <div className="text-xs text-muted-foreground">{s.l}</div>
-                </div>
-              </div>
-            ))}
-          </div>
         </Card>
+
 
         {/* Recommendations */}
         <Card className="p-6 rounded-2xl border-0 shadow-soft">
