@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,16 +32,20 @@ const stripArtikel = (de: string, artikel?: string) => {
 };
 
 const Vocab = () => {
-  const [theme, setTheme] = useState<string>(vocabThemes[0].id);
+  const [params] = useSearchParams();
+  const initialTopic = params.get("topic");
+  const initialTab = params.get("tab");
+  const validTopic = vocabThemes.some((t) => t.id === initialTopic) ? (initialTopic as string) : null;
+  const [theme, setTheme] = useState<string>(validTopic ?? vocabThemes[0].id);
   const [favs, setFavs] = useState<Set<string>>(new Set());
   const [flipIdx, setFlipIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [query, setQuery] = useState("");
-  const [tab, setTab] = useState("browse");
+  const [tab, setTab] = useState(["browse", "flash", "quiz"].includes(initialTab ?? "") ? (initialTab as string) : "browse");
   const [sessionSeed, setSessionSeed] = useState(0);
   const [seen, setSeen] = useState(1);
   const [sessionDone, setSessionDone] = useState(false);
-  const [selectedQuizTopic, setSelectedQuizTopic] = useState<string | null>(null);
+  const [selectedQuizTopic, setSelectedQuizTopic] = useState<string | null>(initialTab === "quiz" ? validTopic : null);
   const [quizStarted, setQuizStarted] = useState(false);
   const [quizRun, setQuizRun] = useState(0);
 
