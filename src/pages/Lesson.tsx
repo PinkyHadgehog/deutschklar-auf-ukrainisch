@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from "react";
+import { useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -32,13 +32,7 @@ const Lesson = () => {
   const extras = slug ? lessonExtras[slug] : undefined;
 
   const alreadyDone = useMemo(() => (slug ? isLessonCompleted(slug) : false), [slug, isLessonCompleted]);
-  const { status, progress, markCompleted, markStarted, setStatus } = useLessonProgress(slug);
-
-  // Opening the lesson once marks it as "started" (progress stays 0%).
-  useEffect(() => {
-    if (slug && lesson) markStarted();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, lesson]);
+  const { status, progress, markCompleted, setStatus } = useLessonProgress(slug);
 
   if (!lesson) {
     return (
@@ -89,6 +83,16 @@ const Lesson = () => {
     toast("Позначку знято");
   };
 
+  const handleStart = () => {
+    setStatus("started");
+    toast("Урок розпочато");
+  };
+
+  const handleCancelStart = () => {
+    setStatus("not_started");
+    toast("Початок скасовано");
+  };
+
   return (
     <div className="container max-w-4xl py-8 md:py-12">
       <LessonHeader
@@ -99,6 +103,8 @@ const Lesson = () => {
         statusControl={
           <LessonStatusControl
             status={status}
+            onStart={handleStart}
+            onCancelStart={handleCancelStart}
             onComplete={handleComplete}
             onUndo={handleUndo}
           />
