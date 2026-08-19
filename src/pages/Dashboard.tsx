@@ -7,18 +7,30 @@ import { Progress } from "@/components/ui/progress";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/context/AuthContext";
 import { courses } from "@/data/mock";
-import { getDailyXp, getDailyBreakdown, subscribeLearningEvents } from "@/lib/xp";
+import { getDailyXp, getDailyBreakdown, subscribeLearningEvents, getWeeklyXp, getWeeklyXpByDay } from "@/lib/xp";
+import { getWeeklyXpGoal, subscribeUserSettings } from "@/lib/userSettings";
 import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles } from "lucide-react";
 
 const Dashboard = () => {
   const { user } = useAuth();
   const [dailyXp, setDailyXp] = useState(0);
   const [breakdown, setBreakdown] = useState<{ label: string; xp: number }[]>([]);
+  const [weeklyXp, setWeeklyXp] = useState(0);
+  const [weeklyByDay, setWeeklyByDay] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
+  const [weeklyGoal, setWeeklyGoal] = useState(100);
 
   useEffect(() => {
-    const sync = () => { setDailyXp(getDailyXp()); setBreakdown(getDailyBreakdown()); };
+    const sync = () => {
+      setDailyXp(getDailyXp());
+      setBreakdown(getDailyBreakdown());
+      setWeeklyXp(getWeeklyXp());
+      setWeeklyByDay(getWeeklyXpByDay());
+      setWeeklyGoal(getWeeklyXpGoal());
+    };
     sync();
-    return subscribeLearningEvents(sync);
+    const un1 = subscribeLearningEvents(sync);
+    const un2 = subscribeUserSettings(sync);
+    return () => { un1(); un2(); };
   }, []);
 
   if (!user) return <Navigate to="/login" replace />;
@@ -30,8 +42,10 @@ const Dashboard = () => {
   const courseProgress = Math.min(100, Math.round((completedCount / Math.max(1, myCourse.lessons)) * 100) + myCourse.progress);
   const displayedProgress = Math.min(100, completedCount > 0 ? courseProgress : myCourse.progress);
   const lastLesson = user.completedLessons[0];
-  const weekDone = Math.min(100, 60 + completedCount * 8);
-  const weekly = [40, 60, 30, 80, 45, 70, 55];
+  const weekDone = Math.min(100, Math.round((weeklyXp / Math.max(1, weeklyGoal)) * 100));
+  const goalReached = weeklyXp >= weeklyGoal;
+  const maxDay = Math.max(1, ...weeklyByDay);
+  const weekly = weeklyByDay.map((xp) => Math.round((xp / maxDay) * 100));
 
   return (
     <div className="container py-8 md:py-12">
@@ -113,7 +127,13 @@ const Dashboard = () => {
             <div className="font-display font-bold">Тижнева ціль</div>
             <Badge className="bg-accent text-accent-foreground">{weekDone}%</Badge>
           </div>
-          <Progress value={weekDone} className="h-2 mb-5" />
+          <Progress value={weekDone} className="h-2 mb-2" />
+          <div className="flex items-center justify-between text-xs mb-4">
+            <span className="text-muted-foreground">
+              <span className="font-semibold text-foreground">{weeklyXp}</span> / {weeklyGoal} XP
+            </span>
+            {goalReached && <span className="font-semibold text-accent-foreground">🎉 Тижнева ціль досягнута!</span>}
+          </div>
           <div className="flex items-end gap-1.5 h-24">
             {weekly.map((v, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">

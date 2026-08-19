@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { useLang } from "@/context/LanguageContext";
+import WeeklyGoalCard from "@/components/profile/WeeklyGoalCard";
 import { Trophy, LogOut, Heart, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
@@ -47,6 +48,8 @@ const Profile = () => {
           </div>
           <Button className="mt-5 bg-gradient-primary" onClick={() => toast.success("Збережено")}>Зберегти</Button>
         </Card>
+
+        <WeeklyGoalCard />
 
         <Card className="p-6 rounded-2xl border-0 shadow-soft">
           <div className="font-display font-bold mb-4">Мова інтерфейсу</div>
