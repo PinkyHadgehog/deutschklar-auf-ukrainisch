@@ -32,13 +32,7 @@ const Lesson = () => {
   const extras = slug ? lessonExtras[slug] : undefined;
 
   const alreadyDone = useMemo(() => (slug ? isLessonCompleted(slug) : false), [slug, isLessonCompleted]);
-  const { status, progress, markCompleted, markStarted, setStatus } = useLessonProgress(slug);
-
-  // Opening the lesson once marks it as "started" (progress stays 0%).
-  useEffect(() => {
-    if (slug && lesson) markStarted();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug, lesson]);
+  const { status, progress, markCompleted, setStatus } = useLessonProgress(slug);
 
   if (!lesson) {
     return (
