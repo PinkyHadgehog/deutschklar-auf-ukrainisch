@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -15,6 +15,8 @@ import {
   LearningGoals, RuleBox, UkrainianTips, LanguageComparison, LessonSummary, PremiumNotice,
 } from "@/components/lesson/LessonSections";
 import AlphabetAudio from "@/components/lesson/AlphabetAudio";
+import LessonStatusControl from "@/components/lesson/LessonStatusControl";
+import { markLessonOpened, useLessonProgress } from "@/lib/lessonProgress";
 
 const Html = ({ html }: { html: string }) => (
   <span dangerouslySetInnerHTML={{ __html: html.replace(/class='hl'/g, 'class="text-primary font-semibold"') }} />
@@ -30,7 +32,11 @@ const Lesson = () => {
   const extras = slug ? lessonExtras[slug] : undefined;
 
   const alreadyDone = useMemo(() => (slug ? isLessonCompleted(slug) : false), [slug, isLessonCompleted]);
-  const [progress, setProgress] = useState(alreadyDone ? 100 : 50);
+  const { status, progress, markCompleted } = useLessonProgress(slug);
+
+  useEffect(() => {
+    if (slug) markLessonOpened(slug);
+  }, [slug]);
 
   if (!lesson) {
     return (
@@ -69,7 +75,7 @@ const Lesson = () => {
     : [...legacyItems, ...((slug && exerciseSets[slug]) || [])];
 
   const finish = () => {
-    setProgress(100);
+    markCompleted();
     if (!user) { toast("Увійдіть, щоб зберегти прогрес"); navigate("/login"); return; }
     if (alreadyDone) { toast.success("Лекцію вже зараховано раніше ✓"); return; }
     completeLesson({ slug: lesson.slug, title: lesson.titleDe, level: lesson.level, points: 10 });
@@ -78,7 +84,13 @@ const Lesson = () => {
 
   return (
     <div className="container max-w-4xl py-8 md:py-12">
-      <LessonHeader lesson={lesson} progress={progress} duration={extras?.duration} premium={extras?.premium} />
+      <LessonHeader
+        lesson={lesson}
+        progress={progress}
+        duration={extras?.duration}
+        premium={extras?.premium}
+        statusControl={<LessonStatusControl status={status} onComplete={markCompleted} />}
+      />
 
       {extras?.premium && <PremiumNotice />}
 
@@ -203,7 +215,7 @@ const Lesson = () => {
           <Button variant="outline" asChild><Link to="/grammar"><ArrowLeft className="h-4 w-4 mr-1"/> До бібліотеки</Link></Button>
         )}
         <Button className="bg-gradient-primary" onClick={finish}>
-          {alreadyDone ? "Завершено ✓" : "Завершити урок"}
+          {alreadyDone || status === "completed" ? "Завершено ✓" : "Завершити урок"}
         </Button>
         {lesson.nextSlug ? (
           <Button variant="outline" asChild><Link to={`/lesson/${lesson.nextSlug}`}>Наступна тема <ArrowRight className="h-4 w-4 ml-1"/></Link></Button>
