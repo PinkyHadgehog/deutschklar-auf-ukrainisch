@@ -174,7 +174,17 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
     setLocked(true);
     const correct = i === q.correctIndex;
     submitAnswer({ questionId: q.id, correct });
-    setAnswers((a) => [...a, { questionId: q.id, word: q.word, correct }]);
+    setAnswers((a) => [
+      ...a,
+      {
+        questionId: q.id,
+        word: q.word,
+        correct,
+        kind: q.kind,
+        userAnswer: q.options[i],
+        correctAnswer: q.options[q.correctIndex],
+      },
+    ]);
     if (correct && !isRepeat) {
       setTotalXp((x) => x + XP.perCorrect);
     }
