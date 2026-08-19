@@ -17,6 +17,7 @@ export interface LessonProgress {
   lessonId: string;
   status: LessonStatus;
   progress: 0 | 25 | 100;
+  updatedAt?: number;
 }
 
 export const statusProgress: Record<LessonStatus, 0 | 25 | 100> = {
@@ -67,6 +68,17 @@ const normalize = (raw: unknown): LessonStatus => {
   return "not_started";
 };
 
+/** All stored lesson progress entries (frontend store snapshot). */
+export const getAllLessonProgress = (): Record<string, LessonProgress> => {
+  const all = read();
+  const out: Record<string, LessonProgress> = {};
+  Object.entries(all).forEach(([id, entry]) => {
+    const status = normalize(entry?.status);
+    out[id] = { lessonId: id, status, progress: statusProgress[status], updatedAt: entry?.updatedAt };
+  });
+  return out;
+};
+
 export const getLessonProgress = (lessonId: string): LessonProgress => {
   const status = normalize(read()[lessonId]?.status);
   return { lessonId, status, progress: statusProgress[status] };
@@ -77,7 +89,7 @@ export const setLessonStatus = (lessonId: string, status: LessonStatus): LessonP
   const previous = getLessonProgress(lessonId).status;
   if (status === "completed") recordLessonCompletion(lessonId);
   else if (previous === "completed") removeLessonCompletion(lessonId);
-  const entry: LessonProgress = { lessonId, status, progress: statusProgress[status] };
+  const entry: LessonProgress = { lessonId, status, progress: statusProgress[status], updatedAt: Date.now() };
   write({ ...read(), [lessonId]: entry });
   return entry;
 };
