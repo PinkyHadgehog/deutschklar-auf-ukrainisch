@@ -49,6 +49,8 @@ const Profile = () => {
           <Button className="mt-5 bg-gradient-primary" onClick={() => toast.success("Збережено")}>Зберегти</Button>
         </Card>
 
+        <WeeklyGoalCard />
+
         <Card className="p-6 rounded-2xl border-0 shadow-soft">
           <div className="font-display font-bold mb-4">Мова інтерфейсу</div>
           <div className="grid grid-cols-2 gap-2">
