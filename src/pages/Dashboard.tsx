@@ -9,6 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { courses } from "@/data/mock";
 import { getDailyXp, getDailyBreakdown, subscribeLearningEvents, getWeeklyXp, getWeeklyXpByDay } from "@/lib/xp";
 import { getWeeklyXpGoal, subscribeUserSettings } from "@/lib/userSettings";
+import { getWeeklyStudySeconds, formatStudyTime, subscribeStudyTime } from "@/lib/studyTime";
 import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles } from "lucide-react";
 
 const Dashboard = () => {
@@ -18,6 +19,7 @@ const Dashboard = () => {
   const [weeklyXp, setWeeklyXp] = useState(0);
   const [weeklyByDay, setWeeklyByDay] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [weeklyGoal, setWeeklyGoal] = useState(100);
+  const [weeklySeconds, setWeeklySeconds] = useState(0);
 
   useEffect(() => {
     const sync = () => {
@@ -26,11 +28,13 @@ const Dashboard = () => {
       setWeeklyXp(getWeeklyXp());
       setWeeklyByDay(getWeeklyXpByDay());
       setWeeklyGoal(getWeeklyXpGoal());
+      setWeeklySeconds(getWeeklyStudySeconds());
     };
     sync();
     const un1 = subscribeLearningEvents(sync);
     const un2 = subscribeUserSettings(sync);
-    return () => { un1(); un2(); };
+    const un3 = subscribeStudyTime(sync);
+    return () => { un1(); un2(); un3(); };
   }, []);
 
   if (!user) return <Navigate to="/login" replace />;
@@ -174,7 +178,7 @@ const Dashboard = () => {
             {[
               { i: BookOpen, n: 47 + completedCount, l: "Лекцій пройдено" },
               { i: Sparkles, n: 12, l: "Квізів складено" },
-              { i: Clock, n: "8 год", l: "Часу за тиждень" },
+              { i: Clock, n: formatStudyTime(weeklySeconds), l: "Часу за тиждень" },
             ].map((s, idx) => (
               <div key={idx} className="rounded-xl border bg-card p-4 flex items-center gap-3">
                 <div className="h-10 w-10 rounded-lg bg-primary-soft grid place-items-center"><s.i className="h-5 w-5 text-primary" /></div>
