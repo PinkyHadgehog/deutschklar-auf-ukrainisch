@@ -70,12 +70,17 @@ const Lesson = () => {
     ? full15
     : [...legacyItems, ...((slug && exerciseSets[slug]) || [])];
 
-  const finish = () => {
+  const handleComplete = () => {
     markCompleted();
     if (!user) { toast("Увійдіть, щоб зберегти прогрес"); navigate("/login"); return; }
     if (alreadyDone) { toast.success("Лекцію вже зараховано раніше ✓"); return; }
     completeLesson({ slug: lesson.slug, title: lesson.titleDe, level: lesson.level, points: 10 });
     toast.success("Лекцію завершено! +10 балів — прогрес збережено в профілі 🎉");
+  };
+
+  const handleUndo = () => {
+    markNotStarted();
+    toast("Позначку знято");
   };
 
   return (
