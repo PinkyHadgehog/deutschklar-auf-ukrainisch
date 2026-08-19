@@ -9,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { courses } from "@/data/mock";
 import { getDailyXp, getDailyBreakdown, subscribeLearningEvents, getWeeklyXp, getWeeklyXpByDay } from "@/lib/xp";
 import { getWeeklyXpGoal, subscribeUserSettings } from "@/lib/userSettings";
-import { getWeeklyCompletedLessons, getWeeklyCompletedQuizzes, subscribeCompletionEvents } from "@/lib/weeklyStats";
+import { getWeeklyCompletedLessons, getWeeklyCompletedQuizzes, subscribeCompletionEvents, getCurrentWeekRange } from "@/lib/weeklyStats";
 import { getWeeklyStudySeconds, formatStudyTime, subscribeStudyTime } from "@/lib/studyTime";
 import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles } from "lucide-react";
 
@@ -54,6 +54,11 @@ const Dashboard = () => {
   const lastLesson = user.completedLessons[0];
   const weekDone = Math.min(100, Math.round((weeklyXp / Math.max(1, weeklyGoal)) * 100));
   const goalReached = weeklyXp >= weeklyGoal;
+  const { start: weekStart, end: weekEnd } = getCurrentWeekRange();
+  const dayShort = ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+  const fmtDay = (d: Date) => `${dayShort[d.getDay()]} · ${d.toLocaleDateString("uk-UA", { day: "numeric", month: "short" })}`;
+  const weekRangeLabel = `${fmtDay(weekStart)} — ${fmtDay(weekEnd)}`;
+  const weekEmpty = weeklyLessons === 0 && weeklyQuizzes === 0 && weeklySeconds === 0;
   const maxDay = Math.max(1, ...weeklyByDay);
   const weekly = weeklyByDay.map((xp) => Math.round((xp / maxDay) * 100));
 
