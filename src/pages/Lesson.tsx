@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -32,7 +32,7 @@ const Lesson = () => {
   const extras = slug ? lessonExtras[slug] : undefined;
 
   const alreadyDone = useMemo(() => (slug ? isLessonCompleted(slug) : false), [slug, isLessonCompleted]);
-  const { status, progress, markCompleted, markStarted } = useLessonProgress(slug);
+  const { status, progress, markCompleted, markStarted, setStatus } = useLessonProgress(slug);
 
   // Opening the lesson once marks it as "started" (progress stays 0%).
   useEffect(() => {
@@ -85,7 +85,7 @@ const Lesson = () => {
   };
 
   const handleUndo = () => {
-    markNotStarted();
+    setStatus("started");
     toast("Позначку знято");
   };
 
