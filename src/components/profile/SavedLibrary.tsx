@@ -3,12 +3,23 @@ import { Link, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Heart, Bookmark, BookOpen, Layers, RotateCw, Play, ArrowRight } from "lucide-react";
+import { Heart, Bookmark, BookOpen, Layers, RotateCw, Play, ArrowRight, Search, ChevronDown } from "lucide-react";
 import { vocabThemes, type Level } from "@/data/mock";
 import { removeSavedItem, useSavedItems, type SavedItem } from "@/lib/savedItems";
 import { getLessonProgressEntry, statusToProgress, type LessonStatus } from "@/lib/lessonProgress";
 import { useProgressVersion } from "@/lib/progressAggregate";
+import {
+  filterSavedWords,
+  groupSavedWordsByTopic,
+  savedWordDe,
+  savedWordTopicId,
+  savedWordsLabel,
+  topicCountLabel,
+  wordCountLabel,
+} from "@/lib/savedWordGroups";
+
 
 const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"];
 
