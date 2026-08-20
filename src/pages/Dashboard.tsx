@@ -8,13 +8,15 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { useAuth } from "@/context/AuthContext";
 import { courses } from "@/data/mock";
 import { getDailyXp, getDailyBreakdown, subscribeLearningEvents, getWeeklyXp, getWeeklyXpByDay } from "@/lib/xp";
-import { getWeeklyXpGoal, subscribeUserSettings } from "@/lib/userSettings";
+import { getWeeklyXpGoal, getDailyStudyMinutesGoal, subscribeUserSettings } from "@/lib/userSettings";
 import { getWeeklyCompletedLessons, getWeeklyCompletedQuizzes, subscribeCompletionEvents, getCurrentWeekRange } from "@/lib/weeklyStats";
 import { getRecommendations, type Recommendation, type RecommendationType } from "@/lib/recommendations";
 import { subscribeVocabMistakes } from "@/lib/vocabMistakes";
 import { subscribeLessonProgress } from "@/lib/lessonProgress";
 import { getWeeklyStudySeconds, formatStudyTime, subscribeStudyTime } from "@/lib/studyTime";
-import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles, Play, RotateCw, AlertTriangle, ArrowRight } from "lucide-react";
+import DailyGoalEditor from "@/components/goals/DailyGoalEditor";
+import WeeklyGoalEditor from "@/components/goals/WeeklyGoalEditor";
+import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles, Play, RotateCw, AlertTriangle, ArrowRight, Pencil, Settings2 } from "lucide-react";
 
 const recIcon: Record<RecommendationType, typeof Play> = {
   continue_lesson: Play,
@@ -30,6 +32,7 @@ const Dashboard = () => {
   const [weeklyXp, setWeeklyXp] = useState(0);
   const [weeklyByDay, setWeeklyByDay] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [weeklyGoal, setWeeklyGoal] = useState(100);
+  const [dailyGoal, setDailyGoal] = useState(20);
   const [weeklySeconds, setWeeklySeconds] = useState(0);
   const [weeklyLessons, setWeeklyLessons] = useState(0);
   const [weeklyQuizzes, setWeeklyQuizzes] = useState(0);
@@ -42,6 +45,7 @@ const Dashboard = () => {
       setWeeklyXp(getWeeklyXp());
       setWeeklyByDay(getWeeklyXpByDay());
       setWeeklyGoal(getWeeklyXpGoal());
+      setDailyGoal(getDailyStudyMinutesGoal());
       setWeeklySeconds(getWeeklyStudySeconds());
       setWeeklyLessons(getWeeklyCompletedLessons());
       setWeeklyQuizzes(getWeeklyCompletedQuizzes());
@@ -70,7 +74,8 @@ const Dashboard = () => {
   const courseProgress = Math.min(100, Math.round((completedCount / Math.max(1, myCourse.lessons)) * 100) + myCourse.progress);
   const displayedProgress = Math.min(100, completedCount > 0 ? courseProgress : myCourse.progress);
   const lastLesson = user.completedLessons[0];
-  const weekDone = Math.min(100, Math.round((weeklyXp / Math.max(1, weeklyGoal)) * 100));
+  const weekDone = Math.round((weeklyXp / Math.max(1, weeklyGoal)) * 100);
+  const visualProgress = Math.min(weekDone, 100);
   const goalReached = weeklyXp >= weeklyGoal;
   const { start: weekStart, end: weekEnd } = getCurrentWeekRange();
   const dayShort = ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
@@ -118,11 +123,21 @@ const Dashboard = () => {
               <div className="text-2xl font-bold">{user.streak}</div>
               <div className="text-xs opacity-80">днів поспіль</div>
             </div>
-            <div className="rounded-xl bg-white/15 p-3 backdrop-blur">
-              <Clock className="h-5 w-5 mb-1.5" />
-              <div className="text-2xl font-bold">{user.goalMinutes} хв</div>
-              <div className="text-xs opacity-80">ціль на день</div>
-            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="rounded-xl bg-white/15 p-3 backdrop-blur text-left hover:bg-white/25 transition">
+                  <div className="flex items-center justify-between">
+                    <Clock className="h-5 w-5 mb-1.5" />
+                    <Pencil className="h-3.5 w-3.5 opacity-80" />
+                  </div>
+                  <div className="text-2xl font-bold">{dailyGoal} хв</div>
+                  <div className="text-xs opacity-80">ціль на день</div>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72">
+                <DailyGoalEditor />
+              </PopoverContent>
+            </Popover>
             <Popover>
               <PopoverTrigger asChild>
                 <button className="rounded-xl bg-white/15 p-3 backdrop-blur text-left hover:bg-white/25 transition">
@@ -158,18 +173,34 @@ const Dashboard = () => {
         <Card className="p-6 rounded-2xl border-0 shadow-soft">
           <div className="flex items-center justify-between mb-3">
             <div className="font-display font-bold">Тижнева ціль</div>
-            <Badge className="bg-accent text-accent-foreground">{weekDone}%</Badge>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  aria-label="Змінити тижневу ціль"
+                  className="h-8 w-8 rounded-lg grid place-items-center text-muted-foreground hover:bg-muted hover:text-foreground transition"
+                >
+                  <Settings2 className="h-4 w-4" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72" align="end">
+                <WeeklyGoalEditor />
+              </PopoverContent>
+            </Popover>
           </div>
-          <Progress value={weekDone} className="h-2 mb-2" />
-          <div className="flex items-center justify-between text-xs mb-4">
-            <span className="text-muted-foreground">
-              <span className="font-semibold text-foreground">{weeklyXp}</span> / {weeklyGoal} XP
-            </span>
-            {goalReached && <span className="font-semibold text-accent-foreground">🎉 Тижнева ціль досягнута!</span>}
+
+          <div className="flex items-end justify-between gap-3 mb-2">
+            <div className="font-display text-2xl font-extrabold leading-none">
+              {weeklyXp} <span className="text-muted-foreground font-bold text-xl">/ {weeklyGoal} XP</span>
+            </div>
+            <span className="text-xs text-muted-foreground font-medium">{weekDone}%</span>
           </div>
+
+          <Progress value={visualProgress} className="h-2 mb-4" />
+
           <div className="flex items-end gap-1.5 h-24">
             {weekly.map((v, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div className="text-[10px] font-semibold text-muted-foreground">{weeklyByDay[i]}</div>
                 <div className="w-full rounded-md bg-primary-soft" style={{ height: `${v}%` }}>
                   <div className="w-full rounded-md bg-gradient-primary h-full" style={{ opacity: v / 100 }} />
                 </div>
@@ -177,7 +208,20 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
+
+          <div className="mt-3 text-xs">
+            {goalReached ? (
+              <span className="font-semibold text-primary">🎉 Тижневу ціль досягнуто!</span>
+            ) : weeklyXp === 0 ? (
+              <span className="text-muted-foreground">Почни з першої активності цього тижня</span>
+            ) : (
+              <span className="text-muted-foreground">
+                Ще <span className="font-semibold text-foreground">{weeklyGoal - weeklyXp} XP</span> до цілі
+              </span>
+            )}
+          </div>
         </Card>
+
 
         {/* Weekly activity */}
         <section className="lg:col-span-3 mt-3">

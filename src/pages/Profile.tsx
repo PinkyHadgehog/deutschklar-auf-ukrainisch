@@ -42,8 +42,8 @@ const Profile = () => {
               </div>
             </div>
             <div>
-              <Label>Денна ціль (хв)</Label>
-              <Input type="number" className="mt-1.5" defaultValue={user.goalMinutes} onBlur={(e) => updateUser({ goalMinutes: Number(e.target.value) })} />
+              <Label>Цілі навчання</Label>
+              <p className="mt-1.5 text-sm text-muted-foreground">Щоденну та тижневу ціль можна змінити в блоці «Мої цілі».</p>
             </div>
           </div>
           <Button className="mt-5 bg-gradient-primary" onClick={() => toast.success("Збережено")}>Зберегти</Button>
