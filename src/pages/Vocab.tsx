@@ -11,7 +11,10 @@ import QuizMode from "@/components/vocab/QuizMode";
 import QuizTopicSelect from "@/components/vocab/QuizTopicSelect";
 import { shuffle, DEFAULT_SESSION_SIZE } from "@/lib/quiz";
 import { useStudySession } from "@/hooks/use-study-session";
-import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2, Search, X } from "lucide-react";
+import { useSavedItems, toggleSavedItem, wordId } from "@/lib/savedItems";
+import { toast } from "sonner";
+import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2, Search, X, Bookmark } from "lucide-react";
+
 
 const speakDe = (text: string, rate = 0.75) => {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -37,7 +40,11 @@ const Vocab = () => {
   const initialTab = params.get("tab");
   const validTopic = vocabThemes.some((t) => t.id === initialTopic) ? (initialTopic as string) : null;
   const [theme, setTheme] = useState<string>(validTopic ?? vocabThemes[0].id);
-  const [favs, setFavs] = useState<Set<string>>(new Set());
+  const saved = useSavedItems();
+  const savedWordIds = useMemo(() => new Set(saved.words.map((w) => w.id)), [saved.words]);
+  const savedTopicIds = useMemo(() => new Set(saved.topics.map((t) => t.id)), [saved.topics]);
+  const [savedMode, setSavedMode] = useState(params.get("saved") === "1");
+
   const [flipIdx, setFlipIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [query, setQuery] = useState("");
@@ -62,6 +69,11 @@ const Vocab = () => {
     if (!quizStarted) setSelectedQuizTopic((cur) => cur ?? theme);
   };
 
+  const savedWords = useMemo(
+    () => vocabWords.filter((w) => savedWordIds.has(wordId(w.theme, w.de))),
+    [savedWordIds]
+  );
+
   const words = useMemo(() => {
     const base = vocabWords.filter((w) => w.theme === theme).length
       ? vocabWords.filter((w) => w.theme === theme)
@@ -76,10 +88,11 @@ const Vocab = () => {
         (w.plural?.toLowerCase().includes(q) ?? false)
     );
   }, [theme, query]);
+  const flashPool = savedMode ? savedWords : words;
   const sessionWords = useMemo(
-    () => shuffle(words).slice(0, DEFAULT_SESSION_SIZE),
+    () => shuffle(flashPool).slice(0, savedMode ? flashPool.length : DEFAULT_SESSION_SIZE),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [words, sessionSeed]
+    [flashPool, sessionSeed, savedMode]
   );
   const current = sessionWords.length ? sessionWords[flipIdx % sessionWords.length] : null;
 
@@ -91,11 +104,29 @@ const Vocab = () => {
     setSessionDone(false);
   };
 
-  const toggleFav = (de: string) => {
-    const n = new Set(favs);
-    n.has(de) ? n.delete(de) : n.add(de);
-    setFavs(n);
+  const toggleFav = (w: { de: string; theme: string; artikel?: string; plural?: string; uk: string }) => {
+    const nowSaved = toggleSavedItem("word", wordId(w.theme, w.de), {
+      de: w.de,
+      artikel: w.artikel,
+      plural: w.plural,
+      uk: w.uk,
+      theme: w.theme,
+    });
+    toast(nowSaved ? "Збережено" : "Видалено зі збереженого");
   };
+
+  const toggleTopic = (th: { id: string; title: string; titleDe: string; emoji: string; count: number }) => {
+    const nowSaved = toggleSavedItem("topic", `vocab:${th.id}`, {
+      kind: "vocab",
+      topicId: th.id,
+      title: `Wortschatz: ${th.titleDe}`,
+      subtitle: th.title,
+      emoji: th.emoji,
+      count: th.count,
+    });
+    toast(nowSaved ? "Тему збережено" : "Видалено зі збереженого");
+  };
+
 
   const artikelColor = (a?: string) => a === "der" ? "text-info" : a === "die" ? "text-destructive" : "text-success";
 
@@ -136,14 +167,24 @@ const Vocab = () => {
 
           <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
             {vocabThemes.map((th) => (
-              <button key={th.id} onClick={() => { setTheme(th.id); setFlipIdx(0); setFlipped(false); setSeen(1); setSessionDone(false); }}
-                className={`p-4 rounded-2xl border text-left transition ${
+              <div key={th.id} role="button" tabIndex={0}
+                onClick={() => { setTheme(th.id); setFlipIdx(0); setFlipped(false); setSeen(1); setSessionDone(false); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setTheme(th.id); } }}
+                className={`relative p-4 rounded-2xl border text-left transition cursor-pointer ${
                   theme === th.id ? "bg-gradient-primary text-primary-foreground border-transparent shadow-soft" : "bg-card hover:border-primary/40"
                 }`}>
+                <button
+                  type="button"
+                  aria-label={savedTopicIds.has(`vocab:${th.id}`) ? "Видалити тему зі збереженого" : "Зберегти тему"}
+                  onClick={(e) => { e.stopPropagation(); toggleTopic(th); }}
+                  className="absolute top-3 right-3"
+                >
+                  <Bookmark className={`h-4 w-4 ${savedTopicIds.has(`vocab:${th.id}`) ? "fill-current" : "opacity-60"}`} />
+                </button>
                 <div className="text-2xl">{th.emoji}</div>
                 <div className="font-display font-bold mt-2 text-sm">{th.title}</div>
                 <div className={`text-xs mt-0.5 ${theme === th.id ? "opacity-80" : "text-muted-foreground"}`}>{th.titleDe} · {th.count}</div>
-              </button>
+              </div>
             ))}
           </div>
 
@@ -162,10 +203,11 @@ const Vocab = () => {
                     </div>
                     <div className="text-sm text-muted-foreground">Pl.: {w.plural}</div>
                   </div>
-                  <button onClick={() => toggleFav(w.de)}>
-                    <Heart className={`h-5 w-5 ${favs.has(w.de) ? "fill-destructive text-destructive" : "text-muted-foreground"}`} />
+                  <button onClick={() => toggleFav(w)} aria-label="Зберегти слово">
+                    <Heart className={`h-5 w-5 ${savedWordIds.has(wordId(w.theme, w.de)) ? "fill-destructive text-destructive" : "text-muted-foreground"}`} />
                   </button>
                 </div>
+
                 <div className="mt-2 text-primary font-medium">{w.uk}</div>
                 <div className="mt-3 p-3 rounded-xl bg-secondary/60 text-sm">
                   <div>{w.sample}</div>
@@ -178,7 +220,15 @@ const Vocab = () => {
 
         <TabsContent value="flash" className="mt-6">
           <div className="max-w-xl mx-auto">
-            <Badge className="mb-3">{vocabThemes.find((t) => t.id === theme)?.title}</Badge>
+            <div className="mb-3 flex items-center gap-2 flex-wrap">
+              <Badge>{savedMode ? `♡ Збережені слова · ${savedWords.length}` : vocabThemes.find((t) => t.id === theme)?.title}</Badge>
+              {savedMode && (
+                <Button variant="ghost" size="sm" onClick={() => { setSavedMode(false); resetSession(); }}>
+                  Усі слова теми
+                </Button>
+              )}
+            </div>
+
 
             {sessionDone ? (
               <Card className="p-10 rounded-3xl border-0 shadow-elevated text-center">

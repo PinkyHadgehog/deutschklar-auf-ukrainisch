@@ -19,7 +19,9 @@ import {
   getTopicLessonIds,
   useProgressVersion,
 } from "@/lib/progressAggregate";
-import { Lock, ArrowRight, BookOpen, Search, X } from "lucide-react";
+import { Lock, ArrowRight, BookOpen, Search, X, Bookmark } from "lucide-react";
+import { toast } from "sonner";
+import { toggleSavedItem, useSavedItems } from "@/lib/savedItems";
 
 
 const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"];
@@ -32,6 +34,8 @@ const Courses = () => {
   const [categoryId, setCategoryId] = useState<"all" | string>("all");
   const lessonsRef = useRef<HTMLElement | null>(null);
   useProgressVersion();
+  const saved = useSavedItems();
+  const savedTopicIds = useMemo(() => new Set(saved.topics.map((t) => t.id)), [saved.topics]);
   const filteredCourses = level === "all" ? courses : courses.filter((c) => c.level === level);
 
 
@@ -259,9 +263,30 @@ const Courses = () => {
                           </div>
                         </AccordionTrigger>
                         <AccordionContent>
-                          <div className="mb-3 text-xs text-muted-foreground">
-                            {topicStats.completed} з {topicStats.total} уроків завершено
+                          <div className="mb-3 flex items-center justify-between gap-3">
+                            <div className="text-xs text-muted-foreground">
+                              {topicStats.completed} з {topicStats.total} уроків завершено
+                            </div>
+                            <button
+                              type="button"
+                              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-primary transition"
+                              onClick={() => {
+                                const nowSaved = toggleSavedItem("topic", `grammar:${topic.slug}`, {
+                                  kind: "grammar",
+                                  topicId: topic.slug,
+                                  title: topic.titleDe,
+                                  subtitle: topic.title,
+                                  level: topic.level,
+                                  count: topicStats.total,
+                                });
+                                toast(nowSaved ? "Тему збережено" : "Видалено зі збереженого");
+                              }}
+                            >
+                              <Bookmark className={`h-3.5 w-3.5 ${savedTopicIds.has(`grammar:${topic.slug}`) ? "fill-primary text-primary" : ""}`} />
+                              {savedTopicIds.has(`grammar:${topic.slug}`) ? "Збережено" : "Зберегти тему"}
+                            </button>
                           </div>
+
 
                           {topic.sub && topic.sub.length > 0 ? (
                             <ul className="grid gap-1.5">

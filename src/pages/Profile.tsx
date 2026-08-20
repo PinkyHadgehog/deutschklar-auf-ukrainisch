@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { useLang } from "@/context/LanguageContext";
 import WeeklyGoalCard from "@/components/profile/WeeklyGoalCard";
-import { Trophy, LogOut, Heart, CreditCard } from "lucide-react";
+import { Trophy, LogOut, CreditCard } from "lucide-react";
+import SavedLibrary from "@/components/profile/SavedLibrary";
 import { toast } from "sonner";
 
 const Profile = () => {
@@ -76,6 +77,8 @@ const Profile = () => {
           <div className="mt-4 text-xs text-muted-foreground">Усього балів: <span className="font-bold text-foreground">{user.points}</span></div>
         </Card>
 
+        <SavedLibrary />
+
         <Card className="p-6 rounded-2xl border-0 shadow-soft md:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <div className="font-display font-bold flex items-center gap-2"><CreditCard className="h-4 w-4 text-primary"/> Підписка</div>
@@ -92,14 +95,14 @@ const Profile = () => {
           </div>
         </Card>
 
-        <Card className="p-6 rounded-2xl border-0 shadow-soft">
-          <div className="font-display font-bold mb-3 flex items-center gap-2"><Heart className="h-4 w-4 text-destructive"/> Обране</div>
-          <div className="text-sm text-muted-foreground">Слова, лекції та теми, які ви зберегли, з'являться тут.</div>
-
-          <Button variant="ghost" onClick={logout} className="mt-6 w-full text-destructive hover:text-destructive">
+        <Card className="p-6 rounded-2xl border-0 shadow-soft md:col-span-3">
+          <div className="font-display font-bold mb-1">Налаштування акаунта</div>
+          <p className="text-sm text-muted-foreground">Вихід з акаунта на цьому пристрої.</p>
+          <Button variant="ghost" onClick={logout} className="mt-4 text-destructive hover:text-destructive">
             <LogOut className="h-4 w-4 mr-1.5"/> Вийти
           </Button>
         </Card>
+
       </div>
     </div>
   );

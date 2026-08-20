@@ -11,9 +11,10 @@ interface Props {
   duration?: number;
   premium?: boolean;
   statusControl?: ReactNode;
+  saveControl?: ReactNode;
 }
 
-const LessonHeader = ({ lesson, progress, duration, premium, statusControl }: Props) => (
+const LessonHeader = ({ lesson, progress, duration, premium, statusControl, saveControl }: Props) => (
   <div>
     <Link to="/grammar" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
       <ArrowLeft className="h-4 w-4 mr-1" /> До граматики
@@ -44,8 +45,13 @@ const LessonHeader = ({ lesson, progress, duration, premium, statusControl }: Pr
       )}
     </div>
 
-    <h1 className="font-display text-3xl md:text-4xl font-extrabold mt-3">{lesson.titleDe}</h1>
-    <p className="text-muted-foreground mt-1">{lesson.titleUk}</p>
+    <div className="mt-3 flex items-start justify-between gap-3">
+      <div className="min-w-0">
+        <h1 className="font-display text-3xl md:text-4xl font-extrabold">{lesson.titleDe}</h1>
+        <p className="text-muted-foreground mt-1">{lesson.titleUk}</p>
+      </div>
+      {saveControl && <div className="shrink-0">{saveControl}</div>}
+    </div>
 
     <Progress value={progress} className="h-2 mt-5" />
     <div className="mt-2 flex items-start justify-between gap-3 flex-wrap">
