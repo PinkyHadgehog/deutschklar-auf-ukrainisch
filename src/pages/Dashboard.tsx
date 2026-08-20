@@ -14,6 +14,8 @@ import { getWeeklyCompletedLessons, getWeeklyCompletedQuizzes, subscribeCompleti
 import { getRecommendations, type Recommendation, type RecommendationType } from "@/lib/recommendations";
 import { subscribeVocabMistakes } from "@/lib/vocabMistakes";
 import { subscribeLessonProgress } from "@/lib/lessonProgress";
+import { getLearningJourney, type LearningJourney } from "@/lib/learningJourney";
+import LearningJourneyCard from "@/components/dashboard/LearningJourneyCard";
 import { getWeeklyStudySeconds, formatStudyTime, subscribeStudyTime } from "@/lib/studyTime";
 import DailyGoalEditor from "@/components/goals/DailyGoalEditor";
 import WeeklyGoalEditor from "@/components/goals/WeeklyGoalEditor";
@@ -38,6 +40,7 @@ const Dashboard = () => {
   const [weeklyLessons, setWeeklyLessons] = useState(0);
   const [weeklyQuizzes, setWeeklyQuizzes] = useState(0);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [journey, setJourney] = useState<LearningJourney>({ state: "new", completed: null, current: null, next: null });
 
   useEffect(() => {
     const sync = () => {
@@ -50,10 +53,12 @@ const Dashboard = () => {
       setWeeklySeconds(getWeeklyStudySeconds());
       setWeeklyLessons(getWeeklyCompletedLessons());
       setWeeklyQuizzes(getWeeklyCompletedQuizzes());
+      const j = getLearningJourney(user?.level ?? "A1");
+      setJourney(j);
       setRecommendations(getRecommendations({
         level: user?.level ?? "A1",
         completedLessonSlugs: (user?.completedLessons ?? []).map((l) => l.slug),
-        excludeIds: user?.completedLessons?.[0]?.slug ? [user.completedLessons[0].slug] : [],
+        excludeIds: [j.completed?.slug, j.current?.slug, j.next?.slug].filter(Boolean) as string[],
       }));
     };
     sync();
@@ -74,7 +79,6 @@ const Dashboard = () => {
   const levelStats = getAggregate(getLevelLessonIds(user.level));
   const totalLessons = allLessons.length;
   const displayedProgress = levelStats.progress;
-  const lastLesson = user.completedLessons[0];
   const weekDone = Math.round((weeklyXp / Math.max(1, weeklyGoal)) * 100);
   const visualProgress = Math.min(weekDone, 100);
   const goalReached = weeklyXp >= weeklyGoal;
@@ -259,38 +263,18 @@ const Dashboard = () => {
           <div className="border-t mt-8" />
         </section>
 
-        {/* Last lesson */}
-        <Card className="p-6 rounded-2xl border-0 shadow-soft lg:col-span-2">
-          <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
-            <div>
-              <div className="font-display font-bold text-lg">Остання лекція</div>
-              <p className="text-sm text-muted-foreground">Продовжуй з того місця, де зупинилася</p>
-            </div>
-            <Badge variant="secondary" className="bg-primary-soft text-primary">B1 · Граматика</Badge>
-          </div>
-          <div className="flex flex-wrap items-center gap-4 p-4 rounded-xl bg-secondary/60">
-            <div className="h-14 w-14 rounded-xl bg-gradient-primary grid place-items-center shrink-0">
-              <BookOpen className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <div className="flex-1 min-w-[12rem]">
-              <div className="font-semibold truncate">{lastLesson?.title ?? "Adjektivdeklination nach dem bestimmten Artikel"}</div>
-              <div className="text-sm text-muted-foreground">
-                {lastLesson
-                  ? `Завершено ${new Date(lastLesson.completedAt).toLocaleDateString("uk-UA")} · +${lastLesson.points} балів`
-                  : "Прогрес: 62% · 4 вправи залишилось"}
-              </div>
-              <Progress value={lastLesson ? 100 : 62} className="h-1.5 mt-2" />
-            </div>
-            <Button asChild size="sm" className="bg-gradient-primary">
-              <Link to={`/lesson/${lastLesson?.slug ?? "adjektivdeklination-bestimmter"}`}>{lastLesson ? "Повторити" : "Продовжити"}</Link>
-            </Button>
-          </div>
-        </Card>
+        {/* Learning journey */}
+        <LearningJourneyCard journey={journey} />
+
+
 
 
         {/* Recommendations */}
         <Card className="p-6 rounded-2xl border-0 shadow-soft">
           <div className="font-display font-bold mb-3 flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Рекомендовано вам</div>
+          {recommendations.length === 0 && (
+            <p className="text-sm text-muted-foreground">Поки немає що повторювати — проходь квізи та вправи, і тут з’являться персональні поради.</p>
+          )}
           <ul className="space-y-2">
             {recommendations.map((r) => {
               const Icon = recIcon[r.type];

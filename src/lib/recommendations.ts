@@ -218,11 +218,12 @@ export const getRecommendations = (input: RecommendationInput): Recommendation[]
     });
   });
 
-  // Diversity first: at most one item per type, in priority order.
+  // Review first: vocabulary and weak quizzes outrank linear course navigation,
+  // which the Dashboard learning journey already covers.
   const order: RecommendationType[] = [
-    "continue_lesson",
     "vocabulary_review",
     "weak_quiz",
+    "continue_lesson",
     "next_lesson",
   ];
   const out: Recommendation[] = [];
