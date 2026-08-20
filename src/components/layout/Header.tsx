@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { GraduationCap, Globe, Menu, X, User2 } from "lucide-react";
+import { GraduationCap, Globe, Menu, X, User2, Bookmark } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/context/LanguageContext";
@@ -21,9 +21,10 @@ const navItemsAuthed = [
   { to: "/courses", key: "nav.courses" },
   { to: "/vocab", key: "nav.vocab" },
   { to: "/progress", key: "nav.progress" },
+  { to: "/saved", label: "Збережене", icon: true },
 ];
 
-type NavItem = { to: string; key?: string; label?: string };
+type NavItem = { to: string; key?: string; label?: string; icon?: boolean };
 
 export const Header = () => {
   const { lang, setLang, t } = useLang();
@@ -63,11 +64,12 @@ export const Header = () => {
                 to={it.to}
                 end={it.to === "/"}
                 className={({ isActive }) =>
-                  `px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  `px-3 py-2 text-sm font-medium rounded-lg transition-colors inline-flex items-center gap-1.5 ${
                     isActive ? "bg-primary-soft text-primary" : "text-foreground/70 hover:text-foreground hover:bg-muted"
                   }`
                 }
               >
+                {it.icon && <Bookmark className="h-4 w-4" />}
                 {it.key ? t(it.key) : it.label}
               </NavLink>
             )
@@ -140,11 +142,12 @@ export const Header = () => {
                   end={it.to === "/"}
                   onClick={() => setOpen(false)}
                   className={({ isActive }) =>
-                    `px-3 py-2.5 text-sm font-medium rounded-lg ${
+                    `px-3 py-2.5 text-sm font-medium rounded-lg flex items-center gap-1.5 ${
                       isActive ? "bg-primary-soft text-primary" : "hover:bg-muted"
                     }`
                   }
                 >
+                  {it.icon && <Bookmark className="h-4 w-4" />}
                   {it.key ? t(it.key) : it.label}
                 </NavLink>
               )

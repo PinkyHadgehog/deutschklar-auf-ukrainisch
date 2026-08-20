@@ -7,13 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/context/AuthContext";
 import { useLang } from "@/context/LanguageContext";
 import WeeklyGoalCard from "@/components/profile/WeeklyGoalCard";
-import { Trophy, LogOut, CreditCard } from "lucide-react";
-import SavedLibrary from "@/components/profile/SavedLibrary";
+import { Trophy, LogOut, CreditCard, Bookmark } from "lucide-react";
+import { useSavedItems } from "@/lib/savedItems";
+import { savedWordsLabel } from "@/lib/savedWordGroups";
 import { toast } from "sonner";
 
 const Profile = () => {
   const { user, logout, updateUser } = useAuth();
   const { lang, setLang } = useLang();
+  const saved = useSavedItems();
   if (!user) return <Navigate to="/login" replace />;
 
   return (
@@ -77,7 +79,18 @@ const Profile = () => {
           <div className="mt-4 text-xs text-muted-foreground">Усього балів: <span className="font-bold text-foreground">{user.points}</span></div>
         </Card>
 
-        <SavedLibrary />
+        <Card className="p-6 rounded-2xl border-0 shadow-soft">
+          <div className="font-display font-bold flex items-center gap-2">
+            <Bookmark className="h-4 w-4 text-primary" /> Збережене
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            {savedWordsLabel(saved.words.length)} · {saved.lessons.length} уроків · {saved.topics.length} тем
+          </p>
+          <Button asChild variant="outline" className="mt-4">
+            <Link to="/saved">Відкрити збережене →</Link>
+          </Button>
+        </Card>
+
 
         <Card className="p-6 rounded-2xl border-0 shadow-soft md:col-span-2">
           <div className="flex items-center justify-between mb-4">

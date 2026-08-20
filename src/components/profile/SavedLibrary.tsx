@@ -92,7 +92,7 @@ const Row = ({
   </div>
 );
 
-const SavedLibrary = () => {
+const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
   const saved = useSavedItems();
   const navigate = useNavigate();
   useProgressVersion();
@@ -143,13 +143,23 @@ const SavedLibrary = () => {
   ];
 
   return (
-    <Card className="p-6 rounded-2xl border-0 shadow-soft md:col-span-3">
-      <div className="font-display font-bold flex items-center gap-2">
-        <Bookmark className="h-4 w-4 text-primary" /> Збережене
-      </div>
-      <p className="text-sm text-muted-foreground mt-1">
-        Слова, уроки та теми, які ти хочеш повторити пізніше.
-      </p>
+    <Card
+      className={
+        variant === "page"
+          ? "p-6 rounded-2xl border-0 shadow-soft"
+          : "p-6 rounded-2xl border-0 shadow-soft md:col-span-3"
+      }
+    >
+      {variant === "card" && (
+        <>
+          <div className="font-display font-bold flex items-center gap-2">
+            <Bookmark className="h-4 w-4 text-primary" /> Збережене
+          </div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Слова, уроки та теми, які ти хочеш повторити пізніше.
+          </p>
+        </>
+      )}
 
       <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
         {tabs.map((t) => (
