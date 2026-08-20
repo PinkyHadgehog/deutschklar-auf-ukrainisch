@@ -170,18 +170,34 @@ const Dashboard = () => {
         <Card className="p-6 rounded-2xl border-0 shadow-soft">
           <div className="flex items-center justify-between mb-3">
             <div className="font-display font-bold">Тижнева ціль</div>
-            <Badge className="bg-accent text-accent-foreground">{weekDone}%</Badge>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  aria-label="Змінити тижневу ціль"
+                  className="h-8 w-8 rounded-lg grid place-items-center text-muted-foreground hover:bg-muted hover:text-foreground transition"
+                >
+                  <Settings2 className="h-4 w-4" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72" align="end">
+                <WeeklyGoalEditor />
+              </PopoverContent>
+            </Popover>
           </div>
-          <Progress value={weekDone} className="h-2 mb-2" />
-          <div className="flex items-center justify-between text-xs mb-4">
-            <span className="text-muted-foreground">
-              <span className="font-semibold text-foreground">{weeklyXp}</span> / {weeklyGoal} XP
-            </span>
-            {goalReached && <span className="font-semibold text-accent-foreground">🎉 Тижнева ціль досягнута!</span>}
+
+          <div className="flex items-end justify-between gap-3 mb-2">
+            <div className="font-display text-2xl font-extrabold leading-none">
+              {weeklyXp} <span className="text-muted-foreground font-bold text-xl">/ {weeklyGoal} XP</span>
+            </div>
+            <span className="text-xs text-muted-foreground font-medium">{weekDone}%</span>
           </div>
+
+          <Progress value={visualProgress} className="h-2 mb-4" />
+
           <div className="flex items-end gap-1.5 h-24">
             {weekly.map((v, i) => (
               <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div className="text-[10px] font-semibold text-muted-foreground">{weeklyByDay[i]}</div>
                 <div className="w-full rounded-md bg-primary-soft" style={{ height: `${v}%` }}>
                   <div className="w-full rounded-md bg-gradient-primary h-full" style={{ opacity: v / 100 }} />
                 </div>
@@ -189,7 +205,20 @@ const Dashboard = () => {
               </div>
             ))}
           </div>
+
+          <div className="mt-3 text-xs">
+            {goalReached ? (
+              <span className="font-semibold text-primary">🎉 Тижневу ціль досягнуто!</span>
+            ) : weeklyXp === 0 ? (
+              <span className="text-muted-foreground">Почни з першої активності цього тижня</span>
+            ) : (
+              <span className="text-muted-foreground">
+                Ще <span className="font-semibold text-foreground">{weeklyGoal - weeklyXp} XP</span> до цілі
+              </span>
+            )}
+          </div>
         </Card>
+
 
         {/* Weekly activity */}
         <section className="lg:col-span-3 mt-3">
