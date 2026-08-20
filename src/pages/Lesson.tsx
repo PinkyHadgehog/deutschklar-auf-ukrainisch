@@ -35,6 +35,8 @@ const Lesson = () => {
 
   const alreadyDone = useMemo(() => (slug ? isLessonCompleted(slug) : false), [slug, isLessonCompleted]);
   const { status, progress, markCompleted, setStatus } = useLessonProgress(slug);
+  const lessonSaved = useIsSaved("lesson", slug ?? "");
+
 
   useStudySession("lesson", slug ?? "", { enabled: !!slug, priority: 1 });
 
