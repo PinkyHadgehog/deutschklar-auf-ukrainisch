@@ -31,7 +31,9 @@ const Courses = () => {
   const [query, setQuery] = useState("");
   const [categoryId, setCategoryId] = useState<"all" | string>("all");
   const lessonsRef = useRef<HTMLElement | null>(null);
+  useProgressVersion();
   const filteredCourses = level === "all" ? courses : courses.filter((c) => c.level === level);
+
 
   const openLevel = (l: Level) => {
     setLevel(l);
