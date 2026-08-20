@@ -29,7 +29,7 @@ const recIcon: Record<RecommendationType, typeof Play> = {
 };
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [dailyXp, setDailyXp] = useState(0);
   const [breakdown, setBreakdown] = useState<{ label: string; xp: number }[]>([]);
   const [weeklyXp, setWeeklyXp] = useState(0);
@@ -40,7 +40,7 @@ const Dashboard = () => {
   const [weeklyLessons, setWeeklyLessons] = useState(0);
   const [weeklyQuizzes, setWeeklyQuizzes] = useState(0);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
-  const [journey, setJourney] = useState<LearningJourney>({ state: "new", completed: null, current: null, next: null });
+  const [journey, setJourney] = useState<LearningJourney>({ state: "new_learner", lastCompletedLesson: null, currentStartedLesson: null, nextLesson: null, level: "A1", nextLevel: "A2", nextLevelLesson: null });
 
   useEffect(() => {
     const sync = () => {
@@ -58,7 +58,7 @@ const Dashboard = () => {
       setRecommendations(getRecommendations({
         level: user?.level ?? "A1",
         completedLessonSlugs: (user?.completedLessons ?? []).map((l) => l.slug),
-        excludeIds: [j.completed?.slug, j.current?.slug, j.next?.slug].filter(Boolean) as string[],
+        excludeIds: [j.lastCompletedLesson?.slug, j.currentStartedLesson?.slug, j.nextLesson?.slug].filter(Boolean) as string[],
       }));
     };
     sync();
@@ -91,12 +91,17 @@ const Dashboard = () => {
   const weekly = weeklyByDay.map((xp) => Math.round((xp / maxDay) * 100));
 
   // Single shared definition: the Continue CTA always targets the Learning Journey's current lesson.
-  const continueCta = journey.current
-    ? { label: "Продовжити навчання", href: `/lesson/${journey.current.slug}` }
-    : journey.next
+  const continueCta = journey.currentStartedLesson
+    ? { label: "Продовжити навчання", href: `/lesson/${journey.currentStartedLesson.slug}` }
+    : journey.nextLesson
       ? {
-          label: journey.state === "new" ? "Почати навчання" : "Почати наступний урок",
-          href: `/lesson/${journey.next.slug}`,
+          label:
+            journey.state === "new_learner"
+              ? "Почати навчання"
+              : journey.state === "level_completed"
+                ? `Перейти до ${journey.nextLevel}`
+                : "Почати наступний урок",
+          href: `/lesson/${journey.nextLesson.slug}`,
         }
       : null;
 
@@ -276,7 +281,14 @@ const Dashboard = () => {
         </section>
 
         {/* Learning journey */}
-        <LearningJourneyCard journey={journey} />
+        <LearningJourneyCard
+          journey={journey}
+          onSwitchLevel={
+            journey.state === "level_completed" && journey.nextLevel
+              ? () => updateUser({ level: journey.nextLevel! })
+              : undefined
+          }
+        />
 
 
 

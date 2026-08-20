@@ -73,13 +73,31 @@ const Step = ({
   );
 };
 
-const LearningJourneyCard = ({ journey }: { journey: LearningJourney }) => {
-  const { state, completed, current, next } = journey;
+const scrollTop = () => window.scrollTo({ top: 0 });
+
+const LearningJourneyCard = ({
+  journey,
+  onSwitchLevel,
+}: {
+  journey: LearningJourney;
+  onSwitchLevel?: () => void;
+}) => {
+  const { state, lastCompletedLesson: completed, currentStartedLesson: current, nextLesson: next, level, nextLevel } =
+    journey;
+
   const primary =
-    state === "started" && current
+    state === "in_progress" && current
       ? { label: "Продовжити урок", href: `/lesson/${current.slug}` }
       : next
-        ? { label: state === "new" ? "Почати перший урок" : "Почати наступний урок", href: `/lesson/${next.slug}` }
+        ? {
+            label:
+              state === "level_completed"
+                ? `Перейти до ${nextLevel}`
+                : state === "new_learner"
+                  ? "Почати навчання"
+                  : "Почати наступний урок",
+            href: `/lesson/${next.slug}`,
+          }
         : null;
 
   return (
@@ -89,60 +107,87 @@ const LearningJourneyCard = ({ journey }: { journey: LearningJourney }) => {
         <p className="text-sm text-muted-foreground">Де ти зупинилася і що варто вчити далі</p>
       </div>
 
-      {state === "new" && (
-        <p className="text-sm text-muted-foreground mb-3">Ти ще не почала навчання</p>
-      )}
+      {state === "level_completed" ? (
+        <div className="rounded-xl bg-secondary/50 p-4">
+          <div className="text-base font-display font-bold">🎉 Рівень {level} завершено</div>
+          <p className="text-sm text-muted-foreground mt-1">
+            Ти завершила всі уроки цього рівня.
+            {next && nextLevel ? " Наступний крок:" : ""}
+          </p>
+          {next && nextLevel && (
+            <div className="mt-3">
+              <Step icon="→" tone="primary" title={next.title} level={next.level} href={`/lesson/${next.slug}`} meta={`${nextLevel} · наступний урок`} last />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="rounded-xl bg-secondary/50 p-4">
+          {state === "new_learner" && (
+            <p className="text-sm text-muted-foreground mb-3">Ти ще не почала навчання</p>
+          )}
 
-      <div className="rounded-xl bg-secondary/50 p-4">
-        {completed && (
-          <Step
-            icon="✓"
-            tone="success"
-            title={completed.title}
-            level={completed.level}
-            href={`/lesson/${completed.slug}`}
-            meta={`Завершено ${fmtDate(completed.progress.completedAt)}${
-              getLessonXp(completed.slug) > 0 ? ` · +${getLessonXp(completed.slug)} XP` : ""
-            }`}
-          />
-        )}
-        {current && (
-          <Step
-            icon="●"
-            tone="primary"
-            title={current.title}
-            level={current.level}
-            href={`/lesson/${current.slug}`}
-            meta={`У процесі · ${current.progress.progress}%`}
-            last={!next}
-          />
-        )}
-        {next && (
-          <Step
-            icon="○"
-            tone="muted"
-            title={next.title}
-            level={next.level}
-            href={`/lesson/${next.slug}`}
-            meta={state === "new" ? "Перший урок" : "Наступний урок"}
-            muted={!!current}
-            last
-          />
-        )}
-      </div>
+          {state !== "new_learner" && completed && (
+            <Step
+              icon="✓"
+              tone="success"
+              title={completed.title}
+              level={completed.level}
+              href={`/lesson/${completed.slug}`}
+              last={!current && !next}
+              meta={`Завершено ${fmtDate(completed.progress.completedAt)}${
+                getLessonXp(completed.slug) > 0 ? ` · +${getLessonXp(completed.slug)} XP` : ""
+              }`}
+            />
+          )}
+
+          {state === "in_progress" && current && (
+            <Step
+              icon="●"
+              tone="primary"
+              title={current.title}
+              level={current.level}
+              href={`/lesson/${current.slug}`}
+              meta={`У процесі · ${current.progress.progress}%`}
+              last={!next}
+            />
+          )}
+
+          {next && (
+            <Step
+              icon={state === "new_learner" ? "○" : state === "in_progress" ? "○" : "→"}
+              tone={state === "ready_for_next" ? "primary" : "muted"}
+              title={next.title}
+              level={next.level}
+              href={`/lesson/${next.slug}`}
+              meta={state === "new_learner" ? "Перший урок" : "Наступний урок"}
+              muted={state === "in_progress"}
+              last
+            />
+          )}
+        </div>
+      )}
 
       <div className="mt-4 flex flex-wrap items-center gap-4">
         {primary && (
           <Button asChild size="sm" className="bg-gradient-primary">
-            <Link to={primary.href} onClick={() => window.scrollTo({ top: 0 })}>
+            <Link to={primary.href} onClick={scrollTop}>
               {primary.label}
             </Link>
           </Button>
         )}
-        {completed && (
+        {state === "level_completed" && nextLevel && onSwitchLevel && (
+          <button
+            type="button"
+            onClick={onSwitchLevel}
+            className="text-xs text-muted-foreground hover:text-primary hover:underline"
+          >
+            Змінити поточний рівень на {nextLevel}
+          </button>
+        )}
+        {state !== "new_learner" && completed && (
           <Link
             to={`/lesson/${completed.slug}`}
-            onClick={() => window.scrollTo({ top: 0 })}
+            onClick={scrollTop}
             className="text-xs text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-1"
           >
             <RotateCw className="h-3 w-3" /> Повторити останній урок

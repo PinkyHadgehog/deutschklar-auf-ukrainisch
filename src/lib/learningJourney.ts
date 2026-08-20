@@ -80,19 +80,68 @@ export const getLessonXp = (slug: string): number =>
     .filter((e) => e.type === "lesson_exercises" && e.sourceId === slug)
     .reduce((s, e) => s + e.xp, 0);
 
-export type JourneyCase = "started" | "completed_only" | "new";
+export type JourneyCase = "in_progress" | "ready_for_next" | "new_learner" | "level_completed";
+
+const LEVELS: Level[] = ["A1", "A2", "B1", "B2", "C1", "C2"];
+
+/** First lesson of a level that is not yet completed/started (or simply the first one). */
+export const getFirstLessonOfLevel = (level: Level): LessonRef | null => {
+  const all = getAllLessonProgress();
+  const inLevel = lessonIndex.filter((l) => l.level === level);
+  const free = inLevel.find((l) => {
+    const s = all[l.slug]?.status;
+    return s !== "completed" && s !== "started";
+  });
+  return free ?? inLevel[0] ?? null;
+};
+
+/** True when every lesson of the level is completed (and the level has lessons). */
+export const isLevelCompleted = (level: Level): boolean => {
+  const all = getAllLessonProgress();
+  const inLevel = lessonIndex.filter((l) => l.level === level);
+  if (!inLevel.length) return false;
+  return inLevel.every((l) => all[l.slug]?.status === "completed");
+};
+
+export const getNextLevel = (level: Level): Level | null => {
+  const i = LEVELS.indexOf(level);
+  return i >= 0 && i < LEVELS.length - 1 ? LEVELS[i + 1] : null;
+};
 
 export interface LearningJourney {
   state: JourneyCase;
-  completed: JourneyLesson | null;
-  current: JourneyLesson | null;
-  next: LessonRef | null;
+  lastCompletedLesson: JourneyLesson | null;
+  currentStartedLesson: JourneyLesson | null;
+  nextLesson: LessonRef | null;
+  level: Level;
+  nextLevel: Level | null;
+  nextLevelLesson: LessonRef | null;
 }
 
-export const getLearningJourney = (level: Level): LearningJourney => {
-  const completed = getLastCompletedLesson();
-  const current = getCurrentStartedLesson();
-  const next = getNextLesson(level);
-  const state: JourneyCase = current ? "started" : completed ? "completed_only" : "new";
-  return { state, completed, current, next };
+export const getLearningJourneyState = (level: Level): LearningJourney => {
+  const lastCompletedLesson = getLastCompletedLesson();
+  const currentStartedLesson = getCurrentStartedLesson();
+  const levelDone = !currentStartedLesson && isLevelCompleted(level);
+  const nextLevel = getNextLevel(level);
+  const nextLevelLesson = levelDone && nextLevel ? getFirstLessonOfLevel(nextLevel) : null;
+
+  const state: JourneyCase = currentStartedLesson
+    ? "in_progress"
+    : levelDone
+      ? "level_completed"
+      : lastCompletedLesson
+        ? "ready_for_next"
+        : "new_learner";
+
+  const nextLesson =
+    state === "level_completed"
+      ? nextLevelLesson
+      : state === "new_learner"
+        ? getFirstLessonOfLevel(level)
+        : getNextLesson(level);
+
+  return { state, lastCompletedLesson, currentStartedLesson, nextLesson, level, nextLevel, nextLevelLesson };
 };
+
+/** Back-compat alias. */
+export const getLearningJourney = getLearningJourneyState;
