@@ -44,6 +44,7 @@ const Vocab = () => {
   const savedWordIds = useMemo(() => new Set(saved.words.map((w) => w.id)), [saved.words]);
   const savedTopicIds = useMemo(() => new Set(saved.topics.map((t) => t.id)), [saved.topics]);
   const [savedMode, setSavedMode] = useState(params.get("saved") === "1");
+  const [focusWord, setFocusWord] = useState<string | null>(params.get("word"));
 
   const [flipIdx, setFlipIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
