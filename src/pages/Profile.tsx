@@ -15,6 +15,7 @@ import { toast } from "sonner";
 const Profile = () => {
   const { user, logout, updateUser } = useAuth();
   const { lang, setLang } = useLang();
+  const saved = useSavedItems();
   if (!user) return <Navigate to="/login" replace />;
 
   return (
