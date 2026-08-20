@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, ArrowRight, Lightbulb, AlertTriangle, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Lightbulb, AlertTriangle, Sparkles, Bookmark } from "lucide-react";
 import { toast } from "sonner";
 import { getLesson } from "@/content/lessons";
 import { exerciseSets, type ExerciseItem } from "@/content/exerciseSets";
@@ -18,6 +18,7 @@ import AlphabetAudio from "@/components/lesson/AlphabetAudio";
 import LessonStatusControl from "@/components/lesson/LessonStatusControl";
 import { useLessonProgress, touchLessonOpened } from "@/lib/lessonProgress";
 import { useStudySession } from "@/hooks/use-study-session";
+import { toggleSavedItem, useIsSaved } from "@/lib/savedItems";
 
 const Html = ({ html }: { html: string }) => (
   <span dangerouslySetInnerHTML={{ __html: html.replace(/class='hl'/g, 'class="text-primary font-semibold"') }} />
@@ -108,6 +109,25 @@ const Lesson = () => {
         progress={progress}
         duration={extras?.duration}
         premium={extras?.premium}
+        saveControl={
+          <Button
+            variant={lessonSaved ? "secondary" : "outline"}
+            size="sm"
+            onClick={() => {
+              if (!slug || !lesson) return;
+              const nowSaved = toggleSavedItem("lesson", slug, {
+                title: lesson.titleDe,
+                subtitle: lesson.titleUk,
+                level: lesson.level,
+                category: lesson.category,
+              });
+              toast(nowSaved ? "Урок збережено" : "Видалено зі збереженого");
+            }}
+          >
+            <Bookmark className={`h-4 w-4 mr-1.5 ${lessonSaved ? "fill-current" : ""}`} />
+            {lessonSaved ? "Збережено" : "Зберегти"}
+          </Button>
+        }
         statusControl={
           <LessonStatusControl
             status={status}
