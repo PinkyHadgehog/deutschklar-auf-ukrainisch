@@ -19,7 +19,9 @@ import {
   getTopicLessonIds,
   useProgressVersion,
 } from "@/lib/progressAggregate";
-import { Lock, ArrowRight, BookOpen, Search, X } from "lucide-react";
+import { Lock, ArrowRight, BookOpen, Search, X, Bookmark } from "lucide-react";
+import { toast } from "sonner";
+import { toggleSavedItem, useSavedItems } from "@/lib/savedItems";
 
 
 const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"];
@@ -32,6 +34,8 @@ const Courses = () => {
   const [categoryId, setCategoryId] = useState<"all" | string>("all");
   const lessonsRef = useRef<HTMLElement | null>(null);
   useProgressVersion();
+  const saved = useSavedItems();
+  const savedTopicIds = useMemo(() => new Set(saved.topics.map((t) => t.id)), [saved.topics]);
   const filteredCourses = level === "all" ? courses : courses.filter((c) => c.level === level);
 
 
