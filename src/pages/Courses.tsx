@@ -234,13 +234,19 @@ const Courses = () => {
                     className="w-full"
                     defaultValue={q ? cat.topics.map((t) => t.slug) : []}
                   >
-                    {cat.topics.map((topic) => (
+                    {cat.topics.map((topic) => {
+                      const topicStats = getAggregate(getTopicLessonIds(topic.slug));
+                      return (
                       <AccordionItem key={topic.slug} value={topic.slug}>
                         <AccordionTrigger className="hover:no-underline">
                           <div className="flex flex-1 items-center justify-between gap-3 pr-2">
-                            <div className="text-left">
+                            <div className="text-left min-w-0">
                               <div className="font-semibold text-sm">{topic.title}</div>
                               <div className="text-xs text-muted-foreground">{topic.titleDe}</div>
+                              <div className="mt-2 flex items-center gap-2">
+                                <Progress value={topicStats.progress} className="h-1.5 w-28" />
+                                <span className="text-xs font-semibold text-primary">{topicStats.progress}%</span>
+                              </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                               {topic.premium && (
@@ -248,14 +254,15 @@ const Courses = () => {
                                   <Lock className="h-3 w-3" /> Premium
                                 </Badge>
                               )}
-                              <Badge variant="outline">{topic.sub?.length || topic.lessons} ур.</Badge>
+                              <Badge variant="outline">{topicStats.total} ур.</Badge>
                             </div>
                           </div>
                         </AccordionTrigger>
                         <AccordionContent>
-                          {topic.progress > 0 && (
-                            <Progress value={topic.progress} className="h-1.5 mb-3" />
-                          )}
+                          <div className="mb-3 text-xs text-muted-foreground">
+                            {topicStats.completed} з {topicStats.total} уроків завершено
+                          </div>
+
                           {topic.sub && topic.sub.length > 0 ? (
                             <ul className="grid gap-1.5">
                               {topic.sub.map((s) => (
