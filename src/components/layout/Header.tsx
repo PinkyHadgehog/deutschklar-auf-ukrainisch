@@ -142,11 +142,12 @@ export const Header = () => {
                   end={it.to === "/"}
                   onClick={() => setOpen(false)}
                   className={({ isActive }) =>
-                    `px-3 py-2.5 text-sm font-medium rounded-lg ${
+                    `px-3 py-2.5 text-sm font-medium rounded-lg flex items-center gap-1.5 ${
                       isActive ? "bg-primary-soft text-primary" : "hover:bg-muted"
                     }`
                   }
                 >
+                  {it.icon && <Bookmark className="h-4 w-4" />}
                   {it.key ? t(it.key) : it.label}
                 </NavLink>
               )
