@@ -289,7 +289,9 @@ const Courses = () => {
                           )}
                         </AccordionContent>
                       </AccordionItem>
-                    ))}
+                      );
+                    })}
+
                   </Accordion>
                 </Card>
               ))}
