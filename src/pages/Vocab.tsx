@@ -40,7 +40,11 @@ const Vocab = () => {
   const initialTab = params.get("tab");
   const validTopic = vocabThemes.some((t) => t.id === initialTopic) ? (initialTopic as string) : null;
   const [theme, setTheme] = useState<string>(validTopic ?? vocabThemes[0].id);
-  const [favs, setFavs] = useState<Set<string>>(new Set());
+  const saved = useSavedItems();
+  const savedWordIds = useMemo(() => new Set(saved.words.map((w) => w.id)), [saved.words]);
+  const savedTopicIds = useMemo(() => new Set(saved.topics.map((t) => t.id)), [saved.topics]);
+  const [savedMode, setSavedMode] = useState(params.get("saved") === "1");
+
   const [flipIdx, setFlipIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [query, setQuery] = useState("");
