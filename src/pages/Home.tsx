@@ -94,12 +94,28 @@ const Home = () => {
             <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl">
               Граматика, словник, приклади, типові помилки та практика — пояснені українською й зібрані в одному логічному шляху від A1 до C2.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="bg-gradient-primary hover:opacity-95 shadow-elevated h-12 px-7 text-base">
+            <div className="mt-8">
+              <p className="text-sm font-semibold text-primary">Не знаєш, з якого рівня почати?</p>
+              <div className="mt-3 flex flex-col sm:flex-row sm:items-start gap-3">
+                <div>
+                  <Button
+                    asChild
+                    size="lg"
+                    data-cta="placement-test"
+                    data-cta-source="hero"
+                    className="bg-gradient-primary hover:opacity-95 shadow-elevated h-12 px-7 text-base w-full sm:w-auto"
+                    onClick={() => trackPlacementEvent(PLACEMENT_EVENTS.ctaClicked, { source: "hero" })}
+                  >
+                    <Link to={PLACEMENT_ROUTE}>Визначити свій рівень безкоштовно <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">{PLACEMENT_META}</p>
+                </div>
+                <Button asChild size="lg" variant="outline" className="h-12 px-7 text-base w-full sm:w-auto">
+                  <Link to="/courses">Переглянути курси</Link>
+                </Button>
+              </div>
+              <Button asChild variant="ghost" size="sm" className="mt-3 px-0 text-muted-foreground hover:bg-transparent hover:text-foreground">
                 <Link to="/signup">Почати безкоштовно <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="h-12 px-7 text-base">
-                <Link to="/courses">Подивитися курси</Link>
               </Button>
             </div>
             <div className="mt-8 flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
