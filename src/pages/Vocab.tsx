@@ -220,7 +220,15 @@ const Vocab = () => {
 
         <TabsContent value="flash" className="mt-6">
           <div className="max-w-xl mx-auto">
-            <Badge className="mb-3">{vocabThemes.find((t) => t.id === theme)?.title}</Badge>
+            <div className="mb-3 flex items-center gap-2 flex-wrap">
+              <Badge>{savedMode ? `♡ Збережені слова · ${savedWords.length}` : vocabThemes.find((t) => t.id === theme)?.title}</Badge>
+              {savedMode && (
+                <Button variant="ghost" size="sm" onClick={() => { setSavedMode(false); resetSession(); }}>
+                  Усі слова теми
+                </Button>
+              )}
+            </div>
+
 
             {sessionDone ? (
               <Card className="p-10 rounded-3xl border-0 shadow-elevated text-center">
