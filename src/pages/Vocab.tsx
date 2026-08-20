@@ -11,7 +11,10 @@ import QuizMode from "@/components/vocab/QuizMode";
 import QuizTopicSelect from "@/components/vocab/QuizTopicSelect";
 import { shuffle, DEFAULT_SESSION_SIZE } from "@/lib/quiz";
 import { useStudySession } from "@/hooks/use-study-session";
-import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2, Search, X } from "lucide-react";
+import { useSavedItems, toggleSavedItem, wordId } from "@/lib/savedItems";
+import { toast } from "sonner";
+import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2, Search, X, Bookmark } from "lucide-react";
+
 
 const speakDe = (text: string, rate = 0.75) => {
   if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
