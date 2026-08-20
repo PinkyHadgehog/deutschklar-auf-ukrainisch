@@ -339,6 +339,17 @@ const Home = () => {
         </p>
       </section>
 
+      {/* 7b. PLACEMENT TEST CTA BEFORE PRICING */}
+      <section className="container pb-4">
+        <PlacementCtaCard
+          source="before_pricing"
+          headline="Не знаєш, який курс обрати?"
+          text="Спочатку визнач свій рівень безкоштовно — і отримай рекомендацію."
+          buttonLabel="Визначити рівень"
+        />
+      </section>
+
+
       {/* 8. PRICING */}
       <section id="pricing" className="bg-primary-soft/40 py-16 md:py-24 scroll-mt-20">
         <div className="container">
