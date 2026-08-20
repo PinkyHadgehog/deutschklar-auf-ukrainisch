@@ -45,6 +45,7 @@ const Dashboard = () => {
       setWeeklyXp(getWeeklyXp());
       setWeeklyByDay(getWeeklyXpByDay());
       setWeeklyGoal(getWeeklyXpGoal());
+      setDailyGoal(getDailyStudyMinutesGoal());
       setWeeklySeconds(getWeeklyStudySeconds());
       setWeeklyLessons(getWeeklyCompletedLessons());
       setWeeklyQuizzes(getWeeklyCompletedQuizzes());
@@ -73,7 +74,8 @@ const Dashboard = () => {
   const courseProgress = Math.min(100, Math.round((completedCount / Math.max(1, myCourse.lessons)) * 100) + myCourse.progress);
   const displayedProgress = Math.min(100, completedCount > 0 ? courseProgress : myCourse.progress);
   const lastLesson = user.completedLessons[0];
-  const weekDone = Math.min(100, Math.round((weeklyXp / Math.max(1, weeklyGoal)) * 100));
+  const weekDone = Math.round((weeklyXp / Math.max(1, weeklyGoal)) * 100);
+  const visualProgress = Math.min(weekDone, 100);
   const goalReached = weeklyXp >= weeklyGoal;
   const { start: weekStart, end: weekEnd } = getCurrentWeekRange();
   const dayShort = ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
