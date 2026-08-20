@@ -12,6 +12,8 @@ import {
 import { courses, testimonials, plans } from "@/data/mock";
 import { getAggregate, getLevelLessonIds, useProgressVersion } from "@/lib/progressAggregate";
 import { useAuth } from "@/context/AuthContext";
+import { PlacementCtaCard } from "@/components/placement/PlacementCtaCard";
+import { PLACEMENT_ROUTE, PLACEMENT_META, PLACEMENT_EVENTS, trackPlacementEvent } from "@/components/placement/placement";
 
 const levelBadge: Record<string, string> = {
   A1: "bg-teal-500",
@@ -94,12 +96,28 @@ const Home = () => {
             <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl">
               Граматика, словник, приклади, типові помилки та практика — пояснені українською й зібрані в одному логічному шляху від A1 до C2.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg" className="bg-gradient-primary hover:opacity-95 shadow-elevated h-12 px-7 text-base">
+            <div className="mt-8">
+              <p className="text-sm font-semibold text-primary">Не знаєш, з якого рівня почати?</p>
+              <div className="mt-3 flex flex-col sm:flex-row sm:items-start gap-3">
+                <div>
+                  <Button
+                    asChild
+                    size="lg"
+                    data-cta="placement-test"
+                    data-cta-source="hero"
+                    className="bg-gradient-primary hover:opacity-95 shadow-elevated h-12 px-7 text-base w-full sm:w-auto"
+                    onClick={() => trackPlacementEvent(PLACEMENT_EVENTS.ctaClicked, { source: "hero" })}
+                  >
+                    <Link to={PLACEMENT_ROUTE}>Визначити свій рівень безкоштовно <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-2">{PLACEMENT_META}</p>
+                </div>
+                <Button asChild size="lg" variant="outline" className="h-12 px-7 text-base w-full sm:w-auto">
+                  <Link to="/courses">Переглянути курси</Link>
+                </Button>
+              </div>
+              <Button asChild variant="ghost" size="sm" className="mt-3 px-0 text-muted-foreground hover:bg-transparent hover:text-foreground">
                 <Link to="/signup">Почати безкоштовно <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="h-12 px-7 text-base">
-                <Link to="/courses">Подивитися курси</Link>
               </Button>
             </div>
             <div className="mt-8 flex flex-wrap items-center gap-5 text-sm text-muted-foreground">
@@ -177,7 +195,7 @@ const Home = () => {
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { icon: Target, title: "1. Обери свій рівень", text: "Пройди короткий тест або обери рівень A1–C2 самостійно.", extra: "Ми допоможемо сформувати зрозумілий старт." },
+              { icon: Target, title: "1. Визнач свій рівень", text: "Пройди безкоштовний адаптивний тест або обери рівень A1–C2 самостійно.", extra: "Після тесту ти отримаєш орієнтовний рівень і рекомендацію, з чого почати." },
               { icon: BookOpen, title: "2. Вчися системно", text: "Уроки з поясненнями українською, прикладами, типовими помилками та 15 вправами для закріплення." },
               { icon: TrendingUp, title: "3. Бачиш свій прогрес", text: "Слідкуй за уроками, квізами, XP, активним часом навчання та персональними рекомендаціями." },
             ].map((s) => (
@@ -191,6 +209,15 @@ const Home = () => {
               </Card>
             ))}
           </div>
+
+          <div className="mt-8 max-w-4xl mx-auto">
+            <PlacementCtaCard
+              source="after_how_it_works"
+              headline="Не впевнена у своєму рівні?"
+              text="Пройди безкоштовний тест і дізнайся, з якого курсу краще почати."
+              buttonLabel="Пройти тест"
+            />
+          </div>
         </div>
       </section>
 
@@ -203,7 +230,21 @@ const Home = () => {
               Навчальний шлях від A1 до C2 — граматика, словник, практика та прогрес в одному місці.
             </p>
           </div>
-          <Button asChild variant="outline"><Link to="/courses">Усі курси <ArrowRight className="ml-1.5 h-4 w-4"/></Link></Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm text-muted-foreground">Не знаєш свій рівень?</span>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              data-cta="placement-test"
+              data-cta-source="courses_overview"
+              className="text-primary hover:text-primary"
+              onClick={() => trackPlacementEvent(PLACEMENT_EVENTS.ctaClicked, { source: "courses_overview" })}
+            >
+              <Link to={PLACEMENT_ROUTE}>Пройти тест →</Link>
+            </Button>
+            <Button asChild variant="outline"><Link to="/courses">Усі курси <ArrowRight className="ml-1.5 h-4 w-4"/></Link></Button>
+          </div>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {courses.map((c) => {
@@ -297,6 +338,17 @@ const Home = () => {
           Рекомендації формуються за простими правилами на основі твоєї активності — без штучного інтелекту.
         </p>
       </section>
+
+      {/* 7b. PLACEMENT TEST CTA BEFORE PRICING */}
+      <section className="container pb-4">
+        <PlacementCtaCard
+          source="before_pricing"
+          headline="Не знаєш, який курс обрати?"
+          text="Спочатку визнач свій рівень безкоштовно — і отримай рекомендацію."
+          buttonLabel="Визначити рівень"
+        />
+      </section>
+
 
       {/* 8. PRICING */}
       <section id="pricing" className="bg-primary-soft/40 py-16 md:py-24 scroll-mt-20">

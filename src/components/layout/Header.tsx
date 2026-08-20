@@ -10,6 +10,7 @@ import {
 
 const navItemsPublic = [
   { to: "/courses", label: "Курси" },
+  { to: "/placement-test", label: "Визначити рівень" },
   { to: "/#how", label: "Як це працює" },
   { to: "/pricing", label: "Тарифи" },
   { to: "/#faq", label: "FAQ" },
