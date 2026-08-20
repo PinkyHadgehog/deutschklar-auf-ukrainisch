@@ -69,6 +69,7 @@ const faqs = [
 
 const Home = () => {
   const { user } = useAuth();
+  useProgressVersion();
   const { hash } = useLocation();
 
   useEffect(() => {

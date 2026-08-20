@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useAuth } from "@/context/AuthContext";
 import { courses } from "@/data/mock";
+import { allLessons, getAggregate, getLevelLessonIds } from "@/lib/progressAggregate";
 import { getDailyXp, getDailyBreakdown, subscribeLearningEvents, getWeeklyXp, getWeeklyXpByDay } from "@/lib/xp";
 import { getWeeklyXpGoal, getDailyStudyMinutesGoal, subscribeUserSettings } from "@/lib/userSettings";
 import { getWeeklyCompletedLessons, getWeeklyCompletedQuizzes, subscribeCompletionEvents, getCurrentWeekRange } from "@/lib/weeklyStats";
@@ -70,9 +71,9 @@ const Dashboard = () => {
 
   const myCourse = courses.find((c) => c.level === user.level) ?? courses[1];
   const completedCount = user.completedLessons.length;
-  const totalLessons = courses.reduce((s, c) => s + c.lessons, 0);
-  const courseProgress = Math.min(100, Math.round((completedCount / Math.max(1, myCourse.lessons)) * 100) + myCourse.progress);
-  const displayedProgress = Math.min(100, completedCount > 0 ? courseProgress : myCourse.progress);
+  const levelStats = getAggregate(getLevelLessonIds(user.level));
+  const totalLessons = allLessons.length;
+  const displayedProgress = levelStats.progress;
   const lastLesson = user.completedLessons[0];
   const weekDone = Math.round((weeklyXp / Math.max(1, weeklyGoal)) * 100);
   const visualProgress = Math.min(weekDone, 100);
