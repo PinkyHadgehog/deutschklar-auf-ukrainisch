@@ -301,9 +301,12 @@ const Home = () => {
             <h2 className="font-display text-3xl md:text-4xl font-extrabold">Прості та зрозумілі тарифи</h2>
             <p className="text-muted-foreground mt-3">Почни безкоштовно. Перейди на Plus або Premium, коли будеш готова.</p>
           </div>
-          <div className="grid md:grid-cols-3 gap-5 items-start">
+          <div className="grid md:grid-cols-3 gap-5 items-start group">
             {plans.map((p) => (
-              <Card key={p.id} className={`p-7 rounded-2xl border-0 h-full ${p.highlight ? "bg-gradient-primary text-primary-foreground shadow-elevated ring-2 ring-primary md:scale-[1.03]" : "shadow-soft bg-card"}`}>
+              <Card
+                key={p.id}
+                className={`relative p-7 rounded-2xl border-0 h-full transition-all duration-300 ease-out hover:scale-[1.03] focus-within:scale-[1.03] active:scale-[1.03] hover:shadow-elevated focus-within:shadow-elevated active:shadow-elevated hover:z-10 focus-within:z-10 active:z-10 ${p.highlight ? "bg-gradient-primary text-primary-foreground shadow-elevated ring-2 ring-primary md:scale-[1.03] hover:scale-[1.04] focus-within:scale-[1.04] active:scale-[1.04]" : "shadow-soft bg-card group-hover:opacity-[0.92] hover:opacity-100 focus-within:opacity-100 active:opacity-100"}`}
+              >
                 {p.highlight && <Badge className="bg-accent text-accent-foreground mb-3">Рекомендовано</Badge>}
                 <div className="font-display font-bold text-xl">{p.name}</div>
                 <div className="mt-2 flex items-baseline gap-1">
