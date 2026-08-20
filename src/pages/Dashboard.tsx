@@ -90,6 +90,16 @@ const Dashboard = () => {
   const maxDay = Math.max(1, ...weeklyByDay);
   const weekly = weeklyByDay.map((xp) => Math.round((xp / maxDay) * 100));
 
+  // Single shared definition: the Continue CTA always targets the Learning Journey's current lesson.
+  const continueCta = journey.current
+    ? { label: "Продовжити навчання", href: `/lesson/${journey.current.slug}` }
+    : journey.next
+      ? {
+          label: journey.state === "new" ? "Почати навчання" : "Почати наступний урок",
+          href: `/lesson/${journey.next.slug}`,
+        }
+      : null;
+
   return (
     <div className="container py-8 md:py-12">
       {/* Greeting */}
