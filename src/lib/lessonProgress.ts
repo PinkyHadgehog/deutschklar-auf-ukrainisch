@@ -17,14 +17,30 @@ export interface LessonProgress {
   lessonId: string;
   status: LessonStatus;
   progress: 0 | 25 | 100;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  lastOpenedAt?: string | null;
   updatedAt?: number;
 }
 
-export const statusProgress: Record<LessonStatus, 0 | 25 | 100> = {
-  not_started: 0,
-  started: 25,
-  completed: 100,
+/** Single mapping status → percentage. Never duplicate this elsewhere. */
+export const statusToProgress = (status: LessonStatus): 0 | 25 | 100 => {
+  switch (status) {
+    case "completed":
+      return 100;
+    case "started":
+      return 25;
+    default:
+      return 0;
+  }
 };
+
+export const statusProgress: Record<LessonStatus, 0 | 25 | 100> = {
+  not_started: statusToProgress("not_started"),
+  started: statusToProgress("started"),
+  completed: statusToProgress("completed"),
+};
+
 
 export const statusLabel: Record<LessonStatus, string> = {
   not_started: "Ще не розпочато",
@@ -68,38 +84,78 @@ const normalize = (raw: unknown): LessonStatus => {
   return "not_started";
 };
 
+const hydrate = (id: string, entry: Partial<LessonProgress> | undefined): LessonProgress => {
+  const status = normalize(entry?.status);
+  return {
+    lessonId: id,
+    status,
+    progress: statusToProgress(status),
+    startedAt: entry?.startedAt ?? null,
+    completedAt: entry?.completedAt ?? null,
+    lastOpenedAt: entry?.lastOpenedAt ?? null,
+    updatedAt: entry?.updatedAt,
+  };
+};
+
 /** All stored lesson progress entries (frontend store snapshot). */
 export const getAllLessonProgress = (): Record<string, LessonProgress> => {
   const all = read();
   const out: Record<string, LessonProgress> = {};
   Object.entries(all).forEach(([id, entry]) => {
-    const status = normalize(entry?.status);
-    out[id] = { lessonId: id, status, progress: statusProgress[status], updatedAt: entry?.updatedAt };
+    out[id] = hydrate(id, entry);
   });
   return out;
 };
 
-export const getLessonProgress = (lessonId: string): LessonProgress => {
-  const status = normalize(read()[lessonId]?.status);
-  return { lessonId, status, progress: statusProgress[status] };
-};
+export const getLessonProgressEntry = (lessonId: string): LessonProgress =>
+  hydrate(lessonId, read()[lessonId]);
+
+export const getLessonProgress = (lessonId: string): LessonProgress =>
+  getLessonProgressEntry(lessonId);
+
+/** Percentage only — derived from status. */
+export const getLessonProgressValue = (lessonId: string): number =>
+  statusToProgress(getLessonProgressEntry(lessonId).status);
+
+export const isLessonCompletedStatus = (lessonId: string): boolean =>
+  getLessonProgressEntry(lessonId).status === "completed";
 
 /** Placeholder for PATCH /api/lessons/{lessonId}/progress */
 export const setLessonStatus = (lessonId: string, status: LessonStatus): LessonProgress => {
-  const previous = getLessonProgress(lessonId).status;
+  const current = getLessonProgressEntry(lessonId);
   if (status === "completed") recordLessonCompletion(lessonId);
-  else if (previous === "completed") removeLessonCompletion(lessonId);
-  const entry: LessonProgress = { lessonId, status, progress: statusProgress[status], updatedAt: Date.now() };
+  else if (current.status === "completed") removeLessonCompletion(lessonId);
+
+  const now = new Date().toISOString();
+  const entry: LessonProgress = {
+    lessonId,
+    status,
+    progress: statusToProgress(status),
+    startedAt:
+      status === "not_started" ? null : current.startedAt ?? now,
+    completedAt: status === "completed" ? current.completedAt ?? now : null,
+    lastOpenedAt: current.lastOpenedAt ?? now,
+    updatedAt: Date.now(),
+  };
   write({ ...read(), [lessonId]: entry });
   return entry;
 };
 
 /** Called once when a lesson page opens: not_started → started. Never downgrades. */
 export const markLessonStarted = (lessonId: string): LessonProgress => {
-  const current = getLessonProgress(lessonId);
+  const current = getLessonProgressEntry(lessonId);
   if (current.status !== "not_started") return current;
   return setLessonStatus(lessonId, "started");
 };
+
+/** Records a visit without changing the status. */
+export const touchLessonOpened = (lessonId: string): LessonProgress => {
+  const current = getLessonProgressEntry(lessonId);
+  const entry: LessonProgress = { ...current, lastOpenedAt: new Date().toISOString() };
+  write({ ...read(), [lessonId]: entry });
+  return entry;
+};
+
 
 export const subscribeLessonProgress = (fn: () => void) => {
   listeners.add(fn);

@@ -16,7 +16,7 @@ import {
 } from "@/components/lesson/LessonSections";
 import AlphabetAudio from "@/components/lesson/AlphabetAudio";
 import LessonStatusControl from "@/components/lesson/LessonStatusControl";
-import { useLessonProgress } from "@/lib/lessonProgress";
+import { useLessonProgress, touchLessonOpened } from "@/lib/lessonProgress";
 import { useStudySession } from "@/hooks/use-study-session";
 
 const Html = ({ html }: { html: string }) => (
@@ -39,6 +39,7 @@ const Lesson = () => {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    if (slug) touchLessonOpened(slug);
   }, [slug]);
 
   if (!lesson) {

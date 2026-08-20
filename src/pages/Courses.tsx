@@ -13,7 +13,14 @@ import {
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { courses, grammarCategories, type Level } from "@/data/mock";
+import {
+  getAggregate,
+  getLevelLessonIds,
+  getTopicLessonIds,
+  useProgressVersion,
+} from "@/lib/progressAggregate";
 import { Lock, ArrowRight, BookOpen, Search, X } from "lucide-react";
+
 
 const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"];
 
@@ -24,7 +31,9 @@ const Courses = () => {
   const [query, setQuery] = useState("");
   const [categoryId, setCategoryId] = useState<"all" | string>("all");
   const lessonsRef = useRef<HTMLElement | null>(null);
+  useProgressVersion();
   const filteredCourses = level === "all" ? courses : courses.filter((c) => c.level === level);
+
 
   const openLevel = (l: Level) => {
     setLevel(l);
@@ -96,7 +105,9 @@ const Courses = () => {
       </div>
 
       <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filteredCourses.map((c) => (
+        {filteredCourses.map((c) => {
+          const stats = getAggregate(getLevelLessonIds(c.level));
+          return (
           <Card
             key={c.level}
             className="p-6 rounded-2xl border-0 shadow-soft group hover:-translate-y-1 transition relative overflow-hidden"
@@ -114,21 +125,26 @@ const Courses = () => {
             <h3 className="font-display font-bold text-xl">{c.title}</h3>
             <p className="text-sm text-muted-foreground mt-1.5">{c.description}</p>
             <div className="mt-4 flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">{c.lessons} лекцій</span>
-              <span className="font-semibold text-primary">{c.progress}%</span>
+              <span className="text-muted-foreground">{stats.total} лекцій</span>
+              <span className="font-semibold text-primary">{stats.progress}%</span>
             </div>
-            <Progress value={c.progress} className="h-1.5 mt-2" />
+            <Progress value={stats.progress} className="h-1.5 mt-2" />
+            <div className="mt-1.5 text-xs text-muted-foreground">
+              {stats.completed} з {stats.total} уроків завершено
+            </div>
             <Button
               variant="outline"
               className="w-full mt-5"
               onClick={() => openLevel(c.level)}
             >
-              {c.progress > 0 ? "Продовжити" : "Почати"}
+              {stats.progress > 0 ? "Продовжити" : "Почати"}
               <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
           </Card>
-        ))}
+          );
+        })}
       </div>
+
 
       {level !== "all" && (
         <section ref={lessonsRef} className="mt-12 scroll-mt-24">
@@ -218,13 +234,19 @@ const Courses = () => {
                     className="w-full"
                     defaultValue={q ? cat.topics.map((t) => t.slug) : []}
                   >
-                    {cat.topics.map((topic) => (
+                    {cat.topics.map((topic) => {
+                      const topicStats = getAggregate(getTopicLessonIds(topic.slug));
+                      return (
                       <AccordionItem key={topic.slug} value={topic.slug}>
                         <AccordionTrigger className="hover:no-underline">
                           <div className="flex flex-1 items-center justify-between gap-3 pr-2">
-                            <div className="text-left">
+                            <div className="text-left min-w-0">
                               <div className="font-semibold text-sm">{topic.title}</div>
                               <div className="text-xs text-muted-foreground">{topic.titleDe}</div>
+                              <div className="mt-2 flex items-center gap-2">
+                                <Progress value={topicStats.progress} className="h-1.5 w-28" />
+                                <span className="text-xs font-semibold text-primary">{topicStats.progress}%</span>
+                              </div>
                             </div>
                             <div className="flex items-center gap-2 shrink-0">
                               {topic.premium && (
@@ -232,14 +254,15 @@ const Courses = () => {
                                   <Lock className="h-3 w-3" /> Premium
                                 </Badge>
                               )}
-                              <Badge variant="outline">{topic.sub?.length || topic.lessons} ур.</Badge>
+                              <Badge variant="outline">{topicStats.total} ур.</Badge>
                             </div>
                           </div>
                         </AccordionTrigger>
                         <AccordionContent>
-                          {topic.progress > 0 && (
-                            <Progress value={topic.progress} className="h-1.5 mb-3" />
-                          )}
+                          <div className="mb-3 text-xs text-muted-foreground">
+                            {topicStats.completed} з {topicStats.total} уроків завершено
+                          </div>
+
                           {topic.sub && topic.sub.length > 0 ? (
                             <ul className="grid gap-1.5">
                               {topic.sub.map((s) => (
@@ -266,7 +289,9 @@ const Courses = () => {
                           )}
                         </AccordionContent>
                       </AccordionItem>
-                    ))}
+                      );
+                    })}
+
                   </Accordion>
                 </Card>
               ))}

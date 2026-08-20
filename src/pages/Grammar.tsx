@@ -5,11 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { grammarCategories } from "@/data/mock";
+import { getAggregate, getTopicLessonIds, useProgressVersion } from "@/lib/progressAggregate";
 import { Lock, Search, ChevronRight } from "lucide-react";
 
 const Grammar = () => {
   const [query, setQuery] = useState("");
   const [level, setLevel] = useState<string>("all");
+  useProgressVersion();
 
   const filtered = grammarCategories.map((cat) => ({
     ...cat,
@@ -53,7 +55,9 @@ const Grammar = () => {
             </div>
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {cat.topics.map((t) => (
+              {cat.topics.map((t) => {
+                const stats = getAggregate(getTopicLessonIds(t.slug));
+                return (
                 <Card key={t.slug} className="p-5 rounded-2xl border-0 shadow-soft hover:-translate-y-0.5 transition">
                   <div className="flex items-start justify-between mb-3">
                     <Badge variant="secondary" className="bg-primary-soft text-primary border-0">{t.level}</Badge>
@@ -62,10 +66,11 @@ const Grammar = () => {
                   <h3 className="font-display font-bold text-lg">{t.title}</h3>
                   <p className="text-xs text-muted-foreground mt-1">{t.titleDe}</p>
                   <div className="mt-3 flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">{t.lessons} лекцій</span>
-                    <span className="font-semibold text-primary">{t.progress}%</span>
+                    <span className="text-muted-foreground">{stats.total} лекцій</span>
+                    <span className="font-semibold text-primary">{stats.progress}%</span>
                   </div>
-                  <Progress value={t.progress} className="h-1.5 mt-2" />
+                  <Progress value={stats.progress} className="h-1.5 mt-2" />
+                  <div className="mt-1 text-xs text-muted-foreground">{stats.completed} з {stats.total} уроків завершено</div>
 
                   {t.sub && (
                     <details className="mt-4 group">
@@ -91,7 +96,8 @@ const Grammar = () => {
                     </Link>
                   )}
                 </Card>
-              ))}
+                );
+              })}
             </div>
           </section>
         ))}
