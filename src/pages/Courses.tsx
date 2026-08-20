@@ -13,7 +13,14 @@ import {
 } from "@/components/ui/accordion";
 import { Input } from "@/components/ui/input";
 import { courses, grammarCategories, type Level } from "@/data/mock";
+import {
+  getAggregate,
+  getLevelLessonIds,
+  getTopicLessonIds,
+  useProgressVersion,
+} from "@/lib/progressAggregate";
 import { Lock, ArrowRight, BookOpen, Search, X } from "lucide-react";
+
 
 const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"];
 
