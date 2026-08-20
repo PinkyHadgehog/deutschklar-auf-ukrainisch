@@ -16,6 +16,7 @@ import Grammar from "./pages/Grammar";
 import Lesson from "./pages/Lesson";
 import Vocab from "./pages/Vocab";
 import PlacementTest from "./pages/PlacementTest";
+import PlacementIntro from "./pages/PlacementIntro";
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import ProgressPage from "./pages/ProgressPage";
@@ -44,6 +45,7 @@ const App = () => (
                 <Route path="/lesson/:slug" element={<Lesson />} />
                 <Route path="/vocab" element={<Vocab />} />
                 <Route path="/test" element={<PlacementTest />} />
+                <Route path="/placement-test" element={<PlacementIntro />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/progress" element={<ProgressPage />} />
