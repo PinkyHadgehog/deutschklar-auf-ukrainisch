@@ -107,6 +107,35 @@ const SavedLibrary = () => {
   const lessons = useMemo(() => filterByLevel(saved.lessons), [saved.lessons, level]);
   const topics = useMemo(() => filterByLevel(saved.topics), [saved.topics, level]);
 
+  // --- Слова: search + CEFR filter + topic grouping ---
+  const [wordQuery, setWordQuery] = useState("");
+  const [wordLevel, setWordLevel] = useState<"all" | Level>("all");
+  const [openTopic, setOpenTopic] = useState<string | null>(null);
+
+  const allTopicCount = useMemo(
+    () => new Set(saved.words.map(savedWordTopicId)).size,
+    [saved.words]
+  );
+  const visibleWords = useMemo(
+    () => filterSavedWords(saved.words, wordQuery, wordLevel),
+    [saved.words, wordQuery, wordLevel]
+  );
+  const groups = useMemo(() => groupSavedWordsByTopic(visibleWords), [visibleWords]);
+
+  const scopeParams = () => {
+    const p = new URLSearchParams({ tab: "flash", saved: "1" });
+    if (wordLevel !== "all") p.set("savedLevel", wordLevel);
+    if (wordQuery.trim()) p.set("savedQuery", wordQuery.trim());
+    return p;
+  };
+  const reviewAllUrl = `/vocab?${scopeParams().toString()}`;
+  const topicReviewUrl = (topicId: string) => {
+    const p = scopeParams();
+    p.set("topic", topicId);
+    return `/vocab?${p.toString()}`;
+  };
+
+
   const tabs = [
     { id: "words" as const, label: "Слова", count: saved.words.length },
     { id: "lessons" as const, label: "Уроки", count: saved.lessons.length },
