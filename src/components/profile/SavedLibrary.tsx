@@ -183,7 +183,15 @@ const SavedLibrary = () => {
                         </>
                       }
                       action={
-                        <Button size="sm" variant="outline" onClick={() => navigate(`/vocab?tab=flash&topic=${theme ?? ""}`)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            navigate(
+                              `/vocab?tab=flash&topic=${encodeURIComponent(theme ?? "")}&word=${encodeURIComponent(de)}`
+                            )
+                          }
+                        >
                           Повторити
                         </Button>
                       }

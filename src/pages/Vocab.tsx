@@ -44,6 +44,7 @@ const Vocab = () => {
   const savedWordIds = useMemo(() => new Set(saved.words.map((w) => w.id)), [saved.words]);
   const savedTopicIds = useMemo(() => new Set(saved.topics.map((t) => t.id)), [saved.topics]);
   const [savedMode, setSavedMode] = useState(params.get("saved") === "1");
+  const [focusWord, setFocusWord] = useState<string | null>(params.get("word"));
 
   const [flipIdx, setFlipIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -90,19 +91,27 @@ const Vocab = () => {
   }, [theme, query]);
   const flashPool = savedMode ? savedWords : words;
   const sessionWords = useMemo(
-    () => shuffle(flashPool).slice(0, savedMode ? flashPool.length : DEFAULT_SESSION_SIZE),
+    () => {
+      const base = shuffle(flashPool).slice(0, savedMode ? flashPool.length : DEFAULT_SESSION_SIZE);
+      if (!focusWord) return base;
+      const target = flashPool.find((w) => w.de === focusWord);
+      if (!target) return base;
+      return [target, ...base.filter((w) => w.de !== target.de)];
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [flashPool, sessionSeed, savedMode]
+    [flashPool, sessionSeed, savedMode, focusWord]
   );
   const current = sessionWords.length ? sessionWords[flipIdx % sessionWords.length] : null;
 
   const resetSession = () => {
     setSessionSeed((s) => s + 1);
+    setFocusWord(null);
     setFlipIdx(0);
     setFlipped(false);
     setSeen(1);
     setSessionDone(false);
   };
+
 
   const toggleFav = (w: { de: string; theme: string; artikel?: string; plural?: string; uk: string }) => {
     const nowSaved = toggleSavedItem("word", wordId(w.theme, w.de), {
