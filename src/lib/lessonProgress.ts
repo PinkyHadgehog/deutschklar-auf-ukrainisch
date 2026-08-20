@@ -17,14 +17,30 @@ export interface LessonProgress {
   lessonId: string;
   status: LessonStatus;
   progress: 0 | 25 | 100;
+  startedAt?: string | null;
+  completedAt?: string | null;
+  lastOpenedAt?: string | null;
   updatedAt?: number;
 }
 
-export const statusProgress: Record<LessonStatus, 0 | 25 | 100> = {
-  not_started: 0,
-  started: 25,
-  completed: 100,
+/** Single mapping status → percentage. Never duplicate this elsewhere. */
+export const statusToProgress = (status: LessonStatus): 0 | 25 | 100 => {
+  switch (status) {
+    case "completed":
+      return 100;
+    case "started":
+      return 25;
+    default:
+      return 0;
+  }
 };
+
+export const statusProgress: Record<LessonStatus, 0 | 25 | 100> = {
+  not_started: statusToProgress("not_started"),
+  started: statusToProgress("started"),
+  completed: statusToProgress("completed"),
+};
+
 
 export const statusLabel: Record<LessonStatus, string> = {
   not_started: "Ще не розпочато",
