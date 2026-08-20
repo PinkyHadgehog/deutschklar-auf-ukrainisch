@@ -79,7 +79,6 @@ const Dashboard = () => {
   const levelStats = getAggregate(getLevelLessonIds(user.level));
   const totalLessons = allLessons.length;
   const displayedProgress = levelStats.progress;
-  const lastLesson = user.completedLessons[0];
   const weekDone = Math.round((weeklyXp / Math.max(1, weeklyGoal)) * 100);
   const visualProgress = Math.min(weekDone, 100);
   const goalReached = weeklyXp >= weeklyGoal;
@@ -273,6 +272,9 @@ const Dashboard = () => {
         {/* Recommendations */}
         <Card className="p-6 rounded-2xl border-0 shadow-soft">
           <div className="font-display font-bold mb-3 flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Рекомендовано вам</div>
+          {recommendations.length === 0 && (
+            <p className="text-sm text-muted-foreground">Поки немає що повторювати — проходь квізи та вправи, і тут з’являться персональні поради.</p>
+          )}
           <ul className="space-y-2">
             {recommendations.map((r) => {
               const Icon = recIcon[r.type];
