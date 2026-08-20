@@ -118,11 +118,21 @@ const Dashboard = () => {
               <div className="text-2xl font-bold">{user.streak}</div>
               <div className="text-xs opacity-80">днів поспіль</div>
             </div>
-            <div className="rounded-xl bg-white/15 p-3 backdrop-blur">
-              <Clock className="h-5 w-5 mb-1.5" />
-              <div className="text-2xl font-bold">{user.goalMinutes} хв</div>
-              <div className="text-xs opacity-80">ціль на день</div>
-            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="rounded-xl bg-white/15 p-3 backdrop-blur text-left hover:bg-white/25 transition">
+                  <div className="flex items-center justify-between">
+                    <Clock className="h-5 w-5 mb-1.5" />
+                    <Pencil className="h-3.5 w-3.5 opacity-80" />
+                  </div>
+                  <div className="text-2xl font-bold">{dailyGoal} хв</div>
+                  <div className="text-xs opacity-80">ціль на день</div>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-72">
+                <DailyGoalEditor />
+              </PopoverContent>
+            </Popover>
             <Popover>
               <PopoverTrigger asChild>
                 <button className="rounded-xl bg-white/15 p-3 backdrop-blur text-left hover:bg-white/25 transition">
