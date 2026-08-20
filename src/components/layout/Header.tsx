@@ -9,11 +9,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItemsPublic = [
-  { to: "/", key: "nav.home" },
-  { to: "/courses", key: "nav.courses" },
-  { to: "/vocab", key: "nav.vocab" },
-  { to: "/test", key: "nav.test" },
-  { to: "/pricing", key: "nav.pricing" },
+  { to: "/courses", label: "Курси" },
+  { to: "/#how", label: "Як це працює" },
+  { to: "/pricing", label: "Тарифи" },
+  { to: "/#faq", label: "FAQ" },
 ];
 
 const navItemsAuthed = [
@@ -23,12 +22,14 @@ const navItemsAuthed = [
   { to: "/progress", key: "nav.progress" },
 ];
 
+type NavItem = { to: string; key?: string; label?: string };
+
 export const Header = () => {
   const { lang, setLang, t } = useLang();
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
-  const items = user ? navItemsAuthed : navItemsPublic;
+  const items: NavItem[] = user ? navItemsAuthed : navItemsPublic;
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -46,20 +47,30 @@ export const Header = () => {
         </Link>
 
         <nav className="hidden lg:flex items-center gap-1">
-          {items.map((it) => (
-            <NavLink
-              key={it.to}
-              to={it.to}
-              end={it.to === "/"}
-              className={({ isActive }) =>
-                `px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  isActive ? "bg-primary-soft text-primary" : "text-foreground/70 hover:text-foreground hover:bg-muted"
-                }`
-              }
-            >
-              {t(it.key)}
-            </NavLink>
-          ))}
+          {items.map((it) =>
+            it.to.includes("#") ? (
+              <Link
+                key={it.to}
+                to={it.to}
+                className="px-3 py-2 text-sm font-medium rounded-lg transition-colors text-foreground/70 hover:text-foreground hover:bg-muted"
+              >
+                {it.label}
+              </Link>
+            ) : (
+              <NavLink
+                key={it.to}
+                to={it.to}
+                end={it.to === "/"}
+                className={({ isActive }) =>
+                  `px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    isActive ? "bg-primary-soft text-primary" : "text-foreground/70 hover:text-foreground hover:bg-muted"
+                  }`
+                }
+              >
+                {it.key ? t(it.key) : it.label}
+              </NavLink>
+            )
+          )}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -111,21 +122,32 @@ export const Header = () => {
       {open && (
         <div className="lg:hidden border-t border-border bg-background">
           <div className="container py-3 flex flex-col gap-1">
-            {items.map((it) => (
-              <NavLink
-                key={it.to}
-                to={it.to}
-                end={it.to === "/"}
-                onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  `px-3 py-2.5 text-sm font-medium rounded-lg ${
-                    isActive ? "bg-primary-soft text-primary" : "hover:bg-muted"
-                  }`
-                }
-              >
-                {t(it.key)}
-              </NavLink>
-            ))}
+            {items.map((it) =>
+              it.to.includes("#") ? (
+                <Link
+                  key={it.to}
+                  to={it.to}
+                  onClick={() => setOpen(false)}
+                  className="px-3 py-2.5 text-sm font-medium rounded-lg hover:bg-muted"
+                >
+                  {it.label}
+                </Link>
+              ) : (
+                <NavLink
+                  key={it.to}
+                  to={it.to}
+                  end={it.to === "/"}
+                  onClick={() => setOpen(false)}
+                  className={({ isActive }) =>
+                    `px-3 py-2.5 text-sm font-medium rounded-lg ${
+                      isActive ? "bg-primary-soft text-primary" : "hover:bg-muted"
+                    }`
+                  }
+                >
+                  {it.key ? t(it.key) : it.label}
+                </NavLink>
+              )
+            )}
             {!user && (
               <div className="grid grid-cols-2 gap-2 pt-2">
                 <Button variant="outline" onClick={() => { setOpen(false); nav("/login"); }}>{t("nav.login")}</Button>
