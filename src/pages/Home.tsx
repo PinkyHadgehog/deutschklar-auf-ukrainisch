@@ -12,6 +12,8 @@ import {
 import { courses, testimonials, plans } from "@/data/mock";
 import { getAggregate, getLevelLessonIds, useProgressVersion } from "@/lib/progressAggregate";
 import { useAuth } from "@/context/AuthContext";
+import { PlacementCtaCard } from "@/components/placement/PlacementCtaCard";
+import { PLACEMENT_ROUTE, PLACEMENT_META, PLACEMENT_EVENTS, trackPlacementEvent } from "@/components/placement/placement";
 
 const levelBadge: Record<string, string> = {
   A1: "bg-teal-500",
