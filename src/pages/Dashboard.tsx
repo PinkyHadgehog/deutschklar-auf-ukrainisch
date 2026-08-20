@@ -32,6 +32,7 @@ const Dashboard = () => {
   const [weeklyXp, setWeeklyXp] = useState(0);
   const [weeklyByDay, setWeeklyByDay] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [weeklyGoal, setWeeklyGoal] = useState(100);
+  const [dailyGoal, setDailyGoal] = useState(20);
   const [weeklySeconds, setWeeklySeconds] = useState(0);
   const [weeklyLessons, setWeeklyLessons] = useState(0);
   const [weeklyQuizzes, setWeeklyQuizzes] = useState(0);
