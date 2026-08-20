@@ -167,14 +167,24 @@ const Vocab = () => {
 
           <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mb-8">
             {vocabThemes.map((th) => (
-              <button key={th.id} onClick={() => { setTheme(th.id); setFlipIdx(0); setFlipped(false); setSeen(1); setSessionDone(false); }}
-                className={`p-4 rounded-2xl border text-left transition ${
+              <div key={th.id} role="button" tabIndex={0}
+                onClick={() => { setTheme(th.id); setFlipIdx(0); setFlipped(false); setSeen(1); setSessionDone(false); }}
+                onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setTheme(th.id); } }}
+                className={`relative p-4 rounded-2xl border text-left transition cursor-pointer ${
                   theme === th.id ? "bg-gradient-primary text-primary-foreground border-transparent shadow-soft" : "bg-card hover:border-primary/40"
                 }`}>
+                <button
+                  type="button"
+                  aria-label={savedTopicIds.has(`vocab:${th.id}`) ? "Видалити тему зі збереженого" : "Зберегти тему"}
+                  onClick={(e) => { e.stopPropagation(); toggleTopic(th); }}
+                  className="absolute top-3 right-3"
+                >
+                  <Bookmark className={`h-4 w-4 ${savedTopicIds.has(`vocab:${th.id}`) ? "fill-current" : "opacity-60"}`} />
+                </button>
                 <div className="text-2xl">{th.emoji}</div>
                 <div className="font-display font-bold mt-2 text-sm">{th.title}</div>
                 <div className={`text-xs mt-0.5 ${theme === th.id ? "opacity-80" : "text-muted-foreground"}`}>{th.titleDe} · {th.count}</div>
-              </button>
+              </div>
             ))}
           </div>
 
@@ -193,10 +203,11 @@ const Vocab = () => {
                     </div>
                     <div className="text-sm text-muted-foreground">Pl.: {w.plural}</div>
                   </div>
-                  <button onClick={() => toggleFav(w.de)}>
-                    <Heart className={`h-5 w-5 ${favs.has(w.de) ? "fill-destructive text-destructive" : "text-muted-foreground"}`} />
+                  <button onClick={() => toggleFav(w)} aria-label="Зберегти слово">
+                    <Heart className={`h-5 w-5 ${savedWordIds.has(wordId(w.theme, w.de)) ? "fill-destructive text-destructive" : "text-muted-foreground"}`} />
                   </button>
                 </div>
+
                 <div className="mt-2 text-primary font-medium">{w.uk}</div>
                 <div className="mt-3 p-3 rounded-xl bg-secondary/60 text-sm">
                   <div>{w.sample}</div>
