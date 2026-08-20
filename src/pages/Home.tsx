@@ -195,7 +195,7 @@ const Home = () => {
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { icon: Target, title: "1. Обери свій рівень", text: "Пройди короткий тест або обери рівень A1–C2 самостійно.", extra: "Ми допоможемо сформувати зрозумілий старт." },
+              { icon: Target, title: "1. Визнач свій рівень", text: "Пройди безкоштовний адаптивний тест або обери рівень A1–C2 самостійно.", extra: "Після тесту ти отримаєш орієнтовний рівень і рекомендацію, з чого почати." },
               { icon: BookOpen, title: "2. Вчися системно", text: "Уроки з поясненнями українською, прикладами, типовими помилками та 15 вправами для закріплення." },
               { icon: TrendingUp, title: "3. Бачиш свій прогрес", text: "Слідкуй за уроками, квізами, XP, активним часом навчання та персональними рекомендаціями." },
             ].map((s) => (
@@ -209,6 +209,15 @@ const Home = () => {
               </Card>
             ))}
           </div>
+
+          <div className="mt-8 max-w-4xl mx-auto">
+            <PlacementCtaCard
+              source="after_how_it_works"
+              headline="Не впевнена у своєму рівні?"
+              text="Пройди безкоштовний тест і дізнайся, з якого курсу краще почати."
+              buttonLabel="Пройти тест"
+            />
+          </div>
         </div>
       </section>
 
@@ -221,7 +230,21 @@ const Home = () => {
               Навчальний шлях від A1 до C2 — граматика, словник, практика та прогрес в одному місці.
             </p>
           </div>
-          <Button asChild variant="outline"><Link to="/courses">Усі курси <ArrowRight className="ml-1.5 h-4 w-4"/></Link></Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-sm text-muted-foreground">Не знаєш свій рівень?</span>
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              data-cta="placement-test"
+              data-cta-source="courses_overview"
+              className="text-primary hover:text-primary"
+              onClick={() => trackPlacementEvent(PLACEMENT_EVENTS.ctaClicked, { source: "courses_overview" })}
+            >
+              <Link to={PLACEMENT_ROUTE}>Пройти тест →</Link>
+            </Button>
+            <Button asChild variant="outline"><Link to="/courses">Усі курси <ArrowRight className="ml-1.5 h-4 w-4"/></Link></Button>
+          </div>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {courses.map((c) => {
