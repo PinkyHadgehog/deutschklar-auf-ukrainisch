@@ -14,6 +14,8 @@ import { getWeeklyCompletedLessons, getWeeklyCompletedQuizzes, subscribeCompleti
 import { getRecommendations, type Recommendation, type RecommendationType } from "@/lib/recommendations";
 import { subscribeVocabMistakes } from "@/lib/vocabMistakes";
 import { subscribeLessonProgress } from "@/lib/lessonProgress";
+import { getLearningJourney, type LearningJourney } from "@/lib/learningJourney";
+import LearningJourneyCard from "@/components/dashboard/LearningJourneyCard";
 import { getWeeklyStudySeconds, formatStudyTime, subscribeStudyTime } from "@/lib/studyTime";
 import DailyGoalEditor from "@/components/goals/DailyGoalEditor";
 import WeeklyGoalEditor from "@/components/goals/WeeklyGoalEditor";
@@ -38,6 +40,7 @@ const Dashboard = () => {
   const [weeklyLessons, setWeeklyLessons] = useState(0);
   const [weeklyQuizzes, setWeeklyQuizzes] = useState(0);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
+  const [journey, setJourney] = useState<LearningJourney>({ state: "new", completed: null, current: null, next: null });
 
   useEffect(() => {
     const sync = () => {
@@ -50,10 +53,12 @@ const Dashboard = () => {
       setWeeklySeconds(getWeeklyStudySeconds());
       setWeeklyLessons(getWeeklyCompletedLessons());
       setWeeklyQuizzes(getWeeklyCompletedQuizzes());
+      const j = getLearningJourney(user?.level ?? "A1");
+      setJourney(j);
       setRecommendations(getRecommendations({
         level: user?.level ?? "A1",
         completedLessonSlugs: (user?.completedLessons ?? []).map((l) => l.slug),
-        excludeIds: user?.completedLessons?.[0]?.slug ? [user.completedLessons[0].slug] : [],
+        excludeIds: [j.completed?.slug, j.current?.slug, j.next?.slug].filter(Boolean) as string[],
       }));
     };
     sync();
