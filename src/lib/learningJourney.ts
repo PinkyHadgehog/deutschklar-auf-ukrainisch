@@ -38,19 +38,21 @@ export const getLastCompletedLesson = (): JourneyLesson | null => {
   return items[0] ?? null;
 };
 
-/** Most recently opened lesson that is still in progress. */
+/**
+ * The single source of truth for "the lesson the learner is currently on".
+ * status === "started", most recent lastOpenedAt, falling back to startedAt.
+ */
 export const getCurrentStartedLesson = (): JourneyLesson | null => {
+  const activity = (p: LessonProgress) =>
+    Math.max(time(p.lastOpenedAt), time(p.startedAt), p.updatedAt ?? 0);
   const items = Object.values(getAllLessonProgress())
     .filter((p) => p.status === "started")
     .map(toJourneyLesson)
     .filter((x): x is JourneyLesson => !!x)
-    .sort(
-      (a, b) =>
-        Math.max(time(b.progress.lastOpenedAt), b.progress.updatedAt ?? 0) -
-        Math.max(time(a.progress.lastOpenedAt), a.progress.updatedAt ?? 0),
-    );
+    .sort((a, b) => activity(b.progress) - activity(a.progress));
   return items[0] ?? null;
 };
+
 
 /**
  * Next lesson in the course order: the first lesson after the current anchor
