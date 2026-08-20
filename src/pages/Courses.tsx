@@ -105,7 +105,9 @@ const Courses = () => {
       </div>
 
       <div className="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {filteredCourses.map((c) => (
+        {filteredCourses.map((c) => {
+          const stats = getAggregate(getLevelLessonIds(c.level));
+          return (
           <Card
             key={c.level}
             className="p-6 rounded-2xl border-0 shadow-soft group hover:-translate-y-1 transition relative overflow-hidden"
@@ -123,21 +125,26 @@ const Courses = () => {
             <h3 className="font-display font-bold text-xl">{c.title}</h3>
             <p className="text-sm text-muted-foreground mt-1.5">{c.description}</p>
             <div className="mt-4 flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">{c.lessons} лекцій</span>
-              <span className="font-semibold text-primary">{c.progress}%</span>
+              <span className="text-muted-foreground">{stats.total} лекцій</span>
+              <span className="font-semibold text-primary">{stats.progress}%</span>
             </div>
-            <Progress value={c.progress} className="h-1.5 mt-2" />
+            <Progress value={stats.progress} className="h-1.5 mt-2" />
+            <div className="mt-1.5 text-xs text-muted-foreground">
+              {stats.completed} з {stats.total} уроків завершено
+            </div>
             <Button
               variant="outline"
               className="w-full mt-5"
               onClick={() => openLevel(c.level)}
             >
-              {c.progress > 0 ? "Продовжити" : "Почати"}
+              {stats.progress > 0 ? "Продовжити" : "Почати"}
               <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
           </Card>
-        ))}
+          );
+        })}
       </div>
+
 
       {level !== "all" && (
         <section ref={lessonsRef} className="mt-12 scroll-mt-24">
