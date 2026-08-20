@@ -10,6 +10,7 @@ import {
   AlertTriangle, Lightbulb, PenLine, Compass, Brain, FileText, RotateCw, BarChart3,
 } from "lucide-react";
 import { courses, testimonials, plans } from "@/data/mock";
+import { getAggregate, getLevelLessonIds, useProgressVersion } from "@/lib/progressAggregate";
 import { useAuth } from "@/context/AuthContext";
 
 const levelBadge: Record<string, string> = {
@@ -206,10 +207,11 @@ const Home = () => {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {courses.map((c) => {
             const showProgress = !!user;
-            const status = c.progress === 100 ? "Завершено" : c.progress > 0 ? "У процесі" : "Не розпочато";
-            const statusClass = c.progress === 100
+            const stats = getAggregate(getLevelLessonIds(c.level));
+            const status = stats.progress === 100 ? "Завершено" : stats.progress > 0 ? "У процесі" : "Не розпочато";
+            const statusClass = stats.progress === 100
               ? "bg-success/15 text-success"
-              : c.progress > 0 ? "bg-primary-soft text-primary" : "bg-secondary text-muted-foreground";
+              : stats.progress > 0 ? "bg-primary-soft text-primary" : "bg-secondary text-muted-foreground";
             return (
               <Link key={c.level} to="/courses" className="block group">
                 <Card className="p-6 rounded-2xl border-0 shadow-soft h-full flex flex-col bg-card hover:-translate-y-1 hover:shadow-elevated transition">
@@ -221,7 +223,7 @@ const Home = () => {
                       <Badge variant="secondary" className={`${statusClass} border-0`}>{status}</Badge>
                     ) : (
                       <Badge variant="secondary" className="bg-secondary text-muted-foreground border-0">
-                        {c.lessons} лекцій
+                        {stats.total} лекцій
                       </Badge>
                     )}
                   </div>
@@ -230,10 +232,11 @@ const Home = () => {
                   {showProgress ? (
                     <>
                       <div className="flex items-center justify-between text-sm mb-2">
-                        <span className="text-muted-foreground">{c.lessons} лекцій</span>
-                        <span className="font-semibold text-primary">{c.progress}%</span>
+                        <span className="text-muted-foreground">{stats.total} лекцій</span>
+                        <span className="font-semibold text-primary">{stats.progress}%</span>
                       </div>
-                      <Progress value={c.progress} className="h-2" />
+                      <Progress value={stats.progress} className="h-2" />
+                      <div className="mt-1.5 text-xs text-muted-foreground">{stats.completed} з {stats.total} уроків завершено</div>
                     </>
                   ) : (
                     <span className="inline-flex items-center text-sm font-semibold text-primary">
