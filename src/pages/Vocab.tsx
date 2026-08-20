@@ -69,6 +69,11 @@ const Vocab = () => {
     if (!quizStarted) setSelectedQuizTopic((cur) => cur ?? theme);
   };
 
+  const savedWords = useMemo(
+    () => vocabWords.filter((w) => savedWordIds.has(wordId(w.theme, w.de))),
+    [savedWordIds]
+  );
+
   const words = useMemo(() => {
     const base = vocabWords.filter((w) => w.theme === theme).length
       ? vocabWords.filter((w) => w.theme === theme)
@@ -83,10 +88,11 @@ const Vocab = () => {
         (w.plural?.toLowerCase().includes(q) ?? false)
     );
   }, [theme, query]);
+  const flashPool = savedMode ? savedWords : words;
   const sessionWords = useMemo(
-    () => shuffle(words).slice(0, DEFAULT_SESSION_SIZE),
+    () => shuffle(flashPool).slice(0, savedMode ? flashPool.length : DEFAULT_SESSION_SIZE),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [words, sessionSeed]
+    [flashPool, sessionSeed, savedMode]
   );
   const current = sessionWords.length ? sessionWords[flipIdx % sessionWords.length] : null;
 
@@ -98,11 +104,29 @@ const Vocab = () => {
     setSessionDone(false);
   };
 
-  const toggleFav = (de: string) => {
-    const n = new Set(favs);
-    n.has(de) ? n.delete(de) : n.add(de);
-    setFavs(n);
+  const toggleFav = (w: { de: string; theme: string; artikel?: string; plural?: string; uk: string }) => {
+    const nowSaved = toggleSavedItem("word", wordId(w.theme, w.de), {
+      de: w.de,
+      artikel: w.artikel,
+      plural: w.plural,
+      uk: w.uk,
+      theme: w.theme,
+    });
+    toast(nowSaved ? "Збережено" : "Видалено зі збереженого");
   };
+
+  const toggleTopic = (th: { id: string; title: string; titleDe: string; emoji: string; count: number }) => {
+    const nowSaved = toggleSavedItem("topic", `vocab:${th.id}`, {
+      kind: "vocab",
+      topicId: th.id,
+      title: `Wortschatz: ${th.titleDe}`,
+      subtitle: th.title,
+      emoji: th.emoji,
+      count: th.count,
+    });
+    toast(nowSaved ? "Тему збережено" : "Видалено зі збереженого");
+  };
+
 
   const artikelColor = (a?: string) => a === "der" ? "text-info" : a === "die" ? "text-destructive" : "text-success";
 
