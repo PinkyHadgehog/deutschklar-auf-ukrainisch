@@ -259,33 +259,10 @@ const Dashboard = () => {
           <div className="border-t mt-8" />
         </section>
 
-        {/* Last lesson */}
-        <Card className="p-6 rounded-2xl border-0 shadow-soft lg:col-span-2">
-          <div className="flex flex-wrap items-start justify-between gap-2 mb-4">
-            <div>
-              <div className="font-display font-bold text-lg">Остання лекція</div>
-              <p className="text-sm text-muted-foreground">Продовжуй з того місця, де зупинилася</p>
-            </div>
-            <Badge variant="secondary" className="bg-primary-soft text-primary">B1 · Граматика</Badge>
-          </div>
-          <div className="flex flex-wrap items-center gap-4 p-4 rounded-xl bg-secondary/60">
-            <div className="h-14 w-14 rounded-xl bg-gradient-primary grid place-items-center shrink-0">
-              <BookOpen className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <div className="flex-1 min-w-[12rem]">
-              <div className="font-semibold truncate">{lastLesson?.title ?? "Adjektivdeklination nach dem bestimmten Artikel"}</div>
-              <div className="text-sm text-muted-foreground">
-                {lastLesson
-                  ? `Завершено ${new Date(lastLesson.completedAt).toLocaleDateString("uk-UA")} · +${lastLesson.points} балів`
-                  : "Прогрес: 62% · 4 вправи залишилось"}
-              </div>
-              <Progress value={lastLesson ? 100 : 62} className="h-1.5 mt-2" />
-            </div>
-            <Button asChild size="sm" className="bg-gradient-primary">
-              <Link to={`/lesson/${lastLesson?.slug ?? "adjektivdeklination-bestimmter"}`}>{lastLesson ? "Повторити" : "Продовжити"}</Link>
-            </Button>
-          </div>
-        </Card>
+        {/* Learning journey */}
+        <LearningJourneyCard journey={journey} />
+
+
 
 
         {/* Recommendations */}
