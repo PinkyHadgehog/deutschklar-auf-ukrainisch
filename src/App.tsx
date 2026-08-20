@@ -20,6 +20,7 @@ import PlacementIntro from "./pages/PlacementIntro";
 import Pricing from "./pages/Pricing";
 import Profile from "./pages/Profile";
 import ProgressPage from "./pages/ProgressPage";
+import Saved from "./pages/Saved";
 import Admin from "./pages/Admin";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound.tsx";
@@ -49,6 +50,8 @@ const App = () => (
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/progress" element={<ProgressPage />} />
+                <Route path="/saved" element={<Saved />} />
+
                 <Route path="/admin" element={<Admin />} />
                 <Route path="/legal/:kind" element={<Legal />} />
                 <Route path="*" element={<NotFound />} />

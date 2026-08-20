@@ -21,6 +21,7 @@ const navItemsAuthed = [
   { to: "/courses", key: "nav.courses" },
   { to: "/vocab", key: "nav.vocab" },
   { to: "/progress", key: "nav.progress" },
+  { to: "/saved", label: "Збережене", icon: true },
 ];
 
 type NavItem = { to: string; key?: string; label?: string };
