@@ -90,6 +90,16 @@ const Dashboard = () => {
   const maxDay = Math.max(1, ...weeklyByDay);
   const weekly = weeklyByDay.map((xp) => Math.round((xp / maxDay) * 100));
 
+  // Single shared definition: the Continue CTA always targets the Learning Journey's current lesson.
+  const continueCta = journey.current
+    ? { label: "Продовжити навчання", href: `/lesson/${journey.current.slug}` }
+    : journey.next
+      ? {
+          label: journey.state === "new" ? "Почати навчання" : "Почати наступний урок",
+          href: `/lesson/${journey.next.slug}`,
+        }
+      : null;
+
   return (
     <div className="container py-8 md:py-12">
       {/* Greeting */}
@@ -99,9 +109,11 @@ const Dashboard = () => {
           <h1 className="font-display text-3xl md:text-4xl font-extrabold mt-1">{user.name}, гарного навчання!</h1>
           <p className="text-muted-foreground mt-1">«Маленькі кроки щодня важливіші за великий ривок раз на місяць.»</p>
         </div>
-        <Button asChild className="bg-gradient-primary h-11 px-6">
-          <Link to={`/lesson/adjektivdeklination-bestimmter`}>Продовжити навчання <ChevronRight className="ml-1 h-4 w-4" /></Link>
-        </Button>
+        {continueCta && (
+          <Button asChild className="bg-gradient-primary h-11 px-6">
+            <Link to={continueCta.href}>{continueCta.label} <ChevronRight className="ml-1 h-4 w-4" /></Link>
+          </Button>
+        )}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-5">
