@@ -70,10 +70,29 @@ const Vocab = () => {
     if (!quizStarted) setSelectedQuizTopic((cur) => cur ?? theme);
   };
 
-  const savedWords = useMemo(
-    () => vocabWords.filter((w) => savedWordIds.has(wordId(w.theme, w.de))),
-    [savedWordIds]
-  );
+  // Saved-mode scoping: optional topic / CEFR level / search coming from the profile library.
+  const savedScopeTopic = params.get("saved") === "1" ? params.get("topic") : null;
+  const savedScopeLevel = params.get("savedLevel");
+  const savedScopeQuery = params.get("savedQuery") ?? "";
+
+  const savedWords = useMemo(() => {
+    const savedById = new Map(saved.words.map((w) => [w.id, w]));
+    const q = savedScopeQuery.trim().toLowerCase();
+    return vocabWords.filter((w) => {
+      const item = savedById.get(wordId(w.theme, w.de));
+      if (!item) return false;
+      if (savedScopeTopic && w.theme !== savedScopeTopic) return false;
+      if (savedScopeLevel && savedScopeLevel !== "all" && item.meta?.level !== savedScopeLevel) return false;
+      if (!q) return true;
+      return (
+        w.de.toLowerCase().includes(q) ||
+        w.uk.toLowerCase().includes(q) ||
+        (w.plural?.toLowerCase().includes(q) ?? false) ||
+        w.theme.toLowerCase().includes(q)
+      );
+    });
+  }, [saved.words, savedScopeTopic, savedScopeLevel, savedScopeQuery]);
+
 
   const words = useMemo(() => {
     const base = vocabWords.filter((w) => w.theme === theme).length

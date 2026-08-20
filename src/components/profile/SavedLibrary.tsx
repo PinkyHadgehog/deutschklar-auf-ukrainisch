@@ -3,12 +3,23 @@ import { Link, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Heart, Bookmark, BookOpen, Layers, RotateCw, Play, ArrowRight } from "lucide-react";
+import { Heart, Bookmark, BookOpen, Layers, RotateCw, Play, ArrowRight, Search, ChevronDown } from "lucide-react";
 import { vocabThemes, type Level } from "@/data/mock";
 import { removeSavedItem, useSavedItems, type SavedItem } from "@/lib/savedItems";
 import { getLessonProgressEntry, statusToProgress, type LessonStatus } from "@/lib/lessonProgress";
 import { useProgressVersion } from "@/lib/progressAggregate";
+import {
+  filterSavedWords,
+  groupSavedWordsByTopic,
+  savedWordDe,
+  savedWordTopicId,
+  savedWordsLabel,
+  topicCountLabel,
+  wordCountLabel,
+} from "@/lib/savedWordGroups";
+
 
 const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"];
 
@@ -96,6 +107,35 @@ const SavedLibrary = () => {
   const lessons = useMemo(() => filterByLevel(saved.lessons), [saved.lessons, level]);
   const topics = useMemo(() => filterByLevel(saved.topics), [saved.topics, level]);
 
+  // --- Слова: search + CEFR filter + topic grouping ---
+  const [wordQuery, setWordQuery] = useState("");
+  const [wordLevel, setWordLevel] = useState<"all" | Level>("all");
+  const [openTopic, setOpenTopic] = useState<string | null>(null);
+
+  const allTopicCount = useMemo(
+    () => new Set(saved.words.map(savedWordTopicId)).size,
+    [saved.words]
+  );
+  const visibleWords = useMemo(
+    () => filterSavedWords(saved.words, wordQuery, wordLevel),
+    [saved.words, wordQuery, wordLevel]
+  );
+  const groups = useMemo(() => groupSavedWordsByTopic(visibleWords), [visibleWords]);
+
+  const scopeParams = () => {
+    const p = new URLSearchParams({ tab: "flash", saved: "1" });
+    if (wordLevel !== "all") p.set("savedLevel", wordLevel);
+    if (wordQuery.trim()) p.set("savedQuery", wordQuery.trim());
+    return p;
+  };
+  const reviewAllUrl = `/vocab?${scopeParams().toString()}`;
+  const topicReviewUrl = (topicId: string) => {
+    const p = scopeParams();
+    p.set("topic", topicId);
+    return `/vocab?${p.toString()}`;
+  };
+
+
   const tabs = [
     { id: "words" as const, label: "Слова", count: saved.words.length },
     { id: "lessons" as const, label: "Уроки", count: saved.lessons.length },
@@ -155,55 +195,137 @@ const SavedLibrary = () => {
             />
           ) : (
             <>
-              {saved.words.length >= 2 && (
-                <Button className="mb-3 bg-gradient-primary" onClick={() => navigate("/vocab?tab=flash&saved=1")}>
-                  <RotateCw className="h-4 w-4 mr-1.5" /> Повторити всі слова
-                </Button>
-              )}
-              <div className="space-y-2">
-                {saved.words.map((w) => {
-                  const de = str(w.meta?.de) ?? w.id.split(":").slice(1).join(":");
-                  const artikel = str(w.meta?.artikel);
-                  const theme = str(w.meta?.theme);
-                  const plural = str(w.meta?.plural);
-                  return (
-                    <Row
-                      key={w.id}
-                      icon={<BookOpen className="h-4 w-4" />}
-                      title={
-                        <span>
-                          {artikel && <span className="mr-1 text-primary">{artikel}</span>}
-                          {stripArtikel(de)}
-                        </span>
-                      }
-                      subtitle={
-                        <>
-                          {str(w.meta?.uk)} · {themeTitle(theme)}
-                          {plural && plural !== "—" ? ` · Pl.: ${plural}` : ""}
-                        </>
-                      }
-                      action={
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() =>
-                            navigate(
-                              `/vocab?tab=flash&topic=${encodeURIComponent(theme ?? "")}&word=${encodeURIComponent(de)}`
-                            )
-                          }
-                        >
-                          Повторити
-                        </Button>
-                      }
-                      onRemove={() => removeSavedItem("word", w.id)}
-                    />
-                  );
-                })}
+              <div className="text-sm text-muted-foreground">
+                Збережено {savedWordsLabel(saved.words.length)} у {topicCountLabel(allTopicCount)}
               </div>
+
+              <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-center">
+                <div className="relative flex-1">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={wordQuery}
+                    onChange={(e) => setWordQuery(e.target.value)}
+                    placeholder="Пошук у збережених словах..."
+                    className="pl-9"
+                  />
+                </div>
+                <div className="flex gap-1.5 overflow-x-auto pb-1">
+                  {LEVELS.map((l) => (
+                    <button
+                      key={l}
+                      onClick={() => setWordLevel(l)}
+                      className={`shrink-0 rounded-lg border px-2.5 py-1 text-xs font-semibold transition ${
+                        wordLevel === l
+                          ? "border-primary bg-primary-soft text-primary"
+                          : "border-border text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      {l === "all" ? "Усі" : l}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {visibleWords.length === 0 ? (
+                <div className="py-10 text-center">
+                  <div className="font-semibold">Нічого не знайдено</div>
+                  <div className="mt-1 text-sm text-muted-foreground">Спробуй інше слово або зміни фільтр.</div>
+                  <Button
+                    variant="outline"
+                    className="mt-4"
+                    onClick={() => { setWordQuery(""); setWordLevel("all"); }}
+                  >
+                    Очистити фільтри
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <Button className="mt-3 bg-gradient-primary" onClick={() => navigate(reviewAllUrl)}>
+                    <RotateCw className="h-4 w-4 mr-1.5" /> Повторити всі слова
+                  </Button>
+
+                  <div className="mt-3 space-y-2">
+                    {groups.map((g) => {
+                      const open = openTopic === g.topicId;
+                      return (
+                        <div key={g.topicId} className="overflow-hidden rounded-xl border border-border/70 bg-card">
+                          <button
+                            type="button"
+                            onClick={() => setOpenTopic(open ? null : g.topicId)}
+                            className={`flex w-full items-center gap-3 px-3 py-2.5 text-left transition ${
+                              open ? "bg-primary-soft/50" : "hover:bg-muted/50"
+                            }`}
+                          >
+                            <span className="text-base">{g.emoji}</span>
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-sm font-semibold">{g.title}</span>
+                              <span className="block text-xs text-muted-foreground">{wordCountLabel(g.words.length)}</span>
+                            </span>
+                            {g.level && <Badge variant="outline" className="shrink-0 text-[10px]">{g.level}</Badge>}
+                            <span className="shrink-0 text-sm font-semibold text-primary">{g.words.length}</span>
+                            <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition ${open ? "rotate-180" : ""}`} />
+                          </button>
+
+                          {open && (
+                            <div className="space-y-2 border-t border-border/60 p-3">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => navigate(topicReviewUrl(g.topicId))}
+                              >
+                                <Play className="h-3.5 w-3.5 mr-1" /> Повторити тему
+                              </Button>
+                              {g.words.map((w) => {
+                                const de = savedWordDe(w);
+                                const artikel = str(w.meta?.artikel);
+                                const plural = str(w.meta?.plural);
+                                return (
+                                  <Row
+                                    key={w.id}
+                                    icon={<BookOpen className="h-4 w-4" />}
+                                    title={
+                                      <span>
+                                        {artikel && <span className="mr-1 text-primary">{artikel}</span>}
+                                        {stripArtikel(de)}
+                                      </span>
+                                    }
+                                    right={str(w.meta?.level) ? <Badge variant="outline" className="shrink-0 text-[10px]">{str(w.meta?.level)}</Badge> : undefined}
+                                    subtitle={
+                                      <>
+                                        {str(w.meta?.uk)}
+                                        {plural && plural !== "—" ? ` · Pl.: ${plural}` : ""}
+                                      </>
+                                    }
+                                    action={
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() =>
+                                          navigate(
+                                            `/vocab?tab=flash&topic=${encodeURIComponent(g.topicId)}&word=${encodeURIComponent(de)}`
+                                          )
+                                        }
+                                      >
+                                        Повторити
+                                      </Button>
+                                    }
+                                    onRemove={() => removeSavedItem("word", w.id)}
+                                  />
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>
       )}
+
 
       {/* LESSONS */}
       {tab === "lessons" && (
