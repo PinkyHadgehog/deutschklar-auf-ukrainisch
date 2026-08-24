@@ -88,8 +88,11 @@ const Dashboard = () => {
   const fmtDay = (d: Date) => `${dayShort[d.getDay()]} · ${d.toLocaleDateString("uk-UA", { day: "numeric", month: "short" })}`;
   const weekRangeLabel = `${fmtDay(weekStart)} — ${fmtDay(weekEnd)}`;
   const weekEmpty = weeklyLessons === 0 && weeklyQuizzes === 0 && weeklySeconds === 0;
-  const maxDay = Math.max(1, ...weeklyByDay);
-  const weekly = weeklyByDay.map((xp) => Math.round((xp / maxDay) * 100));
+  const todayIndex = (new Date().getDay() + 6) % 7;
+  const plannedByDay = WEEK_DAYS.map((d) => plannedGoals[d] || 0);
+  const todayGoal = plannedByDay[todayIndex];
+  const todayXp = weeklyByDay[todayIndex] ?? 0;
+  const todayPct = todayGoal > 0 ? Math.round((todayXp / todayGoal) * 100) : 0;
 
   // Single shared definition: the Continue CTA always targets the Learning Journey's current lesson.
   const continueCta = journey.currentStartedLesson
