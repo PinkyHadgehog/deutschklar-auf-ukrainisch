@@ -36,6 +36,29 @@ export default {
   weekdays: {
     mon: "Пн", tue: "Вт", wed: "Ср", thu: "Чт", fri: "Пт", sat: "Сб", sun: "Нд",
   },
+  xpSource: {
+    vocabularyQuiz: "Словниковий Quiz",
+    lessonExercises: "Вправи уроку",
+  },
+  studyType: {
+    lesson: "Уроки",
+    lessonExercises: "Вправи",
+    vocabulary: "Словник",
+    flashcards: "Flashcards",
+    vocabularyQuiz: "Quiz",
+    mistakeReview: "Робота над помилками",
+  },
+  studyTime: {
+    minutes: "{n} хв",
+    hours: "{n} год",
+    hoursMinutes: "{h} год {m} хв",
+  },
+  recommendations: {
+    continueLesson: "Продовжити урок",
+    quizRepeat: "Quiz: {pct}% · повторити",
+    nextLesson: "Наступний урок",
+    recommendedLesson: "Рекомендований урок",
+  },
   weekdaysFull: {
     sun: "Нд", mon: "Пн", tue: "Вт", wed: "Ср", thu: "Чт", fri: "Пт", sat: "Сб",
   },

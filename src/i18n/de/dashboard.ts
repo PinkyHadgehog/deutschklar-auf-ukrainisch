@@ -36,6 +36,29 @@ export default {
   weekdays: {
     mon: "Mo", tue: "Di", wed: "Mi", thu: "Do", fri: "Fr", sat: "Sa", sun: "So",
   },
+  xpSource: {
+    vocabularyQuiz: "Vokabel-Quiz",
+    lessonExercises: "Lektionsübungen",
+  },
+  studyType: {
+    lesson: "Lektionen",
+    lessonExercises: "Übungen",
+    vocabulary: "Wortschatz",
+    flashcards: "Flashcards",
+    vocabularyQuiz: "Quiz",
+    mistakeReview: "Fehlerarbeit",
+  },
+  studyTime: {
+    minutes: "{n} Min",
+    hours: "{n} Std",
+    hoursMinutes: "{h} Std {m} Min",
+  },
+  recommendations: {
+    continueLesson: "Lektion fortsetzen",
+    quizRepeat: "Quiz: {pct}% · wiederholen",
+    nextLesson: "Nächste Lektion",
+    recommendedLesson: "Empfohlene Lektion",
+  },
   weekdaysFull: {
     sun: "So", mon: "Mo", tue: "Di", wed: "Mi", thu: "Do", fri: "Fr", sat: "Sa",
   },

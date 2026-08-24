@@ -42,16 +42,17 @@ export const statusProgress: Record<LessonStatus, 0 | 25 | 100> = {
 };
 
 
+/** Translation keys — resolve with t() in components. */
 export const statusLabel: Record<LessonStatus, string> = {
-  not_started: "Ще не розпочато",
-  started: "Урок розпочато",
-  completed: "Урок завершено",
+  not_started: "lesson.status.longNotStarted",
+  started: "lesson.status.longStarted",
+  completed: "lesson.status.longCompleted",
 };
 
 export const statusShortLabel: Record<LessonStatus, string> = {
-  not_started: "Не розпочато",
-  started: "Розпочато",
-  completed: "Завершено",
+  not_started: "lesson.status.shortNotStarted",
+  started: "lesson.status.shortStarted",
+  completed: "lesson.status.shortCompleted",
 };
 
 const KEY = "dk_lesson_progress";

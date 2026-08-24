@@ -45,6 +45,12 @@ export default {
     premiumDesc: "Um deinen Fortschritt zu speichern und Zugriff auf alle C1–C2-Materialien zu erhalten, wähle ein Abonnement.",
   },
   status: {
+    longNotStarted: "Noch nicht begonnen",
+    longStarted: "Lektion begonnen",
+    longCompleted: "Lektion abgeschlossen",
+    shortNotStarted: "Nicht begonnen",
+    shortStarted: "Begonnen",
+    shortCompleted: "Abgeschlossen",
     completedDesc: "Du hast diese Lektion als abgeschlossen markiert.",
     undoLabel: "Markierung entfernen",
     undoAria: "Abschlussmarkierung entfernen",

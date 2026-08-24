@@ -184,7 +184,7 @@ const Dashboard = () => {
                   <ul className="space-y-1 text-sm">
                     {breakdown.map((b, i) => (
                       <li key={i} className="flex items-center justify-between gap-3">
-                        <span className="text-muted-foreground">{b.label}</span>
+                        <span className="text-muted-foreground">{t(b.label)}</span>
                         <span className="font-semibold">+{b.xp} XP</span>
                       </li>
                     ))}
@@ -303,7 +303,7 @@ const Dashboard = () => {
             {[
               { i: BookOpen, v: weeklyLessons, l: t("dashboard.lessonsCompleted"), s: t("dashboard.lessonsCompletedSub") },
               { i: Sparkles, v: weeklyQuizzes, l: t("dashboard.quizzesCompleted"), s: t("dashboard.quizzesCompletedSub") },
-              { i: Clock, v: formatStudyTime(weeklySeconds), l: t("dashboard.activeStudy"), s: t("dashboard.activeStudySub") },
+              { i: Clock, v: formatStudyTime(weeklySeconds, t), l: t("dashboard.activeStudy"), s: t("dashboard.activeStudySub") },
             ].map((s, idx) => (
               <Card key={idx} className="p-5 rounded-2xl border-0 shadow-soft">
                 <div className="flex items-start gap-3">
@@ -358,7 +358,7 @@ const Dashboard = () => {
                     </span>
                     <span className="flex-1 min-w-0">
                       <span className="block text-sm font-medium truncate">{r.title}</span>
-                      <span className="block text-xs text-muted-foreground mt-0.5">{r.context}</span>
+                      <span className="block text-xs text-muted-foreground mt-0.5">{r.isContextKey ? t(r.context, r.contextParams) : r.context}</span>
                     </span>
                     <Badge variant="outline" className="text-xs shrink-0">{r.level}</Badge>
                   </Link>

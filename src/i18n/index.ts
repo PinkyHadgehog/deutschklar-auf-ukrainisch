@@ -30,8 +30,28 @@ export type { Lang } from "./types";
 
 const merge = (...parts: unknown[]): Dict => Object.assign({}, ...parts) as Dict;
 
+/**
+ * Namespace files come in two shapes: plain objects that need wrapping under
+ * their namespace, and files that already carry the namespace themselves
+ * (either as a top-level key or as flat "ns.some.key" entries).
+ */
+const ns = (name: string, mod: Record<string, unknown>): Dict => {
+  const keys = Object.keys(mod);
+  const selfNamespaced =
+    keys.length > 0 && keys.every((k) => k === name || k.startsWith(`${name}.`) || !k.includes("."));
+  const carriesOwnNamespace =
+    keys.length > 0 && keys.some((k) => k === name || k.startsWith(`${name}.`));
+  if (selfNamespaced && carriesOwnNamespace) return mod as Dict;
+  return { [name]: mod } as Dict;
+};
+
+const buildDict = (
+  common: Dict,
+  parts: Record<string, Record<string, unknown>>,
+): Dict => merge(common, ...Object.entries(parts).map(([name, mod]) => ns(name, mod)));
+
 export const dictionaries: Record<Lang, Dict> = {
-  uk: merge(ukCommon, {
+  uk: buildDict(ukCommon as Dict, {
     home: ukHome,
     dashboard: ukDashboard,
     courses: ukCourses,
@@ -44,7 +64,7 @@ export const dictionaries: Record<Lang, Dict> = {
     placement: ukPlacement,
     pricing: ukPricing,
   }),
-  de: merge(deCommon, {
+  de: buildDict(deCommon as Dict, {
     home: deHome,
     dashboard: deDashboard,
     courses: deCourses,
@@ -60,6 +80,8 @@ export const dictionaries: Record<Lang, Dict> = {
 };
 
 const lookup = (dict: Dict, path: string): string | undefined => {
+  const flat = (dict as Record<string, unknown>)[path];
+  if (typeof flat === "string") return flat;
   let cur: unknown = dict;
   for (const part of path.split(".")) {
     if (cur && typeof cur === "object" && part in (cur as Dict)) cur = (cur as Dict)[part];

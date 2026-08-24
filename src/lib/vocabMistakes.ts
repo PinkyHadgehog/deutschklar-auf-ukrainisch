@@ -8,6 +8,8 @@
  * Future backend mapping: POST /api/vocabulary/review-items
  */
 
+import { translate } from "@/i18n";
+
 const KEY = "dk_vocab_review_items";
 const RECENT_DAYS = 21;
 
@@ -17,6 +19,8 @@ export interface ReviewItem {
 }
 
 type Store = Record<string, ReviewItem[]>; // topicId -> items
+
+type Translator = (key: string, vars?: Record<string, string | number>) => string;
 
 const listeners = new Set<() => void>();
 
@@ -74,10 +78,23 @@ export const getReviewCounts = (): Record<string, number> => {
   return out;
 };
 
-/** "3 слова варто повторити" / "5 слів варто повторити" */
-export const wordsToReviewLabel = (n: number) => {
+// Ukrainian pluralisation rule for "слово/слова/слів"; the translated text
+// for each bucket (incl. German) lives in the vocab dictionaries.
+const reviewCountKey = (n: number): string => {
   const last = n % 10;
   const teen = n % 100 >= 11 && n % 100 <= 14;
-  const noun = !teen && last === 1 ? "слово" : !teen && last >= 2 && last <= 4 ? "слова" : "слів";
-  return `${n} ${noun} варто повторити`;
+  if (!teen && last === 1) return "vocab.review.count.one";
+  if (!teen && last >= 2 && last <= 4) return "vocab.review.count.few";
+  return "vocab.review.count.many";
 };
+
+/**
+ * "3 слова варто повторити" / "5 слів варто повторити".
+ * Accepts an optional translator so callers rendering in the current
+ * interface language can pass `t` from `useLang()`; defaults to Ukrainian
+ * for callers outside a React render (kept for backward compatibility).
+ */
+export const wordsToReviewLabel = (
+  n: number,
+  t: Translator = (key, vars) => translate(key, "uk", vars)
+) => t(reviewCountKey(n), { n });

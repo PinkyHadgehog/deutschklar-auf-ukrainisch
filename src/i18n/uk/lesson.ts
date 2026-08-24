@@ -45,6 +45,12 @@ export default {
     premiumDesc: "Для збереження прогресу й доступу до всіх C1–C2 матеріалів обери підписку.",
   },
   status: {
+    longNotStarted: "Ще не розпочато",
+    longStarted: "Урок розпочато",
+    longCompleted: "Урок завершено",
+    shortNotStarted: "Не розпочато",
+    shortStarted: "Розпочато",
+    shortCompleted: "Завершено",
     completedDesc: "Ти позначила цей урок як завершений.",
     undoLabel: "Зняти позначку",
     undoAria: "Зняти позначку завершення",

@@ -11,6 +11,8 @@ import type { VocabWord } from "@/data/mock";
 
 export type QuizKind = "de-uk" | "uk-de" | "artikel" | "plural" | "context";
 
+export type Translator = (key: string, vars?: Record<string, string | number>) => string;
+
 export interface QuizQuestion {
   id: string;
   kind: QuizKind;
@@ -32,17 +34,37 @@ export interface QuizAnswerRecord {
 
 export interface MistakeGroup {
   key: QuizKind;
-  label: string;
-  hint: string;
+  labelKey: string;
+  hintKey: string;
   count: number;
 }
 
-const KIND_META: Record<QuizKind, { label: string; hint: string; short: string }> = {
-  artikel: { label: "Артиклі", hint: "Повтори рід іменників: der / die / das.", short: "артиклі" },
-  "de-uk": { label: "Переклад DE → UA", hint: "Повтори значення цих німецьких слів.", short: "переклад з німецької" },
-  "uk-de": { label: "Переклад UA → DE", hint: "Зверни увагу на точний німецький відповідник.", short: "переклад українською→німецькою" },
-  plural: { label: "Множина", hint: "Повтори форми множини цих слів.", short: "множина" },
-  context: { label: "Контекст речення", hint: "Читай усе речення — слово має підходити за змістом.", short: "контекст речення" },
+const KIND_META: Record<QuizKind, { labelKey: string; hintKey: string; shortKey: string }> = {
+  artikel: {
+    labelKey: "vocab.quizKind.artikel.label",
+    hintKey: "vocab.quizKind.artikel.hint",
+    shortKey: "vocab.quizKind.artikel.short",
+  },
+  "de-uk": {
+    labelKey: "vocab.quizKind.deUk.label",
+    hintKey: "vocab.quizKind.deUk.hint",
+    shortKey: "vocab.quizKind.deUk.short",
+  },
+  "uk-de": {
+    labelKey: "vocab.quizKind.ukDe.label",
+    hintKey: "vocab.quizKind.ukDe.hint",
+    shortKey: "vocab.quizKind.ukDe.short",
+  },
+  plural: {
+    labelKey: "vocab.quizKind.plural.label",
+    hintKey: "vocab.quizKind.plural.hint",
+    shortKey: "vocab.quizKind.plural.short",
+  },
+  context: {
+    labelKey: "vocab.quizKind.context.label",
+    hintKey: "vocab.quizKind.context.hint",
+    shortKey: "vocab.quizKind.context.short",
+  },
 };
 
 export const groupMistakes = (answers: QuizAnswerRecord[]): MistakeGroup[] => {
@@ -55,17 +77,32 @@ export const groupMistakes = (answers: QuizAnswerRecord[]): MistakeGroup[] => {
     });
   return Array.from(counts.entries())
     .sort((a, b) => b[1] - a[1])
-    .map(([key, count]) => ({ key, count, label: KIND_META[key].label, hint: KIND_META[key].hint }));
+    .map(([key, count]) => ({
+      key,
+      count,
+      labelKey: KIND_META[key].labelKey,
+      hintKey: KIND_META[key].hintKey,
+    }));
 };
 
-const plural = (n: number) => (n === 1 ? "помилка" : n < 5 ? "помилки" : "помилок");
-export const mistakeCountLabel = (n: number) => `${n} ${plural(n)}`;
+// Ukrainian pluralisation rule for "помилка/помилки/помилок"; the translated
+// text for each bucket lives in the vocab dictionaries.
+const mistakeCountKey = (n: number): string => {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "vocab.mistake.count.one";
+  if (mod10 >= 2 && mod10 <= 4 && !(mod100 >= 12 && mod100 <= 14)) return "vocab.mistake.count.few";
+  return "vocab.mistake.count.many";
+};
 
-export const focusMessage = (groups: MistakeGroup[]): string => {
+export const mistakeCountLabel = (n: number, t: Translator) => t(mistakeCountKey(n), { n });
+
+export const focusMessage = (groups: MistakeGroup[], t: Translator): string => {
   if (groups.length === 0) return "";
-  const top = groups.slice(0, 2).map((g) => KIND_META[g.key].short);
-  const joined = top.length === 2 ? `${top[0]} та ${top[1]}` : top[0];
-  return `${joined.charAt(0).toUpperCase()}${joined.slice(1)}. Перед повторним Quiz переглянь ці слова ще раз.`;
+  const top = groups.slice(0, 2).map((g) => t(KIND_META[g.key].shortKey));
+  const joined = top.length === 2 ? `${top[0]}${t("vocab.quiz.focusJoin")}${top[1]}` : top[0];
+  const capitalized = `${joined.charAt(0).toUpperCase()}${joined.slice(1)}`;
+  return t("vocab.quiz.focusMessage", { topics: capitalized });
 };
 
 export const XP = {
@@ -102,21 +139,41 @@ const buildOptions = (correct: string, distractors: string[]): { options: string
   return { options, correctIndex: options.indexOf(correct) };
 };
 
-const makeQuestion = (word: VocabWord, pool: VocabWord[], kind: QuizKind, idx: number): QuizQuestion | null => {
+const makeQuestion = (
+  word: VocabWord,
+  pool: VocabWord[],
+  kind: QuizKind,
+  idx: number,
+  t: Translator
+): QuizQuestion | null => {
   const base = stripArtikel(word.de);
 
   if (kind === "de-uk") {
     const d = pickDistinct(pool, 3, (w) => w.uk === word.uk).map((w) => w.uk);
     if (d.length < 2) return null;
     const { options, correctIndex } = buildOptions(word.uk, d);
-    return { id: `q${idx}`, kind, prompt: `Що означає „${fullGerman(word)}“?`, options, correctIndex, word };
+    return {
+      id: `q${idx}`,
+      kind,
+      prompt: t("vocab.quiz.prompt.meaning", { word: fullGerman(word) }),
+      options,
+      correctIndex,
+      word,
+    };
   }
 
   if (kind === "uk-de") {
     const d = pickDistinct(pool, 3, (w) => w.de === word.de).map((w) => fullGerman(w));
     if (d.length < 2) return null;
     const { options, correctIndex } = buildOptions(fullGerman(word), d);
-    return { id: `q${idx}`, kind, prompt: `Як німецькою буде „${word.uk}“?`, options, correctIndex, word };
+    return {
+      id: `q${idx}`,
+      kind,
+      prompt: t("vocab.quiz.prompt.translate", { word: word.uk }),
+      options,
+      correctIndex,
+      word,
+    };
   }
 
   if (kind === "artikel") {
@@ -125,7 +182,7 @@ const makeQuestion = (word: VocabWord, pool: VocabWord[], kind: QuizKind, idx: n
     return {
       id: `q${idx}`,
       kind,
-      prompt: "Який правильний артикль?",
+      prompt: t("vocab.quiz.prompt.artikel"),
       sub: `___ ${base}`,
       options,
       correctIndex: options.indexOf(word.artikel),
@@ -147,7 +204,7 @@ const makeQuestion = (word: VocabWord, pool: VocabWord[], kind: QuizKind, idx: n
     return {
       id: `q${idx}`,
       kind,
-      prompt: "Яка правильна форма множини?",
+      prompt: t("vocab.quiz.prompt.plural"),
       sub: `${fullGerman(word)} →`,
       options,
       correctIndex,
@@ -155,19 +212,30 @@ const makeQuestion = (word: VocabWord, pool: VocabWord[], kind: QuizKind, idx: n
     };
   }
 
-
   // context
   if (!word.sample || !word.sample.includes(base)) return null;
   const gapped = word.sample.replace(base, "____");
   const d = pickDistinct(pool, 3, (w) => stripArtikel(w.de) === base).map((w) => stripArtikel(w.de));
   if (d.length < 2) return null;
   const { options, correctIndex } = buildOptions(base, d);
-  return { id: `q${idx}`, kind, prompt: "Обери правильне слово:", sub: `„${gapped}“`, options, correctIndex, word };
+  return {
+    id: `q${idx}`,
+    kind,
+    prompt: t("vocab.quiz.prompt.context"),
+    sub: `„${gapped}“`,
+    options,
+    correctIndex,
+    word,
+  };
 };
 
 const KINDS: QuizKind[] = ["de-uk", "uk-de", "artikel", "plural", "context"];
 
-export const buildQuiz = (sessionWords: VocabWord[], length = DEFAULT_QUIZ_LENGTH): QuizQuestion[] => {
+export const buildQuiz = (
+  sessionWords: VocabWord[],
+  t: Translator,
+  length = DEFAULT_QUIZ_LENGTH
+): QuizQuestion[] => {
   const pool = sessionWords;
   const candidates = shuffle(sessionWords);
   const questions: QuizQuestion[] = [];
@@ -175,7 +243,7 @@ export const buildQuiz = (sessionWords: VocabWord[], length = DEFAULT_QUIZ_LENGT
   for (const word of candidates) {
     if (questions.length >= length) break;
     for (const kind of shuffle(KINDS)) {
-      const q = makeQuestion(word, pool, kind, questions.length);
+      const q = makeQuestion(word, pool, kind, questions.length, t);
       if (q) {
         questions.push(q);
         break;
@@ -193,7 +261,7 @@ export interface QuizScore {
   breakdown: { label: string; xp: number }[];
 }
 
-export const scoreQuiz = (answers: QuizAnswerRecord[], isRepeat = false): QuizScore => {
+export const scoreQuiz = (answers: QuizAnswerRecord[], t: Translator, isRepeat = false): QuizScore => {
   const total = answers.length;
   const correct = answers.filter((a) => a.correct).length;
   const percent = total ? Math.round((correct / total) * 100) : 0;
@@ -203,14 +271,14 @@ export const scoreQuiz = (answers: QuizAnswerRecord[], isRepeat = false): QuizSc
       total,
       percent,
       xp: 0,
-      breakdown: [{ label: "Режим повторення — без XP", xp: 0 }],
+      breakdown: [{ label: t("vocab.quiz.xp.repeatMode"), xp: 0 }],
     };
   }
   const breakdown: { label: string; xp: number }[] = [
-    { label: "правильні відповіді", xp: correct * XP.perCorrect },
+    { label: t("vocab.quiz.xp.correctAnswers"), xp: correct * XP.perCorrect },
   ];
-  if (percent >= 80) breakdown.push({ label: "результат 80%+", xp: XP.bonus80 });
-  if (total > 0 && correct === total) breakdown.push({ label: "ідеальний результат", xp: XP.bonusPerfect });
+  if (percent >= 80) breakdown.push({ label: t("vocab.quiz.xp.bonus80"), xp: XP.bonus80 });
+  if (total > 0 && correct === total) breakdown.push({ label: t("vocab.quiz.xp.bonusPerfect"), xp: XP.bonusPerfect });
   return { correct, total, percent, xp: breakdown.reduce((s, b) => s + b.xp, 0), breakdown };
 };
 

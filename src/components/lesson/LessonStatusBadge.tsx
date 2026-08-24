@@ -1,8 +1,10 @@
 import { useLessonProgress, statusShortLabel } from "@/lib/lessonProgress";
 import { cn } from "@/lib/utils";
+import { useLang } from "@/context/LanguageContext";
 
-/** Compact "100% · ✓ Завершено" / "25% · ● Розпочато" / "0% · ○ Не розпочато" marker. */
+/** Compact "100% · ✓ Completed" / "25% · ● Started" / "0% · ○ Not started" marker. */
 const LessonStatusBadge = ({ lessonId, className }: { lessonId: string; className?: string }) => {
+  const { t } = useLang();
   const { status, progress } = useLessonProgress(lessonId);
 
   const icon = status === "completed" ? "✓ " : status === "started" ? "● " : "○ ";
@@ -20,7 +22,7 @@ const LessonStatusBadge = ({ lessonId, className }: { lessonId: string; classNam
       )}
     >
       {progress}% · {icon}
-      {statusShortLabel[status]}
+      {t(statusShortLabel[status])}
     </span>
   );
 };
