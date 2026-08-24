@@ -37,6 +37,7 @@ const Dashboard = () => {
   const [weeklyByDay, setWeeklyByDay] = useState<number[]>([0, 0, 0, 0, 0, 0, 0]);
   const [weeklyGoal, setWeeklyGoal] = useState(100);
   const [dailyGoal, setDailyGoal] = useState(20);
+  const [plannedGoals, setPlannedGoals] = useState<DailyXpGoals>(() => emptyGoals());
   const [weeklySeconds, setWeeklySeconds] = useState(0);
   const [weeklyLessons, setWeeklyLessons] = useState(0);
   const [weeklyQuizzes, setWeeklyQuizzes] = useState(0);
@@ -51,6 +52,7 @@ const Dashboard = () => {
       setWeeklyByDay(getWeeklyXpByDay());
       setWeeklyGoal(getWeeklyXpGoal());
       setDailyGoal(getDailyStudyMinutesGoal());
+      setPlannedGoals(getEffectiveDailyXpGoals());
       setWeeklySeconds(getWeeklyStudySeconds());
       setWeeklyLessons(getWeeklyCompletedLessons());
       setWeeklyQuizzes(getWeeklyCompletedQuizzes());
