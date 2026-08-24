@@ -12,6 +12,7 @@ import {
 import { courses, plans } from "@/data/mock";
 import { getAggregate, getLevelLessonIds, useProgressVersion } from "@/lib/progressAggregate";
 import { useAuth } from "@/context/AuthContext";
+import { useLang } from "@/context/LanguageContext";
 import { OksiPortrait } from "@/components/home/OksiPortrait";
 import { PLACEMENT_ROUTE, PLACEMENT_EVENTS, trackPlacementEvent } from "@/components/placement/placement";
 
@@ -24,81 +25,6 @@ const levelBadge: Record<string, string> = {
   C2: "bg-blue-900",
 };
 
-/** Outcome-focused copy for the course grid (presentation only — course data stays untouched). */
-const levelOutcome: Record<string, { title: string; text: string }> = {
-  A1: { title: "Почни говорити німецькою", text: "Представся, постав прості запитання, розкажи про себе й зрозумій основи німецької граматики." },
-  A2: { title: "Спілкуйся в повсякденних ситуаціях", text: "Розповідай про минуле, плани та повсякденне життя й упевненіше користуйся базовою граматикою." },
-  B1: { title: "Говори самостійно й упевненіше", text: "Будуй складніші речення, висловлюй свою думку й підтримуй розгорнуті розмови." },
-  B2: { title: "Висловлюй думки точно та природно", text: "Працюй зі складною граматикою, нюансами мови та більш природним формулюванням думок." },
-  C1: { title: "Користуйся німецькою професійно", text: "Висловлюй складні думки, працюй із формальною мовою та спілкуйся впевнено в професійному середовищі." },
-  C2: { title: "Володій мовою майже без обмежень", text: "Розумій мовні нюанси й висловлюйся точно, гнучко та природно навіть у складних ситуаціях." },
-};
-
-const painPoints = [
-  "«Артиклі ніяк не запам’ятовуються.»",
-  "«Не розумію, коли Akkusativ, а коли Dativ.»",
-  "«Знаю правило, але не можу використати його в розмові.»",
-  "«Дивлюся різні пояснення й уже не знаю, що вчити далі.»",
-];
-
-const differentiators = [
-  {
-    icon: Brain,
-    title: "Зрозумій, а не зубри",
-    text: "Правила пояснюються простою українською мовою: не лише «як правильно», а й чому німецька працює саме так.",
-  },
-  {
-    icon: Globe2,
-    title: "Створено для україномовних",
-    text: "Порівнюємо логіку української та німецької й показуємо типові помилки, які найчастіше роблять україномовні.",
-  },
-  {
-    icon: Compass,
-    title: "Завжди знаєш, що вчити далі",
-    text: "Рівень, послідовність уроків, прогрес і рекомендації допомагають рухатися вперед без хаотичного стрибання між темами.",
-  },
-];
-
-const lessonStructure = [
-  { icon: Target, title: "Що ти навчишся робити" },
-  { icon: BookOpen, title: "Зрозуміле пояснення українською" },
-  { icon: Lightbulb, title: "Правило без зайвої теорії" },
-  { icon: Globe2, title: "Порівняння з українською" },
-  { icon: AlertTriangle, title: "Типові помилки україномовних" },
-  { icon: FileText, title: "Коротке повторення" },
-  { icon: PenLine, title: "15 вправ для закріплення" },
-];
-
-const personalization = [
-  { icon: Target, title: "Особиста ціль", text: "Встанови щоденну ціль у хвилинах і тижневу ціль у XP." },
-  { icon: BarChart3, title: "Твій реальний прогрес", text: "Бачиш завершені уроки, квізи, XP та активний час навчання." },
-  { icon: Brain, title: "Що вчити далі", text: "Отримуй рекомендації: продовжити курс, повторити тему чи перейти до наступного кроку." },
-  { icon: RotateCw, title: "Повтори свої помилки", text: "Після Quiz бачиш слабкі місця та можеш повернутися саме до тих завдань, де помилилася." },
-];
-
-const chaosList = [
-  "Десятки правил без зв’язку",
-  "Випадкові відео та матеріали",
-  "Не знаєш, що вчити далі",
-  "Постійно повторюєш ті самі помилки",
-];
-
-const klarList = [
-  "Логічний навчальний шлях",
-  "Пояснення українською",
-  "Практика після кожної теми",
-  "Бачиш свій прогрес і наступний крок",
-];
-
-const faqs = [
-  { q: "Чи підходить платформа для початківців?", a: "Так. Ми починаємо з абсолютного нуля — рівень A1, алфавіт і вимова. Усі пояснення українською мовою." },
-  { q: "Як визначити свій рівень?", a: "Пройди короткий безкоштовний тест або обери рівень A1–C2 самостійно у розділі «Курси»." },
-  { q: "Чи можу я навчатися у власному темпі?", a: "Так. Немає розкладу й дедлайнів: ти сама позначаєш уроки як розпочаті та завершені й задаєш щоденну й тижневу цілі." },
-  { q: "Що входить у безкоштовний доступ?", a: "Базові лекції A1, тест на визначення рівня, частина вправ і доступ до словника." },
-  { q: "Як працює підписка?", a: "Підписка помісячна або річна й відкриває матеріали відповідно до обраного тарифу — Klar Plus або Klar Premium." },
-  { q: "Чи можу я скасувати підписку?", a: "Так, будь-коли у профілі — без пояснень. Доступ збережеться до кінця оплаченого періоду." },
-];
-
 const H1 = "font-display font-extrabold tracking-tight leading-[1.08] text-[2.25rem] sm:text-5xl lg:text-[3.75rem]";
 const H2 = "font-display font-extrabold tracking-tight leading-tight text-[1.75rem] sm:text-4xl lg:text-[2.75rem]";
 const H3 = "font-display font-bold text-xl lg:text-2xl";
@@ -106,6 +32,7 @@ const LEAD = "text-[1.0625rem] md:text-lg text-muted-foreground";
 
 const Home = () => {
   const { user } = useAuth();
+  const { t } = useLang();
   useProgressVersion();
   const { hash } = useLocation();
 
@@ -114,6 +41,78 @@ const Home = () => {
     const el = document.querySelector(hash);
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [hash]);
+
+  const levelOutcome: Record<string, { title: string; text: string }> = {
+    A1: { title: t("home.courses.a1Title"), text: t("home.courses.a1Text") },
+    A2: { title: t("home.courses.a2Title"), text: t("home.courses.a2Text") },
+    B1: { title: t("home.courses.b1Title"), text: t("home.courses.b1Text") },
+    B2: { title: t("home.courses.b2Title"), text: t("home.courses.b2Text") },
+    C1: { title: t("home.courses.c1Title"), text: t("home.courses.c1Text") },
+    C2: { title: t("home.courses.c2Title"), text: t("home.courses.c2Text") },
+  };
+
+  const painPoints = [t("home.painPoints.p1"), t("home.painPoints.p2"), t("home.painPoints.p3"), t("home.painPoints.p4")];
+
+  const differentiators = [
+    { icon: Brain, title: t("home.differentiators.d1Title"), text: t("home.differentiators.d1Text") },
+    { icon: Globe2, title: t("home.differentiators.d2Title"), text: t("home.differentiators.d2Text") },
+    { icon: Compass, title: t("home.differentiators.d3Title"), text: t("home.differentiators.d3Text") },
+  ];
+
+  const lessonStructure = [
+    { icon: Target, title: t("home.lessonStructure.s1") },
+    { icon: BookOpen, title: t("home.lessonStructure.s2") },
+    { icon: Lightbulb, title: t("home.lessonStructure.s3") },
+    { icon: Globe2, title: t("home.lessonStructure.s4") },
+    { icon: AlertTriangle, title: t("home.lessonStructure.s5") },
+    { icon: FileText, title: t("home.lessonStructure.s6") },
+    { icon: PenLine, title: t("home.lessonStructure.s7") },
+  ];
+
+  const personalization = [
+    { icon: Target, title: t("home.personalization.p1Title"), text: t("home.personalization.p1Text") },
+    { icon: BarChart3, title: t("home.personalization.p2Title"), text: t("home.personalization.p2Text") },
+    { icon: Brain, title: t("home.personalization.p3Title"), text: t("home.personalization.p3Text") },
+    { icon: RotateCw, title: t("home.personalization.p4Title"), text: t("home.personalization.p4Text") },
+  ];
+
+  const chaosList = [
+    t("home.transformation.chaos1"),
+    t("home.transformation.chaos2"),
+    t("home.transformation.chaos3"),
+    t("home.transformation.chaos4"),
+  ];
+
+  const klarList = [
+    t("home.transformation.klar1"),
+    t("home.transformation.klar2"),
+    t("home.transformation.klar3"),
+    t("home.transformation.klar4"),
+  ];
+
+  const faqs = [
+    { q: t("home.faq.q1"), a: t("home.faq.a1") },
+    { q: t("home.faq.q2"), a: t("home.faq.a2") },
+    { q: t("home.faq.q3"), a: t("home.faq.a3") },
+    { q: t("home.faq.q4"), a: t("home.faq.a4") },
+    { q: t("home.faq.q5"), a: t("home.faq.a5") },
+    { q: t("home.faq.q6"), a: t("home.faq.a6") },
+  ];
+
+  const heroPreviewCards = [
+    { icon: AlertTriangle, title: t("home.hero.preview.mistakesTitle"), text: t("home.hero.preview.mistakesText"), cls: "bg-accent-soft" },
+    { icon: Globe2, title: t("home.hero.preview.ukTitle"), text: t("home.hero.preview.ukText"), cls: "bg-info-soft" },
+    { icon: Lightbulb, title: t("home.hero.preview.ruleTitle"), text: t("home.hero.preview.ruleText"), cls: "bg-primary-soft" },
+    { icon: PenLine, title: t("home.hero.preview.exercisesTitle"), text: t("home.hero.preview.exercisesText"), cls: "bg-secondary" },
+  ];
+
+  const howItWorksSteps = [
+    { icon: Target, title: t("home.howItWorks.s1Title"), text: t("home.howItWorks.s1Text"), extra: t("home.howItWorks.s1Extra") },
+    { icon: BookOpen, title: t("home.howItWorks.s2Title"), text: t("home.howItWorks.s2Text") },
+    { icon: TrendingUp, title: t("home.howItWorks.s3Title"), text: t("home.howItWorks.s3Text") },
+  ];
+
+  const exampleQuestions = [t("home.example.q1"), t("home.example.q2"), t("home.example.q3")];
 
   const PrimaryCta = ({ source, size = "lg", className = "" }: { source: string; size?: "lg" | "default"; className?: string }) => (
     <Button
@@ -124,7 +123,7 @@ const Home = () => {
       className={`bg-gradient-primary hover:opacity-95 shadow-elevated h-12 px-7 text-base ${className}`}
       onClick={() => trackPlacementEvent(PLACEMENT_EVENTS.ctaClicked, { source })}
     >
-      <Link to={PLACEMENT_ROUTE}>Визначити свій рівень <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+      <Link to={PLACEMENT_ROUTE}>{t("home.hero.ctaPrimary")} <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
     </Button>
   );
 
@@ -135,26 +134,24 @@ const Home = () => {
         <div className="container py-12 md:py-16 lg:py-20 grid lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-14 items-center">
           <div className="animate-fade-in order-1">
             <Badge className="bg-accent text-accent-foreground hover:bg-accent gap-1.5 mb-4 px-3 py-1">
-              <Sparkles className="h-3.5 w-3.5" /> Німецька для україномовних · A1–C2
+              <Sparkles className="h-3.5 w-3.5" /> {t("home.badge")}
             </Badge>
             <h1 className={H1}>
-              Німецька, яку <span className="text-gradient">нарешті можна зрозуміти</span>.
+              {t("home.hero.title").split("{highlight}")[0]}
+              <span className="text-gradient">{t("home.hero.titleHighlight")}</span>.
             </h1>
-            <p className={`mt-5 max-w-xl ${LEAD}`}>
-              Не зубри правила. Зрозумій логіку німецької українською — з послідовними курсами, прикладами,
-              типовими помилками та практикою після кожного уроку.
-            </p>
+            <p className={`mt-5 max-w-xl ${LEAD}`}>{t("home.hero.subtitle")}</p>
 
             <div className="mt-7 flex flex-col sm:flex-row gap-3">
               <PrimaryCta source="hero" className="w-full sm:w-auto" />
               <Button asChild size="lg" variant="outline" className="h-12 px-7 text-base w-full sm:w-auto bg-card">
-                <Link to="/courses">Переглянути курси</Link>
+                <Link to="/courses">{t("home.hero.ctaSecondary")}</Link>
               </Button>
             </div>
-            <p className="text-sm text-muted-foreground mt-3">Безкоштовний тест · 10–15 хв · персональна рекомендація</p>
+            <p className="text-sm text-muted-foreground mt-3">{t("home.hero.support")}</p>
 
             <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted-foreground">
-              {["Пояснення українською", "Курси A1–C2", "15 вправ після уроку", "Прогрес і рекомендації"].map((u) => (
+              {[t("home.hero.bullets.b1"), t("home.hero.bullets.b2"), t("home.hero.bullets.b3"), t("home.hero.bullets.b4")].map((u) => (
                 <li key={u} className="flex items-center gap-1.5">
                   <Check className="h-4 w-4 text-success shrink-0" /> {u}
                 </li>
@@ -168,16 +165,16 @@ const Home = () => {
             <Card className="relative p-6 rounded-2xl shadow-elevated border-0 bg-card">
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <div className="text-xs text-muted-foreground">Так виглядає урок</div>
-                  <div className="font-display font-bold text-lg">Infinitivkonstruktionen</div>
+                  <div className="text-xs text-muted-foreground">{t("home.hero.preview.label")}</div>
+                  <div className="font-display font-bold text-lg">{t("home.hero.preview.lessonTitle")}</div>
                 </div>
                 <Badge variant="secondary" className="bg-primary-soft text-primary border-0">B2</Badge>
               </div>
 
               <div className="rounded-xl bg-secondary p-4 mb-4">
-                <div className="text-sm font-semibold mb-1">Пояснення</div>
+                <div className="text-sm font-semibold mb-1">{t("home.hero.preview.explanationTitle")}</div>
                 <div className="text-sm text-muted-foreground">
-                  <span className="text-primary font-semibold">um … zu</span> = мета, коли суб’єкт однаковий
+                  <span className="text-primary font-semibold">um … zu</span> {t("home.hero.preview.explanationRule")}
                 </div>
                 <div className="text-base mt-2">
                   Ich lerne Deutsch, <span className="text-primary font-semibold">um</span> in Berlin <span className="text-primary font-semibold">zu arbeiten</span>.
@@ -185,12 +182,7 @@ const Home = () => {
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-left">
-                {[
-                  { icon: AlertTriangle, title: "Типові помилки", text: "Що часто плутають", cls: "bg-accent-soft" },
-                  { icon: Globe2, title: "Для україномовних", text: "Порівняння логіки мов", cls: "bg-info-soft" },
-                  { icon: Lightbulb, title: "Правило", text: "Коротко й по суті", cls: "bg-primary-soft" },
-                  { icon: PenLine, title: "15 вправ", text: "Одразу закріпити", cls: "bg-secondary" },
-                ].map((b) => (
+                {heroPreviewCards.map((b) => (
                   <div key={b.title} className={`rounded-xl ${b.cls} p-3`}>
                     <b.icon className="h-4 w-4 mb-1.5 text-primary" />
                     <div className="text-xs font-semibold leading-tight">{b.title}</div>
@@ -206,10 +198,8 @@ const Home = () => {
       {/* 2. PAIN POINTS */}
       <section className="container py-14 md:py-20">
         <div className="max-w-2xl">
-          <h2 className={H2}>Знайомо?</h2>
-          <p className={`mt-3 ${LEAD}`}>
-            Вчиш німецьку, але правила все одно не складаються в одну зрозумілу систему?
-          </p>
+          <h2 className={H2}>{t("home.painPoints.title")}</h2>
+          <p className={`mt-3 ${LEAD}`}>{t("home.painPoints.subtitle")}</p>
         </div>
         <div className="mt-8 grid sm:grid-cols-2 gap-3.5">
           {painPoints.map((p) => (
@@ -219,18 +209,15 @@ const Home = () => {
           ))}
         </div>
         <div className="mt-8 max-w-2xl">
-          <p className="font-display font-bold text-xl lg:text-2xl">Саме тому існує deutsch.klar.</p>
-          <p className={`mt-2 ${LEAD}`}>
-            Замість хаотичного набору правил ти отримуєш зрозумілий навчальний шлях, де кожна нова тема
-            логічно продовжує попередню.
-          </p>
+          <p className="font-display font-bold text-xl lg:text-2xl">{t("home.painPoints.reasonTitle")}</p>
+          <p className={`mt-2 ${LEAD}`}>{t("home.painPoints.reasonText")}</p>
         </div>
       </section>
 
       {/* 3. CORE DIFFERENTIATORS */}
       <section className="bg-primary-soft/40 py-14 md:py-20">
         <div className="container">
-          <h2 className={`${H2} max-w-3xl`}>Не просто уроки. Система, яка допомагає зрозуміти німецьку.</h2>
+          <h2 className={`${H2} max-w-3xl`}>{t("home.differentiators.title")}</h2>
           <div className="mt-10 grid md:grid-cols-3 gap-5">
             {differentiators.map((d) => (
               <Card key={d.title} className="p-7 rounded-2xl border-0 shadow-soft bg-card hover:shadow-elevated transition">
@@ -249,39 +236,34 @@ const Home = () => {
       <section className="container py-14 md:py-20">
         <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
           <div className="max-w-xl">
-            <h2 className={H2}>Побач, як німецька стає зрозумілою</h2>
-            <p className={`mt-4 ${LEAD}`}>
-              У deutsch.klar ти не просто бачиш правильну відповідь — ти розумієш логіку за нею.
-            </p>
-            <p className="mt-5 text-base text-muted-foreground">
-              Урок пояснює правило, порівнює його з українською, показує типові помилки й одразу дає практику.
-            </p>
+            <h2 className={H2}>{t("home.example.title")}</h2>
+            <p className={`mt-4 ${LEAD}`}>{t("home.example.subtitle")}</p>
+            <p className="mt-5 text-base text-muted-foreground">{t("home.example.text")}</p>
             <Button asChild variant="ghost" className="mt-4 px-0 text-primary hover:bg-transparent hover:text-primary">
-              <Link to="/courses">Я вже знаю свій рівень <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+              <Link to="/courses">{t("home.example.cta")} <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
             </Button>
           </div>
 
           <Card className="p-6 md:p-7 rounded-2xl border-0 shadow-elevated bg-card">
             <div className="rounded-xl bg-secondary p-4">
-              <div className="text-xs font-semibold text-muted-foreground">Українською</div>
-              <div className="text-lg mt-1">Я йду до лікаря.</div>
+              <div className="text-xs font-semibold text-muted-foreground">{t("home.example.ukLabel")}</div>
+              <div className="text-lg mt-1">{t("home.example.ukPhrase")}</div>
             </div>
             <div className="rounded-xl bg-primary-soft p-4 mt-3">
-              <div className="text-xs font-semibold text-primary">Німецькою</div>
+              <div className="text-xs font-semibold text-primary">{t("home.example.deLabel")}</div>
               <div className="text-lg mt-1">
                 Ich gehe <span className="text-primary font-semibold">zum</span> Arzt.
               </div>
             </div>
             <div className="mt-5 grid sm:grid-cols-3 gap-2.5">
-              {["Чому «zum»?", "Чому Dativ?", "Чому не «bei»?"].map((q) => (
+              {exampleQuestions.map((q) => (
                 <div key={q} className="rounded-xl border border-primary/20 bg-card px-3 py-3 text-sm font-semibold text-primary text-center">
                   {q}
                 </div>
               ))}
             </div>
             <div className="mt-5 rounded-xl bg-accent-soft p-4 text-sm">
-              <span className="font-semibold">zu + dem = zum</span> — прийменник <span className="font-semibold">zu</span> завжди
-              вимагає Dativ. Українське «до лікаря» тут не перекладається дослівно.
+              <span className="font-semibold">zu + dem = zum</span> {t("home.example.explanationPre")} <span className="font-semibold">zu</span> {t("home.example.explanationPost")}
             </div>
           </Card>
         </div>
@@ -291,10 +273,8 @@ const Home = () => {
       <section className="bg-secondary/40 py-14 md:py-20">
         <div className="container">
           <div className="max-w-2xl">
-            <h2 className={H2}>Один урок — від «не розумію» до «тепер ясно»</h2>
-            <p className={`mt-3 ${LEAD}`}>
-              Кожна тема проходить один логічний шлях: зрозуміти → побачити приклади → уникнути типових помилок → закріпити практикою.
-            </p>
+            <h2 className={H2}>{t("home.lessonStructure.title")}</h2>
+            <p className={`mt-3 ${LEAD}`}>{t("home.lessonStructure.subtitle")}</p>
           </div>
           <div className="mt-9 grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
             {lessonStructure.map((s, i) => (
@@ -303,7 +283,7 @@ const Home = () => {
                   <s.icon className="h-[18px] w-[18px] text-primary" />
                 </div>
                 <div>
-                  <div className="text-[11px] font-semibold text-muted-foreground">Крок {i + 1}</div>
+                  <div className="text-[11px] font-semibold text-muted-foreground">{t("home.lessonStructure.step", { n: i + 1 })}</div>
                   <div className="font-display font-bold text-[15px] leading-snug mt-0.5">{s.title}</div>
                 </div>
               </Card>
@@ -315,15 +295,11 @@ const Home = () => {
       {/* 6. HOW IT WORKS */}
       <section id="how" className="container py-14 md:py-20 scroll-mt-20">
         <div className="max-w-2xl">
-          <h2 className={H2}>Як це працює?</h2>
-          <p className={`mt-3 ${LEAD}`}>Від першого тесту до впевненої німецької — без хаосу.</p>
+          <h2 className={H2}>{t("home.howItWorks.title")}</h2>
+          <p className={`mt-3 ${LEAD}`}>{t("home.howItWorks.subtitle")}</p>
         </div>
         <div className="mt-10 grid md:grid-cols-3 gap-5">
-          {[
-            { icon: Target, title: "1. Визнач свій рівень", text: "Пройди безкоштовний адаптивний тест або обери свій рівень A1–C2 самостійно.", extra: "Після тесту ти отримаєш орієнтовний рівень і рекомендацію, з чого почати." },
-            { icon: BookOpen, title: "2. Навчайся системно", text: "Проходь уроки в логічній послідовності: пояснення, приклади, типові помилки та практика." },
-            { icon: TrendingUp, title: "3. Бачиш свій прогрес", text: "Стеж за уроками, квізами, XP, активним часом навчання та персональними рекомендаціями." },
-          ].map((s) => (
+          {howItWorksSteps.map((s) => (
             <Card key={s.title} className="p-7 rounded-2xl border-0 shadow-soft bg-card hover:shadow-elevated transition">
               <div className="h-12 w-12 rounded-xl bg-gradient-primary grid place-items-center mb-5">
                 <s.icon className="h-6 w-6 text-primary-foreground" />
@@ -344,12 +320,10 @@ const Home = () => {
         <div className="container">
           <div className="flex items-end justify-between gap-4 flex-wrap">
             <div className="max-w-2xl">
-              <h2 className={H2}>Твій шлях від A1 до C2</h2>
-              <p className={`mt-3 ${LEAD}`}>
-                Обери свій рівень або пройди безкоштовний тест — і почни з того місця, яке підходить саме тобі.
-              </p>
+              <h2 className={H2}>{t("home.courses.title")}</h2>
+              <p className={`mt-3 ${LEAD}`}>{t("home.courses.subtitle")}</p>
             </div>
-            <Button asChild variant="outline" className="bg-card"><Link to="/courses">Переглянути курси <ArrowRight className="ml-1.5 h-4 w-4" /></Link></Button>
+            <Button asChild variant="outline" className="bg-card"><Link to="/courses">{t("home.courses.viewCourses")} <ArrowRight className="ml-1.5 h-4 w-4" /></Link></Button>
           </div>
 
           <div className="mt-9 grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -357,7 +331,7 @@ const Home = () => {
               const showProgress = !!user;
               const stats = getAggregate(getLevelLessonIds(c.level));
               const outcome = levelOutcome[c.level] ?? { title: c.title, text: c.description };
-              const status = stats.progress === 100 ? "Завершено" : stats.progress > 0 ? "У процесі" : "Не розпочато";
+              const status = stats.progress === 100 ? t("home.courses.statusDone") : stats.progress > 0 ? t("home.courses.statusInProgress") : t("home.courses.statusNotStarted");
               const statusClass = stats.progress === 100
                 ? "bg-success/15 text-success"
                 : stats.progress > 0 ? "bg-primary-soft text-primary" : "bg-secondary text-muted-foreground";
@@ -372,7 +346,7 @@ const Home = () => {
                         <Badge variant="secondary" className={`${statusClass} border-0`}>{status}</Badge>
                       ) : (
                         <Badge variant="secondary" className="bg-secondary text-muted-foreground border-0">
-                          {stats.total} лекцій
+                          {t("home.courses.lessonsCount", { n: stats.total })}
                         </Badge>
                       )}
                     </div>
@@ -381,15 +355,15 @@ const Home = () => {
                     {showProgress ? (
                       <>
                         <div className="flex items-center justify-between text-sm mb-2">
-                          <span className="text-muted-foreground">Прогрес</span>
+                          <span className="text-muted-foreground">{t("home.courses.progress")}</span>
                           <span className="font-semibold">{stats.progress}%</span>
                         </div>
                         <Progress value={stats.progress} className="h-2" />
-                        <div className="mt-1.5 text-xs text-muted-foreground">{stats.completed} з {stats.total} уроків завершено</div>
+                        <div className="mt-1.5 text-xs text-muted-foreground">{t("home.courses.lessonsCompleted", { completed: stats.completed, total: stats.total })}</div>
                       </>
                     ) : (
                       <span className="inline-flex items-center text-sm font-semibold text-primary">
-                        Переглянути курс <ArrowRight className="ml-1.5 h-4 w-4" />
+                        {t("home.courses.viewCourse")} <ArrowRight className="ml-1.5 h-4 w-4" />
                       </span>
                     )}
                   </Card>
@@ -403,10 +377,8 @@ const Home = () => {
       {/* 8. PERSONAL LEARNING SYSTEM */}
       <section className="container py-14 md:py-20">
         <div className="max-w-2xl">
-          <h2 className={H2}>Ти завжди знаєш, що вчити далі</h2>
-          <p className={`mt-3 ${LEAD}`}>
-            deutsch.klar допомагає бачити прогрес, слабкі місця та наступний логічний крок у навчанні.
-          </p>
+          <h2 className={H2}>{t("home.personalization.title")}</h2>
+          <p className={`mt-3 ${LEAD}`}>{t("home.personalization.subtitle")}</p>
         </div>
         <div className="mt-9 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {personalization.map((p) => (
@@ -419,9 +391,7 @@ const Home = () => {
             </Card>
           ))}
         </div>
-        <p className="text-xs text-muted-foreground/80 mt-5">
-          Рекомендації формуються за простими правилами на основі твоєї активності — без штучного інтелекту.
-        </p>
+        <p className="text-xs text-muted-foreground/80 mt-5">{t("home.personalization.footnote")}</p>
       </section>
 
       {/* 9. OKSI */}
@@ -429,25 +399,16 @@ const Home = () => {
         <div className="container grid lg:grid-cols-[45%_1fr] gap-10 lg:gap-14 items-center">
           <OksiPortrait />
           <div className="max-w-xl">
-            <h2 className={H2}>Привіт, я Оксі 👋</h2>
-            <p className="mt-4 font-display font-bold text-xl lg:text-2xl leading-snug">
-              Я хочу, щоб ти не просто вчила німецьку — а розуміла її.
-            </p>
-            <p className={`mt-4 ${LEAD}`}>
-              Я створила deutsch.klar для україномовних, яким недостатньо просто почути правило й завчити його.
-              Тут ти розумієш, чому німецька працює саме так, бачиш різницю між українською та німецькою
-              й одразу закріплюєш нове на практиці.
-            </p>
+            <h2 className={H2}>{t("home.oksi.greeting")}</h2>
+            <p className="mt-4 font-display font-bold text-xl lg:text-2xl leading-snug">{t("home.oksi.lead")}</p>
+            <p className={`mt-4 ${LEAD}`}>{t("home.oksi.text")}</p>
             <blockquote className="mt-6 rounded-2xl bg-card border-l-4 border-primary px-5 py-4 shadow-soft">
               <Quote className="h-4 w-4 text-primary mb-1.5" />
-              <p className="font-display font-bold text-lg">Менше зубріння. Більше логіки. Більше впевненості.</p>
+              <p className="font-display font-bold text-lg">{t("home.oksi.quote")}</p>
             </blockquote>
             <div className="mt-6">
-              <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Чому я створила deutsch.klar</div>
-              <p className="mt-2 text-base text-muted-foreground">
-                Бо сама бачила, як багато україномовних вчать німецьку роками — і все одно не відчувають системи.
-                Мені хотілося зробити місце, де пояснення нарешті звучать зрозуміло, а кожен урок веде до наступного.
-              </p>
+              <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{t("home.oksi.whyTitle")}</div>
+              <p className="mt-2 text-base text-muted-foreground">{t("home.oksi.whyText")}</p>
             </div>
           </div>
         </div>
@@ -455,10 +416,10 @@ const Home = () => {
 
       {/* 10. TRANSFORMATION */}
       <section className="container py-14 md:py-20">
-        <h2 className={`${H2} max-w-2xl`}>Від хаосу — до зрозумілої системи</h2>
+        <h2 className={`${H2} max-w-2xl`}>{t("home.transformation.title")}</h2>
         <div className="mt-9 grid md:grid-cols-2 gap-5">
           <Card className="p-7 rounded-2xl border border-border/70 shadow-none bg-secondary/40">
-            <div className="font-display font-bold text-lg text-muted-foreground">Коли вчишся хаотично</div>
+            <div className="font-display font-bold text-lg text-muted-foreground">{t("home.transformation.chaosTitle")}</div>
             <ul className="mt-4 space-y-3">
               {chaosList.map((i) => (
                 <li key={i} className="flex gap-3 text-[1.0625rem] text-muted-foreground">
@@ -468,7 +429,7 @@ const Home = () => {
             </ul>
           </Card>
           <Card className="p-7 rounded-2xl border-0 shadow-elevated bg-card ring-1 ring-primary/15">
-            <div className="font-display font-bold text-lg text-primary">З deutsch.klar</div>
+            <div className="font-display font-bold text-lg text-primary">{t("home.transformation.klarTitle")}</div>
             <ul className="mt-4 space-y-3">
               {klarList.map((i) => (
                 <li key={i} className="flex gap-3 text-[1.0625rem]">
@@ -484,13 +445,11 @@ const Home = () => {
       <section className="container pb-14 md:pb-20">
         <Card className="rounded-3xl border-0 bg-primary-soft/60 p-8 md:p-12 shadow-soft flex flex-col md:flex-row md:items-center gap-6 justify-between">
           <div className="max-w-xl">
-            <h2 className="font-display font-extrabold text-2xl md:text-[2rem] leading-tight">Спробуй один урок — і відчуй різницю</h2>
-            <p className="mt-3 text-muted-foreground">
-              Подивись, як працюють пояснення deutsch.klar, і виріши сама, чи такий формат навчання підходить тобі.
-            </p>
+            <h2 className="font-display font-extrabold text-2xl md:text-[2rem] leading-tight">{t("home.tryLesson.title")}</h2>
+            <p className="mt-3 text-muted-foreground">{t("home.tryLesson.text")}</p>
           </div>
           <Button asChild size="lg" className="bg-gradient-primary hover:opacity-95 h-12 px-7 text-base shrink-0">
-            <Link to="/courses">Почати безкоштовно <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+            <Link to="/courses">{t("home.tryLesson.cta")} <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
           </Button>
         </Card>
       </section>
@@ -499,8 +458,8 @@ const Home = () => {
       <section id="pricing" className="bg-secondary/40 py-14 md:py-20 scroll-mt-20">
         <div className="container">
           <div className="max-w-2xl mx-auto text-center mb-10">
-            <h2 className={H2}>Простий вибір без прихованих умов</h2>
-            <p className={`mt-3 ${LEAD}`}>Почни безкоштовно. Перейди на Plus або Premium, коли захочеш більше можливостей.</p>
+            <h2 className={H2}>{t("home.pricing.title")}</h2>
+            <p className={`mt-3 ${LEAD}`}>{t("home.pricing.subtitle")}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-5 items-start group">
             {plans.map((p) => (
@@ -508,11 +467,11 @@ const Home = () => {
                 key={p.id}
                 className={`relative p-7 rounded-2xl border-0 h-full transition-all duration-300 ease-out hover:scale-[1.03] focus-within:scale-[1.03] active:scale-[1.03] hover:shadow-elevated focus-within:shadow-elevated active:shadow-elevated hover:z-10 focus-within:z-10 active:z-10 ${p.highlight ? "bg-gradient-primary text-primary-foreground shadow-elevated ring-2 ring-primary md:scale-[1.03] hover:scale-[1.04] focus-within:scale-[1.04] active:scale-[1.04]" : "shadow-soft bg-card group-hover:opacity-[0.92] hover:opacity-100 focus-within:opacity-100 active:opacity-100"}`}
               >
-                {p.highlight && <Badge className="bg-accent text-accent-foreground mb-3">Рекомендовано</Badge>}
+                {p.highlight && <Badge className="bg-accent text-accent-foreground mb-3">{t("home.pricing.recommended")}</Badge>}
                 <div className="font-display font-bold text-xl">{p.name}</div>
                 <div className="mt-2 flex items-baseline gap-1">
                   <span className="text-4xl font-extrabold">{p.priceM === 0 ? "0 €" : `${p.priceM.toFixed(2)} €`}</span>
-                  <span className={`text-sm ${p.highlight ? "opacity-80" : "text-muted-foreground"}`}>/міс</span>
+                  <span className={`text-sm ${p.highlight ? "opacity-80" : "text-muted-foreground"}`}>{t("home.pricing.perMonth")}</span>
                 </div>
                 <ul className="mt-5 space-y-2 text-sm">
                   {p.features.map((f) => (
@@ -523,21 +482,19 @@ const Home = () => {
                   ))}
                 </ul>
                 <Button asChild className={`w-full mt-6 ${p.highlight ? "bg-background text-primary hover:bg-background/90" : "bg-gradient-primary"}`}>
-                  <Link to="/pricing">{p.id === "free" ? "Почати" : "Обрати"}</Link>
+                  <Link to="/pricing">{p.id === "free" ? t("home.pricing.ctaFree") : t("home.pricing.ctaPaid")}</Link>
                 </Button>
               </Card>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground text-center mt-6">
-            Пункти з позначкою «(у розробці)» ще готуються й поки не доступні.
-          </p>
+          <p className="text-xs text-muted-foreground text-center mt-6">{t("home.pricing.footnote")}</p>
         </div>
       </section>
 
       {/* 13. FAQ */}
       <section id="faq" className="container py-14 md:py-20 scroll-mt-20">
         <div className="max-w-3xl mx-auto">
-          <h2 className={`${H2} text-center mb-9`}>Часті питання</h2>
+          <h2 className={`${H2} text-center mb-9`}>{t("home.faq.title")}</h2>
           <Accordion type="single" collapsible className="space-y-3">
             {faqs.map((f, i) => (
               <AccordionItem key={i} value={`i-${i}`} className="rounded-xl border bg-card px-5">
@@ -552,17 +509,15 @@ const Home = () => {
       {/* 14. FINAL CTA */}
       <section className="container pb-16 md:pb-24">
         <Card className="rounded-3xl border-0 bg-gradient-hero p-10 md:p-14 text-center shadow-soft">
-          <h2 className={H2}>Готова нарешті зрозуміти німецьку?</h2>
-          <p className={`mt-4 max-w-xl mx-auto ${LEAD}`}>
-            Почни з безкоштовного тесту або одразу обери свій курс — і рухайся у своєму темпі.
-          </p>
+          <h2 className={H2}>{t("home.finalCta.title")}</h2>
+          <p className={`mt-4 max-w-xl mx-auto ${LEAD}`}>{t("home.finalCta.subtitle")}</p>
           <div className="mt-8 flex flex-col sm:flex-row flex-wrap justify-center gap-3">
             <PrimaryCta source="final_cta" />
             <Button asChild size="lg" variant="outline" className="h-12 px-7 text-base bg-card">
-              <Link to="/courses">Переглянути курси</Link>
+              <Link to="/courses">{t("home.hero.ctaSecondary")}</Link>
             </Button>
           </div>
-          <p className="mt-5 text-sm text-muted-foreground">Безкоштовно · A1–C2 · українською</p>
+          <p className="mt-5 text-sm text-muted-foreground">{t("home.finalCta.footnote")}</p>
         </Card>
       </section>
     </div>

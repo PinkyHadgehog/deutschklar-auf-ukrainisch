@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Clock, Crown, ChevronRight } from "lucide-react";
 import type { LessonContent } from "@/content/lessons";
+import { useLang } from "@/context/LanguageContext";
 
 interface Props {
   lesson: LessonContent;
@@ -14,15 +15,17 @@ interface Props {
   saveControl?: ReactNode;
 }
 
-const LessonHeader = ({ lesson, progress, duration, premium, statusControl, saveControl }: Props) => (
+const LessonHeader = ({ lesson, progress, duration, premium, statusControl, saveControl }: Props) => {
+  const { t } = useLang();
+  return (
   <div>
     <Link to="/grammar" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-      <ArrowLeft className="h-4 w-4 mr-1" /> До граматики
+      <ArrowLeft className="h-4 w-4 mr-1" /> {t("lesson.backToGrammar")}
     </Link>
 
     {/* Breadcrumb */}
     <nav className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground flex-wrap" aria-label="Breadcrumb">
-      <Link to="/grammar" className="hover:text-foreground">Граматика</Link>
+      <Link to="/grammar" className="hover:text-foreground">{t("lesson.breadcrumbGrammar")}</Link>
       <ChevronRight className="h-3 w-3" />
       <span className="text-foreground/70">{lesson.level}</span>
       <ChevronRight className="h-3 w-3" />
@@ -34,14 +37,14 @@ const LessonHeader = ({ lesson, progress, duration, premium, statusControl, save
     <div className="mt-3 flex items-center gap-2 flex-wrap">
       <Badge variant="secondary" className="bg-primary-soft text-primary border-0">{lesson.level}</Badge>
       <Badge variant="outline">{lesson.category}</Badge>
-      <Badge variant="outline">Граматика</Badge>
+      <Badge variant="outline">{t("lesson.badgeGrammar")}</Badge>
       {duration && (
-        <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3"/> {duration} хв</Badge>
+        <Badge variant="outline" className="gap-1"><Clock className="h-3 w-3"/> {t("lesson.badgeMinutes", { n: duration })}</Badge>
       )}
       {premium ? (
-        <Badge className="bg-amber-500/10 text-amber-600 border-0 gap-1"><Crown className="h-3 w-3"/> Premium</Badge>
+        <Badge className="bg-amber-500/10 text-amber-600 border-0 gap-1"><Crown className="h-3 w-3"/> {t("lesson.badgePremium")}</Badge>
       ) : (
-        <Badge className="bg-success/10 text-success border-0">Безкоштовно</Badge>
+        <Badge className="bg-success/10 text-success border-0">{t("lesson.badgeFree")}</Badge>
       )}
     </div>
 
@@ -59,6 +62,7 @@ const LessonHeader = ({ lesson, progress, duration, premium, statusControl, save
       <div className="ml-auto shrink-0 text-sm font-semibold text-foreground">{progress}%</div>
     </div>
   </div>
-);
+  );
+};
 
 export default LessonHeader;

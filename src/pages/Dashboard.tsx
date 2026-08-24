@@ -21,6 +21,7 @@ import DailyGoalEditor from "@/components/goals/DailyGoalEditor";
 import WeeklyGoalEditor from "@/components/goals/WeeklyGoalEditor";
 import XpDistributionEditor from "@/components/goals/XpDistributionEditor";
 import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles, Play, RotateCw, AlertTriangle, ArrowRight, Pencil, Settings2 } from "lucide-react";
+import { useLang } from "@/context/LanguageContext";
 
 const recIcon: Record<RecommendationType, typeof Play> = {
   continue_lesson: Play,
@@ -31,6 +32,7 @@ const recIcon: Record<RecommendationType, typeof Play> = {
 
 const Dashboard = () => {
   const { user, updateUser } = useAuth();
+  const { t, lang } = useLang();
   const [dailyXp, setDailyXp] = useState(0);
   const [breakdown, setBreakdown] = useState<{ label: string; xp: number }[]>([]);
   const [weeklyXp, setWeeklyXp] = useState(0);
@@ -86,8 +88,8 @@ const Dashboard = () => {
   const visualProgress = Math.min(weekDone, 100);
   const goalReached = weeklyXp >= weeklyGoal;
   const { start: weekStart, end: weekEnd } = getCurrentWeekRange();
-  const dayShort = ["Нд", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
-  const fmtDay = (d: Date) => `${dayShort[d.getDay()]} · ${d.toLocaleDateString("uk-UA", { day: "numeric", month: "short" })}`;
+  const weekdayKeys = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
+  const fmtDay = (d: Date) => `${t(`dashboard.weekdaysFull.${weekdayKeys[d.getDay()]}`)} · ${d.toLocaleDateString(lang === "de" ? "de-DE" : "uk-UA", { day: "numeric", month: "short" })}`;
   const weekRangeLabel = `${fmtDay(weekStart)} — ${fmtDay(weekEnd)}`;
   const weekEmpty = weeklyLessons === 0 && weeklyQuizzes === 0 && weeklySeconds === 0;
   const todayIndex = (new Date().getDay() + 6) % 7;
@@ -98,15 +100,15 @@ const Dashboard = () => {
 
   // Single shared definition: the Continue CTA always targets the Learning Journey's current lesson.
   const continueCta = journey.currentStartedLesson
-    ? { label: "Продовжити навчання", href: `/lesson/${journey.currentStartedLesson.slug}` }
+    ? { label: t("dashboard.continueLesson"), href: `/lesson/${journey.currentStartedLesson.slug}` }
     : journey.nextLesson
       ? {
           label:
             journey.state === "new_learner"
-              ? "Почати навчання"
+              ? t("dashboard.startLearning")
               : journey.state === "level_completed"
-                ? `Перейти до ${journey.nextLevel}`
-                : "Почати наступний урок",
+                ? t("dashboard.goToLevel", { level: journey.nextLevel ?? "" })
+                : t("dashboard.startNextLesson"),
           href: `/lesson/${journey.nextLesson.slug}`,
         }
       : null;
@@ -116,9 +118,9 @@ const Dashboard = () => {
       {/* Greeting */}
       <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
         <div>
-          <div className="text-sm text-muted-foreground">Привіт 👋</div>
-          <h1 className="font-display text-3xl md:text-4xl font-extrabold mt-1">{user.name}, гарного навчання!</h1>
-          <p className="text-muted-foreground mt-1">«Маленькі кроки щодня важливіші за великий ривок раз на місяць.»</p>
+          <div className="text-sm text-muted-foreground">{t("dashboard.greeting")}</div>
+          <h1 className="font-display text-3xl md:text-4xl font-extrabold mt-1">{t("dashboard.greetingName", { name: user.name })}</h1>
+          <p className="text-muted-foreground mt-1">{t("dashboard.quote")}</p>
         </div>
         {continueCta && (
           <Button asChild className="bg-gradient-primary h-11 px-6">
@@ -132,7 +134,7 @@ const Dashboard = () => {
         <Card className="p-6 rounded-2xl border-0 shadow-soft lg:col-span-2 bg-gradient-primary text-primary-foreground">
           <div className="flex items-start justify-between">
             <div>
-              <div className="text-sm opacity-80">Ваш поточний рівень</div>
+              <div className="text-sm opacity-80">{t("dashboard.currentLevel")}</div>
               <div className="font-display text-5xl font-extrabold mt-1">{user.level}</div>
               <div className="opacity-90 mt-1">{myCourse.title}</div>
             </div>
@@ -149,7 +151,7 @@ const Dashboard = () => {
             <div className="rounded-xl bg-white/15 p-3 backdrop-blur">
               <Flame className="h-5 w-5 mb-1.5" />
               <div className="text-2xl font-bold">{user.streak}</div>
-              <div className="text-xs opacity-80">днів поспіль</div>
+              <div className="text-xs opacity-80">{t("dashboard.streakDays")}</div>
             </div>
             <Popover>
               <PopoverTrigger asChild>
@@ -158,8 +160,8 @@ const Dashboard = () => {
                     <Clock className="h-5 w-5 mb-1.5" />
                     <Pencil className="h-3.5 w-3.5 opacity-80" />
                   </div>
-                  <div className="text-2xl font-bold">{dailyGoal} хв</div>
-                  <div className="text-xs opacity-80">ціль на день</div>
+                  <div className="text-2xl font-bold">{t("dashboard.dailyGoalMinutes", { n: dailyGoal })}</div>
+                  <div className="text-xs opacity-80">{t("dashboard.dailyGoalLabel")}</div>
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-72">
@@ -170,14 +172,14 @@ const Dashboard = () => {
               <PopoverTrigger asChild>
                 <button className="rounded-xl bg-white/15 p-3 backdrop-blur text-left hover:bg-white/25 transition">
                   <Trophy className="h-5 w-5 mb-1.5" />
-                  <div className="text-2xl font-bold">{dailyXp} XP</div>
-                  <div className="text-xs opacity-80">XP сьогодні</div>
+                  <div className="text-2xl font-bold">{t("dashboard.xpToday", { n: dailyXp })}</div>
+                  <div className="text-xs opacity-80">{t("dashboard.xpTodayLabel")}</div>
                 </button>
               </PopoverTrigger>
               <PopoverContent className="w-64">
-                <div className="font-display font-bold mb-2">Сьогодні</div>
+                <div className="font-display font-bold mb-2">{t("dashboard.today")}</div>
                 {breakdown.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Сьогодні ще немає активності. Пройди Quiz або вправи уроку.</p>
+                  <p className="text-sm text-muted-foreground">{t("dashboard.noActivityToday")}</p>
                 ) : (
                   <ul className="space-y-1 text-sm">
                     {breakdown.map((b, i) => (
@@ -189,7 +191,7 @@ const Dashboard = () => {
                   </ul>
                 )}
                 <div className="mt-3 pt-2 border-t flex items-center justify-between text-sm font-bold">
-                  <span>Разом</span><span>{dailyXp} XP</span>
+                  <span>{t("dashboard.total")}</span><span>{t("dashboard.xpToday", { n: dailyXp })}</span>
                 </div>
               </PopoverContent>
             </Popover>
@@ -200,11 +202,11 @@ const Dashboard = () => {
         {/* Week goal */}
         <Card className="p-6 rounded-2xl border-0 shadow-soft">
           <div className="flex items-center justify-between mb-3">
-            <div className="font-display font-bold">Тижнева ціль</div>
+            <div className="font-display font-bold">{t("dashboard.weeklyGoalTitle")}</div>
             <Popover>
               <PopoverTrigger asChild>
                 <button
-                  aria-label="Змінити тижневу ціль"
+                  aria-label={t("dashboard.changeWeeklyGoal")}
                   className="h-8 w-8 rounded-lg grid place-items-center text-muted-foreground hover:bg-muted hover:text-foreground transition"
                 >
                   <Settings2 className="h-4 w-4" />
@@ -230,7 +232,7 @@ const Dashboard = () => {
           {/* Today */}
           <div className="rounded-xl bg-secondary/60 p-3 mb-4">
             <div className="text-xs text-muted-foreground flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Сьогодні
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {t("dashboard.today")}
             </div>
             {todayGoal > 0 ? (
               <>
@@ -243,7 +245,7 @@ const Dashboard = () => {
                 <Progress value={Math.min(todayPct, 100)} className="h-1.5 mt-2" />
               </>
             ) : (
-              <div className="font-display font-extrabold text-lg leading-none mt-0.5">Вихідний день</div>
+              <div className="font-display font-extrabold text-lg leading-none mt-0.5">{t("dashboard.restDay")}</div>
             )}
           </div>
 
@@ -269,7 +271,7 @@ const Dashboard = () => {
                     <div className="w-full rounded-md bg-gradient-primary" style={{ height: `${fill}%` }} />
                   </div>
                   <div className={`text-[10px] ${isToday ? "font-bold text-primary" : "text-muted-foreground"}`}>
-                    {WEEK_DAY_LABELS[WEEK_DAYS[i]]}
+                    {t(`dashboard.weekdays.${WEEK_DAYS[i]}`)}
                   </div>
                 </div>
               );
@@ -278,12 +280,12 @@ const Dashboard = () => {
 
           <div className="mt-3 text-xs">
             {goalReached ? (
-              <span className="font-semibold text-primary">🎉 Тижневу ціль досягнуто!</span>
+              <span className="font-semibold text-primary">{t("dashboard.goalReached")}</span>
             ) : weeklyXp === 0 ? (
-              <span className="text-muted-foreground">Почни з першої активності цього тижня</span>
+              <span className="text-muted-foreground">{t("dashboard.startFirstActivity")}</span>
             ) : (
               <span className="text-muted-foreground">
-                Ще <span className="font-semibold text-foreground">{weeklyGoal - weeklyXp} XP</span> до цілі
+                {t("dashboard.xpToGoalBefore")} <span className="font-semibold text-foreground">{weeklyGoal - weeklyXp} XP</span> {t("dashboard.xpToGoalAfter")}
               </span>
             )}
           </div>
@@ -294,14 +296,14 @@ const Dashboard = () => {
         {/* Weekly activity */}
         <section className="lg:col-span-3 mt-3">
           <div className="mb-4">
-            <h2 className="font-display text-xl md:text-2xl font-extrabold">Цього тижня</h2>
+            <h2 className="font-display text-xl md:text-2xl font-extrabold">{t("dashboard.thisWeek")}</h2>
             <p className="text-sm text-muted-foreground mt-0.5">{weekRangeLabel}</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[
-              { i: BookOpen, v: weeklyLessons, l: "Уроків завершено", s: "📖 цього тижня" },
-              { i: Sparkles, v: weeklyQuizzes, l: "Квізів складено", s: "✨ цього тижня" },
-              { i: Clock, v: formatStudyTime(weeklySeconds), l: "Активного навчання", s: "⏱ цього тижня" },
+              { i: BookOpen, v: weeklyLessons, l: t("dashboard.lessonsCompleted"), s: t("dashboard.lessonsCompletedSub") },
+              { i: Sparkles, v: weeklyQuizzes, l: t("dashboard.quizzesCompleted"), s: t("dashboard.quizzesCompletedSub") },
+              { i: Clock, v: formatStudyTime(weeklySeconds), l: t("dashboard.activeStudy"), s: t("dashboard.activeStudySub") },
             ].map((s, idx) => (
               <Card key={idx} className="p-5 rounded-2xl border-0 shadow-soft">
                 <div className="flex items-start gap-3">
@@ -319,8 +321,8 @@ const Dashboard = () => {
           </div>
           {weekEmpty && (
             <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-              <span>Цього тижня ще немає навчальної активності.</span>
-              <Link to="/courses" className="font-semibold text-primary hover:underline">Почати навчання</Link>
+              <span>{t("dashboard.noActivityWeek")}</span>
+              <Link to="/courses" className="font-semibold text-primary hover:underline">{t("dashboard.startLearningLink")}</Link>
             </div>
           )}
           <div className="border-t mt-8" />
@@ -341,9 +343,9 @@ const Dashboard = () => {
 
         {/* Recommendations */}
         <Card className="p-6 rounded-2xl border-0 shadow-soft">
-          <div className="font-display font-bold mb-3 flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Рекомендовано вам</div>
+          <div className="font-display font-bold mb-3 flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> {t("dashboard.recommendedForYou")}</div>
           {recommendations.length === 0 && (
-            <p className="text-sm text-muted-foreground">Поки немає що повторювати — проходь квізи та вправи, і тут з’являться персональні поради.</p>
+            <p className="text-sm text-muted-foreground">{t("dashboard.noRecommendations")}</p>
           )}
           <ul className="space-y-2">
             {recommendations.map((r) => {

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { vocabThemes } from "@/data/mock";
+import { useLang } from "@/context/LanguageContext";
 
 interface QuizTopicSelectProps {
   selected: string | null;
@@ -7,11 +8,13 @@ interface QuizTopicSelectProps {
   onStart: () => void;
 }
 
-const QuizTopicSelect = ({ selected, onSelect, onStart }: QuizTopicSelectProps) => (
+const QuizTopicSelect = ({ selected, onSelect, onStart }: QuizTopicSelectProps) => {
+  const { t } = useLang();
+  return (
   <div>
     <div className="text-center">
-      <h2 className="font-display text-2xl md:text-3xl font-extrabold">Обери тему для Quiz</h2>
-      <p className="text-muted-foreground mt-2">Яку тему ти хочеш сьогодні потренувати?</p>
+      <h2 className="font-display text-2xl md:text-3xl font-extrabold">{t("vocab.quiz.select.heading")}</h2>
+      <p className="text-muted-foreground mt-2">{t("vocab.quiz.select.subtitle")}</p>
     </div>
 
     <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -32,7 +35,7 @@ const QuizTopicSelect = ({ selected, onSelect, onStart }: QuizTopicSelectProps) 
             <div className="text-2xl">{th.emoji}</div>
             <div className="font-display font-bold mt-2 text-sm">{th.title}</div>
             <div className={`text-xs mt-0.5 ${active ? "opacity-80" : "text-muted-foreground"}`}>
-              {th.titleDe} · {th.count} Wörter
+              {th.titleDe} · {t("vocab.quiz.select.wordsCount", { count: th.count })}
             </div>
           </button>
         );
@@ -41,10 +44,11 @@ const QuizTopicSelect = ({ selected, onSelect, onStart }: QuizTopicSelectProps) 
 
     <div className="mt-6 flex justify-center">
       <Button className="bg-gradient-primary" size="lg" disabled={!selected} onClick={onStart}>
-        Почати Quiz
+        {t("vocab.quiz.select.start")}
       </Button>
     </div>
   </div>
-);
+  );
+};
 
 export default QuizTopicSelect;

@@ -22,6 +22,7 @@ import {
 import { Lock, ArrowRight, BookOpen, Search, X, Bookmark } from "lucide-react";
 import { toast } from "sonner";
 import { toggleSavedItem, useSavedItems } from "@/lib/savedItems";
+import { useLang } from "@/context/LanguageContext";
 
 
 const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"];
@@ -29,6 +30,7 @@ const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"]
 const norm = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
 
 const Courses = () => {
+  const { t } = useLang();
   const [level, setLevel] = useState<"all" | Level>("all");
   const [query, setQuery] = useState("");
   const [categoryId, setCategoryId] = useState<"all" | string>("all");
@@ -86,9 +88,9 @@ const Courses = () => {
   return (
     <div className="container py-10 md:py-14">
       <div className="max-w-3xl">
-        <h1 className="font-display text-3xl md:text-4xl font-extrabold">Курси за рівнями</h1>
+        <h1 className="font-display text-3xl md:text-4xl font-extrabold">{t("courses.heading")}</h1>
         <p className="text-muted-foreground mt-2">
-          Структуровані програми від A1 до C2. Обери рівень — і одразу побачиш усі теми, підкатегорії та уроки.
+          {t("courses.subtitle")}
         </p>
       </div>
 
@@ -103,7 +105,7 @@ const Courses = () => {
                 : "bg-background hover:bg-muted border-input"
             }`}
           >
-            {l === "all" ? "Усі рівні" : l}
+            {l === "all" ? t("courses.allLevels") : l}
           </button>
         ))}
       </div>
@@ -118,7 +120,7 @@ const Courses = () => {
           >
             {c.premium && (
               <Badge className="absolute top-4 right-4 bg-accent text-accent-foreground gap-1">
-                <Lock className="h-3 w-3" /> Premium
+                <Lock className="h-3 w-3" /> {t("courses.premium")}
               </Badge>
             )}
             <div
@@ -129,19 +131,19 @@ const Courses = () => {
             <h3 className="font-display font-bold text-xl">{c.title}</h3>
             <p className="text-sm text-muted-foreground mt-1.5">{c.description}</p>
             <div className="mt-4 flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">{stats.total} лекцій</span>
+              <span className="text-muted-foreground">{t("courses.lessonsCount", { n: stats.total })}</span>
               <span className="font-semibold text-primary">{stats.progress}%</span>
             </div>
             <Progress value={stats.progress} className="h-1.5 mt-2" />
             <div className="mt-1.5 text-xs text-muted-foreground">
-              {stats.completed} з {stats.total} уроків завершено
+              {t("courses.lessonsCompletedOf", { completed: stats.completed, total: stats.total })}
             </div>
             <Button
               variant="outline"
               className="w-full mt-5"
               onClick={() => openLevel(c.level)}
             >
-              {stats.progress > 0 ? "Продовжити" : "Почати"}
+              {stats.progress > 0 ? t("courses.continue") : t("courses.start")}
               <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
           </Card>
@@ -155,14 +157,14 @@ const Courses = () => {
           <div className="flex items-end justify-between flex-wrap gap-3">
             <div>
               <h2 className="font-display text-2xl md:text-3xl font-extrabold">
-                Уроки та підкатегорії — рівень {level}
+                {t("courses.lessonsAndSubcategoriesLevel", { level })}
               </h2>
               <p className="text-muted-foreground mt-1 text-sm">
-                {topicsByLevel.length} категорій · {totalLessons} уроків
+                {t("courses.categoriesAndLessons", { categories: topicsByLevel.length, lessons: totalLessons })}
               </p>
             </div>
             <Button asChild variant="outline" size="sm">
-              <Link to="/grammar">Перейти до граматики <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
+              <Link to="/grammar">{t("courses.goToGrammar")} <ArrowRight className="ml-1.5 h-4 w-4" /></Link>
             </Button>
           </div>
 
@@ -172,13 +174,13 @@ const Courses = () => {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Пошук теми чи підкатегорії… (напр. Präsens, артиклі, Konjunktiv)"
+                placeholder={t("courses.searchPlaceholder")}
                 className="pl-9 pr-9 h-11 rounded-xl"
               />
               {query && (
                 <button
                   onClick={() => setQuery("")}
-                  aria-label="Очистити пошук"
+                  aria-label={t("courses.clearSearch")}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-md hover:bg-muted"
                 >
                   <X className="h-4 w-4 text-muted-foreground" />
@@ -194,7 +196,7 @@ const Courses = () => {
                     : "bg-background hover:bg-muted border-input"
                 }`}
               >
-                Усі категорії
+                {t("courses.allCategories")}
               </button>
               {availableCategories.map((cat) => (
                 <button
@@ -215,8 +217,8 @@ const Courses = () => {
           {topicsByLevel.length === 0 ? (
             <Card className="mt-6 p-8 rounded-2xl border-0 shadow-soft text-center text-muted-foreground">
               {q || categoryId !== "all"
-                ? `Нічого не знайдено для «${query}» на рівні ${level}. Спробуй інший запит чи категорію.`
-                : `Для рівня ${level} ще немає опублікованих тем. Зазирни пізніше.`}
+                ? t("courses.emptySearch", { query, level })
+                : t("courses.emptyLevel", { level })}
             </Card>
           ) : (
             <div className="mt-6 grid md:grid-cols-2 gap-5">
@@ -255,17 +257,17 @@ const Courses = () => {
                             <div className="flex items-center gap-2 shrink-0">
                               {topic.premium && (
                                 <Badge variant="secondary" className="gap-1">
-                                  <Lock className="h-3 w-3" /> Premium
+                                  <Lock className="h-3 w-3" /> {t("courses.premium")}
                                 </Badge>
                               )}
-                              <Badge variant="outline">{topicStats.total} ур.</Badge>
+                              <Badge variant="outline">{t("courses.lessonsShort", { n: topicStats.total })}</Badge>
                             </div>
                           </div>
                         </AccordionTrigger>
                         <AccordionContent>
                           <div className="mb-3 flex items-center justify-between gap-3">
                             <div className="text-xs text-muted-foreground">
-                              {topicStats.completed} з {topicStats.total} уроків завершено
+                              {t("courses.lessonsCompletedOf", { completed: topicStats.completed, total: topicStats.total })}
                             </div>
                             <button
                               type="button"
@@ -279,11 +281,11 @@ const Courses = () => {
                                   level: topic.level,
                                   count: topicStats.total,
                                 });
-                                toast(nowSaved ? "Тему збережено" : "Видалено зі збереженого");
+                                toast(nowSaved ? t("courses.topicSaved") : t("courses.topicUnsaved"));
                               }}
                             >
                               <Bookmark className={`h-3.5 w-3.5 ${savedTopicIds.has(`grammar:${topic.slug}`) ? "fill-primary text-primary" : ""}`} />
-                              {savedTopicIds.has(`grammar:${topic.slug}`) ? "Збережено" : "Зберегти тему"}
+                              {savedTopicIds.has(`grammar:${topic.slug}`) ? t("courses.savedTopic") : t("courses.saveTopic")}
                             </button>
                           </div>
 
@@ -308,7 +310,7 @@ const Courses = () => {
                           ) : (
                             <Button asChild size="sm" variant="outline">
                               <Link to={`/lesson/${topic.slug}`}>
-                                Відкрити урок <ArrowRight className="ml-1.5 h-4 w-4" />
+                                {t("courses.openLesson")} <ArrowRight className="ml-1.5 h-4 w-4" />
                               </Link>
                             </Button>
                           )}

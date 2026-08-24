@@ -2,6 +2,7 @@ import { Check, Circle, CircleDot, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LessonStatus } from "@/lib/lessonProgress";
 import { statusLabel } from "@/lib/lessonProgress";
+import { useLang } from "@/context/LanguageContext";
 
 interface Props {
   status: LessonStatus;
@@ -20,20 +21,21 @@ const LessonStatusControl = ({
   onUndo,
   className,
 }: Props) => {
+  const { t } = useLang();
   if (status === "completed") {
     return (
       <div className={cn("flex flex-col items-start gap-2", className)}>
         <div className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs font-medium text-success">
           <Check className="h-3.5 w-3.5" /> {statusLabel.completed}
         </div>
-        <p className="text-xs text-muted-foreground">Ти позначила цей урок як завершений.</p>
+        <p className="text-xs text-muted-foreground">{t("lesson.status.completedDesc")}</p>
         <button
           type="button"
           onClick={onUndo}
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground"
-          aria-label="Зняти позначку завершення"
+          aria-label={t("lesson.status.undoAria")}
         >
-          <RotateCcw className="h-3 w-3" /> Зняти позначку
+          <RotateCcw className="h-3 w-3" /> {t("lesson.status.undoLabel")}
         </button>
       </div>
     );
@@ -51,7 +53,7 @@ const LessonStatusControl = ({
             onClick={onComplete}
             className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs text-muted-foreground transition hover:border-success/40 hover:bg-success/10 hover:text-success"
           >
-            <Circle className="h-3.5 w-3.5" /> Позначити урок як завершений
+            <Circle className="h-3.5 w-3.5" /> {t("lesson.status.markComplete")}
           </button>
         </div>
         <button
@@ -59,7 +61,7 @@ const LessonStatusControl = ({
           onClick={onCancelStart}
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground"
         >
-          <RotateCcw className="h-3 w-3" /> Скасувати початок
+          <RotateCcw className="h-3 w-3" /> {t("lesson.status.cancelStart")}
         </button>
       </div>
     );
@@ -72,7 +74,7 @@ const LessonStatusControl = ({
         onClick={onStart}
         className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-medium text-muted-foreground transition hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
       >
-        <Circle className="h-3.5 w-3.5" /> Розпочати урок
+        <Circle className="h-3.5 w-3.5" /> {t("lesson.status.startLesson")}
       </button>
     </div>
   );

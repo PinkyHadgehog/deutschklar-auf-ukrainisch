@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { useLang } from "@/context/LanguageContext";
 import {
   DAILY_GOAL_PRESETS,
   MAX_DAILY_MINUTES_GOAL,
@@ -15,6 +16,7 @@ interface Props {
 }
 
 const DailyGoalEditor = ({ onSaved }: Props) => {
+  const { t } = useLang();
   const [goal, setGoal] = useState(() => getDailyStudyMinutesGoal());
   const [value, setValue] = useState(() => String(getDailyStudyMinutesGoal()));
   const [error, setError] = useState<string | null>(null);
@@ -22,20 +24,20 @@ const DailyGoalEditor = ({ onSaved }: Props) => {
   const save = (raw: string) => {
     const num = Number(raw);
     if (!raw.trim() || !Number.isInteger(num) || !setDailyStudyMinutesGoal(num)) {
-      setError(`Введи значення від ${MIN_DAILY_MINUTES_GOAL} до ${MAX_DAILY_MINUTES_GOAL} хв.`);
+      setError(t("dashboard.dailyEditor.error", { min: MIN_DAILY_MINUTES_GOAL, max: MAX_DAILY_MINUTES_GOAL }));
       return;
     }
     setError(null);
     setGoal(num);
     setValue(String(num));
-    toast.success("Щоденну ціль збережено");
+    toast.success(t("dashboard.dailyEditor.saved"));
     onSaved?.();
   };
 
   return (
     <div>
-      <div className="font-display font-bold">Щоденна ціль</div>
-      <p className="text-sm text-muted-foreground mt-1">Скільки часу ти хочеш навчатися щодня?</p>
+      <div className="font-display font-bold">{t("dashboard.dailyEditor.title")}</div>
+      <p className="text-sm text-muted-foreground mt-1">{t("dashboard.dailyEditor.subtitle")}</p>
 
       <div className="mt-3 flex flex-wrap gap-2">
         {DAILY_GOAL_PRESETS.map((p) => (
@@ -47,13 +49,13 @@ const DailyGoalEditor = ({ onSaved }: Props) => {
               goal === p ? "bg-gradient-primary text-primary-foreground border-transparent" : "hover:bg-muted"
             }`}
           >
-            {p} хв
+            {t("dashboard.dailyEditor.minutesShort", { n: p })}
           </button>
         ))}
       </div>
 
       <div className="mt-3 flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Інше:</span>
+        <span className="text-sm text-muted-foreground">{t("dashboard.dailyEditor.other")}</span>
         <Input
           type="number"
           min={MIN_DAILY_MINUTES_GOAL}
@@ -63,12 +65,12 @@ const DailyGoalEditor = ({ onSaved }: Props) => {
           value={value}
           onChange={(e) => { setValue(e.target.value); setError(null); }}
         />
-        <span className="text-sm text-muted-foreground">хв</span>
+        <span className="text-sm text-muted-foreground">{t("dashboard.dailyEditor.minutes")}</span>
       </div>
 
       {error && <p className="mt-2 text-sm text-destructive">{error}</p>}
 
-      <Button className="mt-3 w-full bg-gradient-primary" onClick={() => save(value)}>Зберегти</Button>
+      <Button className="mt-3 w-full bg-gradient-primary" onClick={() => save(value)}>{t("dashboard.dailyEditor.save")}</Button>
     </div>
   );
 };

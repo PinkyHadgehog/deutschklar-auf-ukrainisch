@@ -17,11 +17,12 @@ import {
   sumGoals,
 } from "@/lib/userSettings";
 import { getWeeklyXp, getWeeklyXpByDay, subscribeLearningEvents } from "@/lib/xp";
+import { useLang } from "@/context/LanguageContext";
 
-const MODES: { value: XpDistributionMode; label: string; hint: string }[] = [
-  { value: "even", label: "Рівномірно", hint: "Ціль ділиться на всі 7 днів" },
-  { value: "days", label: "Обрати навчальні дні", hint: "Ціль ділиться лише між обраними днями" },
-  { value: "custom", label: "Власний план", hint: "Свій показник XP для кожного дня" },
+const useModes = (t: (k: string) => string): { value: XpDistributionMode; label: string; hint: string }[] => [
+  { value: "even", label: t("dashboard.xpDist.modeEvenLabel"), hint: t("dashboard.xpDist.modeEvenHint") },
+  { value: "days", label: t("dashboard.xpDist.modeDaysLabel"), hint: t("dashboard.xpDist.modeDaysHint") },
+  { value: "custom", label: t("dashboard.xpDist.modeCustomLabel"), hint: t("dashboard.xpDist.modeCustomHint") },
 ];
 
 /** Index of today, Monday = 0. */
@@ -32,6 +33,8 @@ interface Props {
 }
 
 const XpDistributionEditor = ({ onSaved }: Props) => {
+  const { t } = useLang();
+  const MODES = useModes(t);
   const [weeklyGoal, setWeeklyGoal] = useState(() => getUserSettings().weeklyXpGoal);
   const [mode, setMode] = useState<XpDistributionMode>(() => getUserSettings().xpDistributionMode);
   const [days, setDays] = useState<WeekDayKey[]>(() => getUserSettings().studyDays);
@@ -84,27 +87,27 @@ const XpDistributionEditor = ({ onSaved }: Props) => {
     rest.forEach((d) => (next[d] = spread[d] || 0));
     setCustom(next);
     setMode("custom");
-    toast.success("Тиждень перепланований — перевір і збережи");
+    toast.success(t("dashboard.xpDist.replanned"));
   };
 
   const save = () => {
     if (mode === "custom" && diff !== 0) {
       toast.error(
         diff < 0
-          ? `Розподілено ${distributed} з ${weeklyGoal} XP. Ще ${-diff} XP не розподілено.`
-          : `Перевищено на ${diff} XP. Зменш денні цілі або натисни «Розподілити автоматично».`
+          ? t("dashboard.xpDist.errorUnder", { distributed, goal: weeklyGoal, remaining: -diff })
+          : t("dashboard.xpDist.errorOver", { diff })
       );
       return;
     }
     setXpDistribution({ mode, studyDays: days, dailyXpGoals: preview });
-    toast.success("План на тиждень збережено");
+    toast.success(t("dashboard.xpDist.saved"));
     onSaved?.();
   };
 
   return (
     <div>
-      <div className="font-display font-bold">Як розподілити ціль по днях?</div>
-      <p className="text-sm text-muted-foreground mt-1">Тижнева ціль: {weeklyGoal} XP</p>
+      <div className="font-display font-bold">{t("dashboard.xpDist.title")}</div>
+      <p className="text-sm text-muted-foreground mt-1">{t("dashboard.xpDist.weeklyGoalLabel", { n: weeklyGoal })}</p>
 
       <div className="mt-3 space-y-1.5">
         {MODES.map((m) => (
@@ -139,7 +142,7 @@ const XpDistributionEditor = ({ onSaved }: Props) => {
                   : "hover:bg-muted text-muted-foreground"
               }`}
             >
-              {WEEK_DAY_LABELS[d]}
+              {t(`dashboard.weekdays.${d}`)}
             </button>
           ))}
         </div>
@@ -149,7 +152,7 @@ const XpDistributionEditor = ({ onSaved }: Props) => {
         <div className="mt-3 space-y-1.5">
           {WEEK_DAYS.map((d) => (
             <div key={d} className="flex items-center gap-2">
-              <span className="w-8 text-sm font-semibold text-muted-foreground">{WEEK_DAY_LABELS[d]}</span>
+              <span className="w-8 text-sm font-semibold text-muted-foreground">{t(`dashboard.weekdays.${d}`)}</span>
               <Input
                 type="number"
                 min={0}
@@ -160,7 +163,7 @@ const XpDistributionEditor = ({ onSaved }: Props) => {
                   setCustom((prev) => ({ ...prev, [d]: Math.max(0, Math.round(Number(e.target.value) || 0)) }))
                 }
               />
-              <span className="text-xs text-muted-foreground">XP</span>
+              <span className="text-xs text-muted-foreground">{t("dashboard.xpDist.xp")}</span>
             </div>
           ))}
         </div>
@@ -168,7 +171,7 @@ const XpDistributionEditor = ({ onSaved }: Props) => {
         <div className="mt-3 grid grid-cols-7 gap-1 text-center">
           {WEEK_DAYS.map((d) => (
             <div key={d} className="rounded-lg bg-secondary/60 py-1.5">
-              <div className="text-[10px] text-muted-foreground">{WEEK_DAY_LABELS[d]}</div>
+              <div className="text-[10px] text-muted-foreground">{t(`dashboard.weekdays.${d}`)}</div>
               <div className="text-xs font-bold">{preview[d] > 0 ? preview[d] : "—"}</div>
             </div>
           ))}
@@ -177,30 +180,30 @@ const XpDistributionEditor = ({ onSaved }: Props) => {
 
       <div className="mt-3 text-xs">
         <span className="text-muted-foreground">
-          Розподілено: <span className="font-semibold text-foreground">{distributed} / {weeklyGoal} XP</span>
+          {t("dashboard.xpDist.distributedLabel")} <span className="font-semibold text-foreground">{distributed} / {weeklyGoal} XP</span>
         </span>
         {diff < 0 && (
           <div className="mt-1 text-amber-600 dark:text-amber-400 font-medium">
-            Залишилось розподілити: {-diff} XP
+            {t("dashboard.xpDist.remaining", { n: -diff })}
           </div>
         )}
         {diff > 0 && (
-          <div className="mt-1 text-destructive font-medium">Перевищено на: {diff} XP</div>
+          <div className="mt-1 text-destructive font-medium">{t("dashboard.xpDist.exceeded", { n: diff })}</div>
         )}
       </div>
 
       {mode === "custom" && diff !== 0 && (
         <Button variant="outline" size="sm" className="mt-2 w-full" onClick={autoDistribute}>
-          Розподілити автоматично
+          {t("dashboard.xpDist.autoDistribute")}
         </Button>
       )}
 
       <Button variant="ghost" size="sm" className="mt-2 w-full" onClick={replanWeek}>
-        Перепланувати тиждень
+        {t("dashboard.xpDist.replanWeek")}
       </Button>
 
       <Button className="mt-2 w-full bg-gradient-primary" onClick={save}>
-        Зберегти
+        {t("dashboard.xpDist.save")}
       </Button>
     </div>
   );

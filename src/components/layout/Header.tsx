@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { GraduationCap, Globe, Menu, X, User2, Bookmark } from "lucide-react";
+import { GraduationCap, Globe, Menu, X, User2, Bookmark, Check } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useLang } from "@/context/LanguageContext";
@@ -9,11 +9,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const navItemsPublic = [
-  { to: "/courses", label: "Курси" },
-  { to: "/placement-test", label: "Визначити рівень" },
-  { to: "/#how", label: "Як це працює" },
-  { to: "/pricing", label: "Тарифи" },
-  { to: "/#faq", label: "FAQ" },
+  { to: "/courses", key: "nav.courses" },
+  { to: "/placement-test", key: "nav.placement" },
+  { to: "/#how", key: "nav.howItWorks" },
+  { to: "/pricing", key: "nav.pricing" },
+  { to: "/#faq", key: "nav.faq" },
 ];
 
 const navItemsAuthed = [
@@ -21,7 +21,7 @@ const navItemsAuthed = [
   { to: "/courses", key: "nav.courses" },
   { to: "/vocab", key: "nav.vocab" },
   { to: "/progress", key: "nav.progress" },
-  { to: "/saved", label: "Збережене", icon: true },
+  { to: "/saved", key: "nav.saved", icon: true },
 ];
 
 type NavItem = { to: string; key?: string; label?: string; icon?: boolean };
@@ -44,7 +44,7 @@ export const Header = () => {
             <div className="font-display text-lg font-extrabold tracking-tight">
               deutsch<span className="text-primary">.</span>klar
             </div>
-            <div className="text-[10px] uppercase tracking-widest text-muted-foreground -mt-0.5">з Оксі</div>
+            <div className="text-[10px] uppercase tracking-widest text-muted-foreground -mt-0.5">{t("nav.byOksi")}</div>
           </div>
         </Link>
 
@@ -56,7 +56,7 @@ export const Header = () => {
                 to={it.to}
                 className="px-3 py-2 text-sm font-medium rounded-lg transition-colors text-foreground/70 hover:text-foreground hover:bg-muted"
               >
-                {it.label}
+                {it.key ? t(it.key) : it.label}
               </Link>
             ) : (
               <NavLink
@@ -81,12 +81,18 @@ export const Header = () => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="gap-1.5">
                 <Globe className="h-4 w-4" />
-                <span className="text-xs font-semibold uppercase">{lang}</span>
+                <span className="text-xs font-semibold uppercase">{lang === "uk" ? "UA" : "DE"}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setLang("uk")}>🇺🇦 Українська</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setLang("de")}>🇩🇪 Deutsch</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setLang("uk")} className="justify-between">
+                <span>🇺🇦 Українська</span>
+                {lang === "uk" && <Check className="h-4 w-4" />}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setLang("de")} className="justify-between">
+                <span>🇩🇪 Deutsch</span>
+                {lang === "de" && <Check className="h-4 w-4" />}
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -133,7 +139,7 @@ export const Header = () => {
                   onClick={() => setOpen(false)}
                   className="px-3 py-2.5 text-sm font-medium rounded-lg hover:bg-muted"
                 >
-                  {it.label}
+                  {it.key ? t(it.key) : it.label}
                 </Link>
               ) : (
                 <NavLink

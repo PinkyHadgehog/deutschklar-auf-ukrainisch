@@ -13,6 +13,7 @@ import { shuffle, DEFAULT_SESSION_SIZE } from "@/lib/quiz";
 import { useStudySession } from "@/hooks/use-study-session";
 import { useSavedItems, toggleSavedItem, wordId } from "@/lib/savedItems";
 import { toast } from "sonner";
+import { useLang } from "@/context/LanguageContext";
 import { Heart, RotateCw, ChevronLeft, ChevronRight, Volume2, Search, X, Bookmark } from "lucide-react";
 
 
@@ -35,6 +36,7 @@ const stripArtikel = (de: string, artikel?: string) => {
 };
 
 const Vocab = () => {
+  const { t } = useLang();
   const [params] = useSearchParams();
   const initialTopic = params.get("topic");
   const initialTab = params.get("tab");
@@ -140,19 +142,19 @@ const Vocab = () => {
       uk: w.uk,
       theme: w.theme,
     });
-    toast(nowSaved ? "Збережено" : "Видалено зі збереженого");
+    toast(nowSaved ? t("vocab.toast.saved") : t("vocab.toast.removed"));
   };
 
   const toggleTopic = (th: { id: string; title: string; titleDe: string; emoji: string; count: number }) => {
     const nowSaved = toggleSavedItem("topic", `vocab:${th.id}`, {
       kind: "vocab",
       topicId: th.id,
-      title: `Wortschatz: ${th.titleDe}`,
+      title: t("vocab.topic.savedTitlePrefix", { titleDe: th.titleDe }),
       subtitle: th.title,
       emoji: th.emoji,
       count: th.count,
     });
-    toast(nowSaved ? "Тему збережено" : "Видалено зі збереженого");
+    toast(nowSaved ? t("vocab.toast.topicSaved") : t("vocab.toast.topicRemoved"));
   };
 
 
@@ -161,15 +163,15 @@ const Vocab = () => {
   return (
     <div className="container py-10 md:py-14">
       <div className="max-w-3xl">
-        <h1 className="font-display text-3xl md:text-4xl font-extrabold">Словник за темами</h1>
-        <p className="text-muted-foreground mt-2">Вивчай слова в контексті — з артиклями, множиною та прикладами.</p>
+        <h1 className="font-display text-3xl md:text-4xl font-extrabold">{t("vocab.heading")}</h1>
+        <p className="text-muted-foreground mt-2">{t("vocab.subtitle")}</p>
       </div>
 
       <Tabs value={tab} onValueChange={(v) => { setTab(v); if (v === "quiz") openQuizTab(); }} className="mt-8">
         <TabsList>
-          <TabsTrigger value="browse">Перегляд</TabsTrigger>
-          <TabsTrigger value="flash">Flashcards</TabsTrigger>
-          <TabsTrigger value="quiz">Quiz</TabsTrigger>
+          <TabsTrigger value="browse">{t("vocab.tabs.browse")}</TabsTrigger>
+          <TabsTrigger value="flash">{t("vocab.tabs.flash")}</TabsTrigger>
+          <TabsTrigger value="quiz">{t("vocab.tabs.quiz")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="browse" className="mt-6">
@@ -178,7 +180,7 @@ const Vocab = () => {
             <Input
               value={query}
               onChange={(e) => { setQuery(e.target.value); setFlipIdx(0); }}
-              placeholder="Пошук слова німецькою або українською…"
+              placeholder={t("vocab.search.placeholder")}
               className="pl-9 pr-9 rounded-2xl"
             />
             {query && (
@@ -186,7 +188,7 @@ const Vocab = () => {
                 type="button"
                 onClick={() => setQuery("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label="Очистити пошук"
+                aria-label={t("vocab.search.clear")}
               >
                 <X className="h-4 w-4" />
               </button>
@@ -203,7 +205,7 @@ const Vocab = () => {
                 }`}>
                 <button
                   type="button"
-                  aria-label={savedTopicIds.has(`vocab:${th.id}`) ? "Видалити тему зі збереженого" : "Зберегти тему"}
+                  aria-label={savedTopicIds.has(`vocab:${th.id}`) ? t("vocab.topic.unsaveAria") : t("vocab.topic.saveAria")}
                   onClick={(e) => { e.stopPropagation(); toggleTopic(th); }}
                   className="absolute top-3 right-3"
                 >
@@ -219,7 +221,7 @@ const Vocab = () => {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {words.length === 0 && (
               <div className="col-span-full text-muted-foreground text-sm">
-                Нічого не знайдено за запитом «{query}».
+                {t("vocab.empty.noResults", { query })}
               </div>
             )}
             {words.map((w) => (
@@ -229,9 +231,9 @@ const Vocab = () => {
                     <div className="font-display text-xl font-extrabold">
                       <span className={`mr-1.5 ${artikelColor(w.artikel)}`}>{w.artikel}</span>{stripArtikel(w.de, w.artikel)}
                     </div>
-                    <div className="text-sm text-muted-foreground">Pl.: {w.plural}</div>
+                    <div className="text-sm text-muted-foreground">{t("vocab.word.plural", { plural: w.plural })}</div>
                   </div>
-                  <button onClick={() => toggleFav(w)} aria-label="Зберегти слово">
+                  <button onClick={() => toggleFav(w)} aria-label={t("vocab.word.saveAria")}>
                     <Heart className={`h-5 w-5 ${savedWordIds.has(wordId(w.theme, w.de)) ? "fill-destructive text-destructive" : "text-muted-foreground"}`} />
                   </button>
                 </div>
@@ -249,10 +251,10 @@ const Vocab = () => {
         <TabsContent value="flash" className="mt-6">
           <div className="max-w-xl mx-auto">
             <div className="mb-3 flex items-center gap-2 flex-wrap">
-              <Badge>{savedMode ? `♡ Збережені слова · ${savedWords.length}` : vocabThemes.find((t) => t.id === theme)?.title}</Badge>
+              <Badge>{savedMode ? t("vocab.flash.savedBadge", { count: savedWords.length }) : vocabThemes.find((th) => th.id === theme)?.title}</Badge>
               {savedMode && (
                 <Button variant="ghost" size="sm" onClick={() => { setSavedMode(false); resetSession(); }}>
-                  Усі слова теми
+                  {t("vocab.flash.allWordsBtn")}
                 </Button>
               )}
             </div>
@@ -260,16 +262,16 @@ const Vocab = () => {
 
             {sessionDone ? (
               <Card className="p-10 rounded-3xl border-0 shadow-elevated text-center">
-                <div className="font-display text-3xl font-extrabold">🎉 Lernrunde abgeschlossen</div>
+                <div className="font-display text-3xl font-extrabold">{t("vocab.flash.doneTitle")}</div>
                 <div className="mt-3 text-muted-foreground">
-                  Ти пройшла {sessionWords.length} слів. Готова перевірити себе?
+                  {t("vocab.flash.doneSubtitle", { count: sessionWords.length })}
                 </div>
                 <div className="mt-6 flex flex-wrap gap-2 justify-center">
                   <Button className="bg-gradient-primary" onClick={() => { setSessionDone(false); setTab("quiz"); openQuizTab(); }}>
-                    Почати Quiz
+                    {t("vocab.flash.startQuiz")}
                   </Button>
                   <Button variant="outline" onClick={resetSession}>
-                    <RotateCw className="h-4 w-4 mr-1" /> Ще раз повторити
+                    <RotateCw className="h-4 w-4 mr-1" /> {t("vocab.flash.repeat")}
                   </Button>
                 </div>
               </Card>
@@ -277,33 +279,33 @@ const Vocab = () => {
               <>
                 <div className="mb-3">
                   <div className="flex items-center justify-between text-xs text-muted-foreground mb-1.5">
-                    <span>{Math.min(seen, sessionWords.length)} / {sessionWords.length} Wörter</span>
+                    <span>{t("vocab.flash.counter", { seen: Math.min(seen, sessionWords.length), total: sessionWords.length })}</span>
                   </div>
                   <Progress value={sessionWords.length ? (Math.min(seen, sessionWords.length) / sessionWords.length) * 100 : 0} className="h-2" />
                 </div>
                 <Card onClick={() => current && setFlipped(!flipped)}
                   className="p-10 rounded-3xl border-0 shadow-elevated cursor-pointer min-h-[260px] flex flex-col items-center justify-center text-center bg-gradient-primary text-primary-foreground">
                   {!current ? (
-                    <div className="opacity-90">Немає слів за цим запитом.</div>
+                    <div className="opacity-90">{t("vocab.flash.noWords")}</div>
                   ) : !flipped ? (
                     <>
-                      <div className="text-xs uppercase tracking-wider opacity-80">Deutsch</div>
+                      <div className="text-xs uppercase tracking-wider opacity-80">{t("vocab.flash.deLabel")}</div>
                       <div className="font-display text-4xl font-extrabold mt-2">{current.artikel} {stripArtikel(current.de, current.artikel)}</div>
-                      <div className="opacity-80 mt-2">Pl.: {current.plural}</div>
+                      <div className="opacity-80 mt-2">{t("vocab.flash.plural", { plural: current.plural })}</div>
                       <div className="mt-5" onClick={(e) => e.stopPropagation()}>
                         <Button
                           size="sm"
                           className="bg-yellow-400 text-black border-yellow-400 hover:bg-yellow-500 hover:border-yellow-500 active:bg-yellow-600 active:border-yellow-600"
                           onClick={(e) => { e.stopPropagation(); speakDe(`${current.artikel ?? ""} ${current.de}`.trim(), 0.55); }}
                         >
-                          <Volume2 className="h-4 w-4 mr-1" /> Прослухати
+                          <Volume2 className="h-4 w-4 mr-1" /> {t("vocab.flash.listen")}
                         </Button>
                       </div>
-                      <div className="text-xs opacity-70 mt-4">Натисни картку, щоб перевернути</div>
+                      <div className="text-xs opacity-70 mt-4">{t("vocab.flash.flipHint")}</div>
                     </>
                   ) : (
                     <>
-                      <div className="text-xs uppercase tracking-wider opacity-80">Українською</div>
+                      <div className="text-xs uppercase tracking-wider opacity-80">{t("vocab.flash.ukLabel")}</div>
                       <div className="font-display text-3xl font-extrabold mt-2">{current.uk}</div>
                       <div className="mt-4 opacity-90 italic">«{current.sample}»</div>
                     </>
@@ -311,16 +313,16 @@ const Vocab = () => {
                 </Card>
                 <div className="mt-5 flex items-center justify-between">
                   <Button variant="outline" disabled={flipIdx === 0} onClick={() => { setFlipIdx(Math.max(0, flipIdx - 1)); setFlipped(false); }}>
-                    <ChevronLeft className="h-4 w-4 mr-1"/> Назад
+                    <ChevronLeft className="h-4 w-4 mr-1"/> {t("vocab.flash.back")}
                   </Button>
-                  <Button variant="ghost" onClick={() => setFlipped(!flipped)}><RotateCw className="h-4 w-4 mr-1"/> Перевернути</Button>
+                  <Button variant="ghost" onClick={() => setFlipped(!flipped)}><RotateCw className="h-4 w-4 mr-1"/> {t("vocab.flash.flip")}</Button>
                   <Button className="bg-gradient-primary" onClick={() => {
                     if (flipIdx + 1 >= sessionWords.length) { setSessionDone(true); return; }
                     setFlipIdx(flipIdx + 1);
                     setSeen((s) => Math.max(s, flipIdx + 2));
                     setFlipped(false);
                   }}>
-                    Далі <ChevronRight className="h-4 w-4 ml-1"/>
+                    {t("vocab.flash.next")} <ChevronRight className="h-4 w-4 ml-1"/>
                   </Button>
                 </div>
               </>

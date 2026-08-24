@@ -2,6 +2,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { addLearningEvent } from "@/lib/xp";
 import { recordQuizCompletion } from "@/lib/weeklyStats";
 import { recordVocabSession } from "@/lib/vocabMistakes";
+import { useLang } from "@/context/LanguageContext";
 
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ interface QuizModeProps {
 }
 
 const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: QuizModeProps) => {
+  const { t } = useLang();
   const [round, setRound] = useState(0);
   const [pool, setPool] = useState<VocabWord[]>(words);
   const [length, setLength] = useState(DEFAULT_QUIZ_LENGTH);
@@ -98,7 +100,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
     return (
       <Card className="p-8 rounded-3xl border-0 shadow-soft text-center">
         <div className="text-muted-foreground">
-          Недостатньо слів у цій темі, щоб скласти квіз. Обери іншу тему.
+          {t("vocab.quiz.notEnoughWords")}
         </div>
       </Card>
     );
@@ -113,13 +115,13 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
     return (
       <Card className="p-8 rounded-3xl border-0 shadow-elevated">
         <div className="text-center">
-          <div className="text-3xl font-display font-extrabold">🎉 Quiz abgeschlossen!</div>
+          <div className="text-3xl font-display font-extrabold">{t("vocab.quiz.finishedTitle")}</div>
           <div className="mt-4 font-display text-4xl font-extrabold text-primary">
-            {score.correct} / {score.total} правильно
+            {t("vocab.quiz.score", { correct: score.correct, total: score.total })}
           </div>
           <div className="text-muted-foreground mt-1">{score.percent} %</div>
           <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-primary text-primary-foreground font-bold">
-            <Sparkles className="h-4 w-4" /> {isRepeat ? "0 XP" : `+${gained} XP`} {score.percent === 100 && !isRepeat && "🏆"}
+            <Sparkles className="h-4 w-4" /> {isRepeat ? t("vocab.quiz.xpRepeat") : t("vocab.quiz.xpGained", { xp: gained })} {score.percent === 100 && !isRepeat && "🏆"}
           </div>
           <div className="mt-4 text-sm text-muted-foreground space-y-0.5">
             {score.breakdown.map((b, i) => (
@@ -132,13 +134,13 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
 
         {wrongRecords.length === 0 ? (
           <div className="mt-6 text-center text-sm text-muted-foreground">
-            <div className="font-display font-bold text-foreground">🎉 Ідеальний результат!</div>
-            <div className="mt-1">У тебе немає помилок для повторення.</div>
+            <div className="font-display font-bold text-foreground">{t("vocab.quiz.perfectTitle")}</div>
+            <div className="mt-1">{t("vocab.quiz.perfectSubtitle")}</div>
           </div>
         ) : (
           <div className="mt-6 space-y-5">
             <div>
-              <div className="font-display font-bold mb-2">На що варто звернути увагу</div>
+              <div className="font-display font-bold mb-2">{t("vocab.quiz.focusHeading")}</div>
               <div className="space-y-2">
                 {groups.map((g) => (
                   <div key={g.key} className="p-3 rounded-xl bg-secondary/60 text-sm">
@@ -152,7 +154,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
             </div>
 
             <div>
-              <div className="font-display font-bold mb-2">Повтори ці слова</div>
+              <div className="font-display font-bold mb-2">{t("vocab.quiz.reviewHeading")}</div>
               <div className="grid sm:grid-cols-2 gap-2">
                 {wrongRecords.map((a, i) => (
                   <div key={`${a.questionId}-${i}`} className="p-3 rounded-xl bg-secondary/60 text-sm">
@@ -160,9 +162,9 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
                     <div className="text-muted-foreground"> — {a.word.uk}</div>
                     {a.userAnswer && a.correctAnswer && (
                       <div className="mt-1 text-xs">
-                        <span className="text-destructive">твоя відповідь: {a.userAnswer}</span>
+                        <span className="text-destructive">{t("vocab.quiz.yourAnswer", { answer: a.userAnswer })}</span>
                         <br />
-                        <span className="text-success">правильно: {a.correctAnswer}</span>
+                        <span className="text-success">{t("vocab.quiz.correctWas", { answer: a.correctAnswer })}</span>
                       </div>
                     )}
                   </div>
@@ -172,7 +174,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
 
             {focus && (
               <div className="p-3 rounded-xl border-2 border-primary/30 text-sm">
-                <span className="font-semibold">Фокус для повторення: </span>
+                <span className="font-semibold">{t("vocab.quiz.focusLabel")}</span>
                 <span className="text-muted-foreground">{focus}</span>
               </div>
             )}
@@ -189,7 +191,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
                 restart(wrong, Math.min(wrong.length, DEFAULT_QUIZ_LENGTH));
               }}
             >
-              <RotateCcw className="h-4 w-4 mr-1" /> Повторити помилки
+              <RotateCcw className="h-4 w-4 mr-1" /> {t("vocab.quiz.repeatMistakes")}
             </Button>
           )}
           <Button
@@ -200,13 +202,13 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
               restart(words, DEFAULT_QUIZ_LENGTH);
             }}
           >
-            Новий Quiz
+            {t("vocab.quiz.newQuiz")}
           </Button>
           <Button variant="outline" onClick={onChangeTopic}>
-            <Shuffle className="h-4 w-4 mr-1" /> Обрати іншу тему
+            <Shuffle className="h-4 w-4 mr-1" /> {t("vocab.quiz.chooseAnotherTopic")}
           </Button>
           <Button variant="ghost" onClick={onBackToVocab}>
-            <BookOpen className="h-4 w-4 mr-1" /> До словника
+            <BookOpen className="h-4 w-4 mr-1" /> {t("vocab.quiz.backToVocab")}
           </Button>
         </div>
       </Card>
@@ -250,28 +252,28 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
   return (
     <Card className="p-6 md:p-8 rounded-3xl border-0 shadow-elevated">
       <div className="flex items-center justify-between">
-        <Badge>Quiz · {themeTitle}</Badge>
+        <Badge>{t("vocab.quiz.title", { theme: themeTitle })}</Badge>
         {totalXp > 0 && <span className="text-xs font-semibold text-primary">{totalXp} XP</span>}
         <span className="text-xs text-muted-foreground">
-          Питання {idx + 1} з {questions.length}
+          {t("vocab.quiz.questionCounter", { current: idx + 1, total: questions.length })}
         </span>
       </div>
       <Progress value={((idx + (locked ? 1 : 0)) / questions.length) * 100} className="mt-3 h-2" />
       <div className="mt-2 flex justify-end">
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground" onClick={() => setConfirmChange(true)}>
-          Змінити тему
+          {t("vocab.quiz.changeTopic")}
         </Button>
       </div>
 
       <AlertDialog open={confirmChange} onOpenChange={setConfirmChange}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Змінити тему?</AlertDialogTitle>
-            <AlertDialogDescription>Поточний Quiz буде завершено. Змінити тему?</AlertDialogDescription>
+            <AlertDialogTitle>{t("vocab.quiz.dialog.title")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("vocab.quiz.dialog.description")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Скасувати</AlertDialogCancel>
-            <AlertDialogAction onClick={onChangeTopic}>Змінити тему</AlertDialogAction>
+            <AlertDialogCancel>{t("vocab.quiz.dialog.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={onChangeTopic}>{t("vocab.quiz.dialog.confirm")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -316,21 +318,21 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
           >
             {isCorrect ? (
               <>
-                <Check className="h-4 w-4" /> Правильно! {isRepeat ? "" : `+${XP.perCorrect} XP`}
+                <Check className="h-4 w-4" /> {t("vocab.quiz.correct")} {isRepeat ? "" : t("vocab.quiz.xpGained", { xp: XP.perCorrect })}
               </>
             ) : (
               <>
-                <X className="h-4 w-4" /> Неправильно
+                <X className="h-4 w-4" /> {t("vocab.quiz.incorrect")}
               </>
             )}
           </div>
           {!isCorrect && (
             <div className="mt-1 text-sm text-muted-foreground">
-              Правильна відповідь: <span className="font-semibold text-foreground">{q.options[q.correctIndex]}</span>
+              {t("vocab.quiz.correctAnswerLabel")}<span className="font-semibold text-foreground">{q.options[q.correctIndex]}</span>
             </div>
           )}
           <Button className="mt-4 bg-gradient-primary" disabled={!canContinue} onClick={next}>
-            Далі <ArrowRight className="h-4 w-4 ml-1" />
+            {t("vocab.quiz.next")} <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
         </div>
       )}

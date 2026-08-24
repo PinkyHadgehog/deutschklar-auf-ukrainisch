@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Heart, Bookmark, BookOpen, Layers, RotateCw, Play, ArrowRight, Search, ChevronDown } from "lucide-react";
+import { useLang } from "@/context/LanguageContext";
 import { vocabThemes, type Level } from "@/data/mock";
 import { removeSavedItem, useSavedItems, type SavedItem } from "@/lib/savedItems";
 import { getLessonProgressEntry, statusToProgress, type LessonStatus } from "@/lib/lessonProgress";
@@ -15,9 +16,6 @@ import {
   groupSavedWordsByTopic,
   savedWordDe,
   savedWordTopicId,
-  savedWordsLabel,
-  topicCountLabel,
-  wordCountLabel,
 } from "@/lib/savedWordGroups";
 
 
@@ -25,18 +23,6 @@ const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"]
 
 const str = (v: unknown) => (typeof v === "string" ? v : undefined);
 const stripArtikel = (de: string) => de.replace(/^\s*(der|die|das)\s+/i, "");
-
-const statusText: Record<LessonStatus, string> = {
-  not_started: "Не розпочато",
-  started: "У процесі",
-  completed: "Завершено",
-};
-
-const ctaText: Record<LessonStatus, string> = {
-  not_started: "Почати урок",
-  started: "Продовжити",
-  completed: "Повторити",
-};
 
 const EmptyState = ({ text, hint, ctaLabel, to }: { text: string; hint: string; ctaLabel: string; to: string }) => (
   <div className="py-10 text-center">
@@ -57,6 +43,7 @@ const Row = ({
   action,
   onRemove,
   onClick,
+  removeAria,
 }: {
   icon: React.ReactNode;
   title: React.ReactNode;
@@ -65,41 +52,70 @@ const Row = ({
   action?: React.ReactNode;
   onRemove: () => void;
   onClick?: () => void;
-}) => (
-  <div
-    onClick={onClick}
-    className={`flex items-center gap-3 rounded-xl border border-border/70 bg-card px-3 py-2.5 transition hover:border-primary/40 ${onClick ? "cursor-pointer" : ""}`}
-  >
-    <div className="shrink-0 text-primary">{icon}</div>
-    <div className="min-w-0 flex-1">
-      <div className="flex items-center gap-2">
-        <div className="truncate text-sm font-semibold">{title}</div>
-        {right}
+  removeAria: string;
+}) => {
+  const { t } = useLang();
+  return (
+    <div
+      onClick={onClick}
+      className={`flex items-center gap-3 rounded-xl border border-border/70 bg-card px-3 py-2.5 transition hover:border-primary/40 ${onClick ? "cursor-pointer" : ""}`}
+    >
+      <div className="shrink-0 text-primary">{icon}</div>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <div className="truncate text-sm font-semibold">{title}</div>
+          {right}
+        </div>
+        {subtitle && <div className="truncate text-xs text-muted-foreground">{subtitle}</div>}
       </div>
-      {subtitle && <div className="truncate text-xs text-muted-foreground">{subtitle}</div>}
+      <div className="flex shrink-0 items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+        {action}
+        <button
+          type="button"
+          aria-label={removeAria}
+          onClick={(e) => { e.stopPropagation(); onRemove(); toast(t("savedPage.removedToast")); }}
+          className="p-1.5 text-destructive/80 hover:text-destructive"
+        >
+          <Heart className="h-4 w-4 fill-current" />
+        </button>
+      </div>
     </div>
-    <div className="flex shrink-0 items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
-      {action}
-      <button
-        type="button"
-        aria-label="Видалити зі збереженого"
-        onClick={(e) => { e.stopPropagation(); onRemove(); toast("Видалено зі збереженого"); }}
-        className="p-1.5 text-destructive/80 hover:text-destructive"
-      >
-        <Heart className="h-4 w-4 fill-current" />
-      </button>
-    </div>
-  </div>
-);
+  );
+};
 
 const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
+  const { t, lang } = useLang();
   const saved = useSavedItems();
   const navigate = useNavigate();
   useProgressVersion();
   const [tab, setTab] = useState<"words" | "lessons" | "topics">("words");
   const [level, setLevel] = useState<"all" | Level>("all");
 
-  const themeTitle = (id?: string) => vocabThemes.find((t) => t.id === id)?.titleDe ?? id ?? "";
+  const statusText: Record<LessonStatus, string> = {
+    not_started: t("savedPage.status.not_started"),
+    started: t("savedPage.status.started"),
+    completed: t("savedPage.status.completed"),
+  };
+
+  const ctaText: Record<LessonStatus, string> = {
+    not_started: t("savedPage.cta.not_started"),
+    started: t("savedPage.cta.started"),
+    completed: t("savedPage.cta.completed"),
+  };
+
+  const countLabel = (n: number, base: "savedWord" | "topic" | "word") => {
+    const mod10 = n % 10;
+    const mod100 = n % 100;
+    let suffix: "one" | "few" | "many";
+    if (lang === "uk") {
+      if (mod10 === 1 && mod100 !== 11) suffix = "one";
+      else if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) suffix = "few";
+      else suffix = "many";
+    } else {
+      suffix = n === 1 ? "one" : "many";
+    }
+    return t(`savedPage.count.${base}_${suffix}`, { n });
+  };
 
   const filterByLevel = (items: SavedItem[]) =>
     level === "all" ? items : items.filter((i) => str(i.meta?.level) === level);
@@ -137,9 +153,9 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
 
 
   const tabs = [
-    { id: "words" as const, label: "Слова", count: saved.words.length },
-    { id: "lessons" as const, label: "Уроки", count: saved.lessons.length },
-    { id: "topics" as const, label: "Теми", count: saved.topics.length },
+    { id: "words" as const, label: t("savedPage.tabs.words"), count: saved.words.length },
+    { id: "lessons" as const, label: t("savedPage.tabs.lessons"), count: saved.lessons.length },
+    { id: "topics" as const, label: t("savedPage.tabs.topics"), count: saved.topics.length },
   ];
 
   return (
@@ -153,26 +169,26 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
       {variant === "card" && (
         <>
           <div className="font-display font-bold flex items-center gap-2">
-            <Bookmark className="h-4 w-4 text-primary" /> Збережене
+            <Bookmark className="h-4 w-4 text-primary" /> {t("savedPage.cardTitle")}
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Слова, уроки та теми, які ти хочеш повторити пізніше.
+            {t("savedPage.cardSubtitle")}
           </p>
         </>
       )}
 
       <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-        {tabs.map((t) => (
+        {tabs.map((tb) => (
           <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
+            key={tb.id}
+            onClick={() => setTab(tb.id)}
             className={`shrink-0 rounded-full px-4 py-1.5 text-sm font-semibold transition ${
-              tab === t.id
+              tab === tb.id
                 ? "bg-gradient-primary text-primary-foreground shadow-soft"
                 : "bg-secondary/70 text-muted-foreground hover:text-foreground"
             }`}
           >
-            {t.label} <span className="opacity-80">{t.count}</span>
+            {tb.label} <span className="opacity-80">{tb.count}</span>
           </button>
         ))}
       </div>
@@ -187,7 +203,7 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
                 level === l ? "border-primary bg-primary-soft text-primary" : "border-border text-muted-foreground hover:text-foreground"
               }`}
             >
-              {l === "all" ? "Усі" : l}
+              {l === "all" ? t("savedPage.levelAll") : l}
             </button>
           ))}
         </div>
@@ -198,15 +214,18 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
         <div className="mt-4">
           {saved.words.length === 0 ? (
             <EmptyState
-              text="Тут поки немає збережених слів"
-              hint="Зберігай слова, які хочеш повторити пізніше."
-              ctaLabel="Перейти до словника"
+              text={t("savedPage.words.emptyTitle")}
+              hint={t("savedPage.words.emptyHint")}
+              ctaLabel={t("savedPage.words.emptyCta")}
               to="/vocab"
             />
           ) : (
             <>
               <div className="text-sm text-muted-foreground">
-                Збережено {savedWordsLabel(saved.words.length)} у {topicCountLabel(allTopicCount)}
+                {t("savedPage.words.savedIn", {
+                  words: countLabel(saved.words.length, "savedWord"),
+                  topics: countLabel(allTopicCount, "topic"),
+                })}
               </div>
 
               <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-center">
@@ -215,7 +234,7 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
                   <Input
                     value={wordQuery}
                     onChange={(e) => setWordQuery(e.target.value)}
-                    placeholder="Пошук у збережених словах..."
+                    placeholder={t("savedPage.words.searchPlaceholder")}
                     className="pl-9"
                   />
                 </div>
@@ -230,7 +249,7 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
                           : "border-border text-muted-foreground hover:text-foreground"
                       }`}
                     >
-                      {l === "all" ? "Усі" : l}
+                      {l === "all" ? t("savedPage.levelAll") : l}
                     </button>
                   ))}
                 </div>
@@ -238,20 +257,20 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
 
               {visibleWords.length === 0 ? (
                 <div className="py-10 text-center">
-                  <div className="font-semibold">Нічого не знайдено</div>
-                  <div className="mt-1 text-sm text-muted-foreground">Спробуй інше слово або зміни фільтр.</div>
+                  <div className="font-semibold">{t("savedPage.words.notFoundTitle")}</div>
+                  <div className="mt-1 text-sm text-muted-foreground">{t("savedPage.words.notFoundHint")}</div>
                   <Button
                     variant="outline"
                     className="mt-4"
                     onClick={() => { setWordQuery(""); setWordLevel("all"); }}
                   >
-                    Очистити фільтри
+                    {t("savedPage.words.clearFilters")}
                   </Button>
                 </div>
               ) : (
                 <>
                   <Button className="mt-3 bg-gradient-primary" onClick={() => navigate(reviewAllUrl)}>
-                    <RotateCw className="h-4 w-4 mr-1.5" /> Повторити всі слова
+                    <RotateCw className="h-4 w-4 mr-1.5" /> {t("savedPage.words.reviewAll")}
                   </Button>
 
                   <div className="mt-3 space-y-2">
@@ -269,7 +288,7 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
                             <span className="text-base">{g.emoji}</span>
                             <span className="min-w-0 flex-1">
                               <span className="block truncate text-sm font-semibold">{g.title}</span>
-                              <span className="block text-xs text-muted-foreground">{wordCountLabel(g.words.length)}</span>
+                              <span className="block text-xs text-muted-foreground">{countLabel(g.words.length, "word")}</span>
                             </span>
                             {g.level && <Badge variant="outline" className="shrink-0 text-[10px]">{g.level}</Badge>}
                             <span className="shrink-0 text-sm font-semibold text-primary">{g.words.length}</span>
@@ -283,7 +302,7 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
                                 variant="outline"
                                 onClick={() => navigate(topicReviewUrl(g.topicId))}
                               >
-                                <Play className="h-3.5 w-3.5 mr-1" /> Повторити тему
+                                <Play className="h-3.5 w-3.5 mr-1" /> {t("savedPage.words.reviewTopic")}
                               </Button>
                               {g.words.map((w) => {
                                 const de = savedWordDe(w);
@@ -303,7 +322,7 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
                                     subtitle={
                                       <>
                                         {str(w.meta?.uk)}
-                                        {plural && plural !== "—" ? ` · Pl.: ${plural}` : ""}
+                                        {plural && plural !== "—" ? ` · ${t("savedPage.words.pluralPrefix")} ${plural}` : ""}
                                       </>
                                     }
                                     action={
@@ -316,10 +335,11 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
                                           )
                                         }
                                       >
-                                        Повторити
+                                        {t("savedPage.words.review")}
                                       </Button>
                                     }
                                     onRemove={() => removeSavedItem("word", w.id)}
+                                    removeAria={t("savedPage.removeAria")}
                                   />
                                 );
                               })}
@@ -342,13 +362,13 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
         <div className="mt-4">
           {saved.lessons.length === 0 ? (
             <EmptyState
-              text="Тут поки немає збережених уроків"
-              hint="Зберігай важливі уроки, щоб швидко повертатися до них."
-              ctaLabel="Перейти до курсів"
+              text={t("savedPage.lessons.emptyTitle")}
+              hint={t("savedPage.lessons.emptyHint")}
+              ctaLabel={t("savedPage.lessons.emptyCta")}
               to="/courses"
             />
           ) : lessons.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">Немає збережених уроків цього рівня.</div>
+            <div className="py-8 text-center text-sm text-muted-foreground">{t("savedPage.lessons.emptyForLevel")}</div>
           ) : (
             <div className="space-y-2">
               {lessons.map((l) => {
@@ -362,7 +382,7 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
                     right={<Badge variant="outline" className="shrink-0 text-[10px]">{str(l.meta?.level) ?? "—"}</Badge>}
                     subtitle={
                       <>
-                        {str(l.meta?.category) ?? "Граматика"} · {statusText[entry.status]} · {pct}%
+                        {str(l.meta?.category) ?? t("savedPage.lessons.defaultCategory")} · {statusText[entry.status]} · {pct}%
                       </>
                     }
                     action={
@@ -372,6 +392,7 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
                     }
                     onClick={() => { navigate(`/lesson/${l.id}`); window.scrollTo({ top: 0 }); }}
                     onRemove={() => removeSavedItem("lesson", l.id)}
+                    removeAria={t("savedPage.removeAria")}
                   />
                 );
               })}
@@ -385,40 +406,41 @@ const SavedLibrary = ({ variant = "card" }: { variant?: "card" | "page" }) => {
         <div className="mt-4">
           {saved.topics.length === 0 ? (
             <EmptyState
-              text="Тут поки немає збережених тем"
-              hint="Додай теми, до яких хочеш повернутися пізніше."
-              ctaLabel="Переглянути теми"
+              text={t("savedPage.topics.emptyTitle")}
+              hint={t("savedPage.topics.emptyHint")}
+              ctaLabel={t("savedPage.topics.emptyCta")}
               to="/courses"
             />
           ) : topics.length === 0 ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">Немає збережених тем цього рівня.</div>
+            <div className="py-8 text-center text-sm text-muted-foreground">{t("savedPage.topics.emptyForLevel")}</div>
           ) : (
             <div className="space-y-2">
-              {topics.map((t) => {
-                const isVocab = str(t.meta?.kind) === "vocab";
-                const topicId = str(t.meta?.topicId) ?? t.id.split(":").slice(1).join(":");
+              {topics.map((tp) => {
+                const isVocab = str(tp.meta?.kind) === "vocab";
+                const topicId = str(tp.meta?.topicId) ?? tp.id.split(":").slice(1).join(":");
                 const to = isVocab ? `/vocab?topic=${topicId}&tab=flash` : `/courses`;
-                const count = typeof t.meta?.count === "number" ? t.meta.count : undefined;
+                const count = typeof tp.meta?.count === "number" ? tp.meta.count : undefined;
                 return (
                   <Row
-                    key={t.id}
-                    icon={<span className="text-base">{str(t.meta?.emoji) ?? "📘"}</span>}
-                    title={str(t.meta?.title) ?? topicId}
-                    right={str(t.meta?.level) ? <Badge variant="outline" className="shrink-0 text-[10px]">{str(t.meta?.level)}</Badge> : undefined}
+                    key={tp.id}
+                    icon={<span className="text-base">{str(tp.meta?.emoji) ?? "📘"}</span>}
+                    title={str(tp.meta?.title) ?? topicId}
+                    right={str(tp.meta?.level) ? <Badge variant="outline" className="shrink-0 text-[10px]">{str(tp.meta?.level)}</Badge> : undefined}
                     subtitle={
                       <>
-                        {isVocab ? "Wortschatz" : "Граматика"}
-                        {str(t.meta?.subtitle) ? ` · ${str(t.meta?.subtitle)}` : ""}
+                        {isVocab ? t("savedPage.topics.vocabLabel") : t("savedPage.topics.grammarLabel")}
+                        {str(tp.meta?.subtitle) ? ` · ${str(tp.meta?.subtitle)}` : ""}
                         {count !== undefined ? ` · ${count}` : ""}
                       </>
                     }
                     action={
                       <Button size="sm" variant="outline" onClick={() => { navigate(to); window.scrollTo({ top: 0 }); }}>
-                        {isVocab ? <><Play className="h-3.5 w-3.5 mr-1" /> Повторити</> : <>Відкрити <ArrowRight className="h-3.5 w-3.5 ml-1" /></>}
+                        {isVocab ? <><Play className="h-3.5 w-3.5 mr-1" /> {t("savedPage.topics.review")}</> : <>{t("savedPage.topics.open")} <ArrowRight className="h-3.5 w-3.5 ml-1" /></>}
                       </Button>
                     }
                     onClick={() => { navigate(to); window.scrollTo({ top: 0 }); }}
-                    onRemove={() => removeSavedItem("topic", t.id)}
+                    onRemove={() => removeSavedItem("topic", tp.id)}
+                    removeAria={t("savedPage.removeAria")}
                   />
                 );
               })}
