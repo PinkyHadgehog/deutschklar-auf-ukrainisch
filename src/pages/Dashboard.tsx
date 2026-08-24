@@ -9,7 +9,7 @@ import { useAuth } from "@/context/AuthContext";
 import { courses } from "@/data/mock";
 import { allLessons, getAggregate, getLevelLessonIds } from "@/lib/progressAggregate";
 import { getDailyXp, getDailyBreakdown, subscribeLearningEvents, getWeeklyXp, getWeeklyXpByDay } from "@/lib/xp";
-import { getWeeklyXpGoal, getDailyStudyMinutesGoal, subscribeUserSettings } from "@/lib/userSettings";
+import { getWeeklyXpGoal, getDailyStudyMinutesGoal, subscribeUserSettings, getEffectiveDailyXpGoals, WEEK_DAYS, WEEK_DAY_LABELS, type DailyXpGoals, emptyGoals } from "@/lib/userSettings";
 import { getWeeklyCompletedLessons, getWeeklyCompletedQuizzes, subscribeCompletionEvents, getCurrentWeekRange } from "@/lib/weeklyStats";
 import { getRecommendations, type Recommendation, type RecommendationType } from "@/lib/recommendations";
 import { subscribeVocabMistakes } from "@/lib/vocabMistakes";
