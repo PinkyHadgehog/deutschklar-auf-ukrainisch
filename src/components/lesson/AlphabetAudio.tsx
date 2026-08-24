@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Volume2, VolumeX, Volume1, Loader2, Gauge } from "lucide-react";
+import { useLang } from "@/context/LanguageContext";
 
 const SPEEDS = [0.75, 1, 1.25] as const;
 type Speed = (typeof SPEEDS)[number];
@@ -52,6 +53,7 @@ function pickGermanVoice(): SpeechSynthesisVoice | null {
 }
 
 const AlphabetAudio = () => {
+  const { t } = useLang();
   const [speakingId, setSpeakingId] = useState<string | null>(null);
   const [supported, setSupported] = useState(true);
   const [speed, setSpeed] = useState<Speed>(1);
@@ -107,13 +109,13 @@ const AlphabetAudio = () => {
     <div className="mt-5">
       {!supported && (
         <div className="mb-3 text-xs text-muted-foreground">
-          Твій браузер не підтримує озвучення (Web Speech API). Спробуй Chrome або Edge.
+          {t("lesson.audio.notSupported")}
         </div>
       )}
       <Card className="mb-3 p-3 rounded-xl border-0 shadow-soft flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
         <div className="flex items-center gap-2">
           <Gauge className="h-4 w-4 text-muted-foreground" aria-hidden />
-          <span className="text-xs font-medium text-muted-foreground">Швидкість</span>
+          <span className="text-xs font-medium text-muted-foreground">{t("lesson.audio.speed")}</span>
           <div className="inline-flex rounded-lg border border-border overflow-hidden">
             {SPEEDS.map((s) => (
               <button
@@ -137,14 +139,14 @@ const AlphabetAudio = () => {
 
         <div className="flex items-center gap-2 flex-1 min-w-[180px]">
           <VolIcon className="h-4 w-4 text-muted-foreground" aria-hidden />
-          <span className="text-xs font-medium text-muted-foreground">Гучність</span>
+          <span className="text-xs font-medium text-muted-foreground">{t("lesson.audio.volume")}</span>
           <Slider
             value={[Math.round(volume * 100)]}
             onValueChange={(v) => setVolume((v[0] ?? 0) / 100)}
             max={100}
             step={5}
             disabled={!supported}
-            aria-label="Гучність озвучення"
+            aria-label={t("lesson.audio.volumeAria")}
             className="flex-1 max-w-[220px]"
           />
           <span className="text-xs tabular-nums w-9 text-right text-muted-foreground">
@@ -168,7 +170,7 @@ const AlphabetAudio = () => {
             >
               <button
                 type="button"
-                aria-label={`Програти літеру ${r.letter} і приклад ${r.example}`}
+                aria-label={t("lesson.audio.playRowAria", { letter: r.letter, example: r.example })}
                 onClick={() => playRow(r)}
                 disabled={!supported}
                 className="h-11 w-11 shrink-0 rounded-xl bg-primary text-primary-foreground grid place-items-center font-display font-bold text-lg hover:bg-primary/90 disabled:opacity-50"
@@ -181,7 +183,7 @@ const AlphabetAudio = () => {
                   <span className="text-xs text-muted-foreground truncate">[{r.transcription}]</span>
                 </div>
                 <div className="text-xs text-muted-foreground mt-0.5">
-                  Назва: <span className="font-medium text-foreground/80">{r.name}</span>
+                  {t("lesson.audio.nameLabel")} <span className="font-medium text-foreground/80">{r.name}</span>
                 </div>
               </div>
               <div className="flex flex-col gap-1 shrink-0">
@@ -192,10 +194,10 @@ const AlphabetAudio = () => {
                   className="h-7 px-2 text-xs"
                   onClick={() => speak(r.spell, letterId, 0.8)}
                   disabled={!supported}
-                  aria-label={`Програти назву літери ${r.spell}`}
+                  aria-label={t("lesson.audio.playLetterAria", { spell: r.spell })}
                 >
                   {isLetter ? <Loader2 className="h-3 w-3 animate-spin" /> : <Volume2 className="h-3 w-3" />}
-                  <span className="ml-1">Літера</span>
+                  <span className="ml-1">{t("lesson.audio.letterButton")}</span>
                 </Button>
                 <Button
                   type="button"
@@ -204,10 +206,10 @@ const AlphabetAudio = () => {
                   className="h-7 px-2 text-xs"
                   onClick={() => speak(r.example, wordId, 0.9)}
                   disabled={!supported}
-                  aria-label={`Програти слово ${r.example}`}
+                  aria-label={t("lesson.audio.playWordAria", { example: r.example })}
                 >
                   {isWord ? <Loader2 className="h-3 w-3 animate-spin" /> : <Volume2 className="h-3 w-3" />}
-                  <span className="ml-1">Слово</span>
+                  <span className="ml-1">{t("lesson.audio.wordButton")}</span>
                 </Button>
               </div>
             </Card>
@@ -215,7 +217,7 @@ const AlphabetAudio = () => {
         })}
       </div>
       <p className="mt-3 text-xs text-muted-foreground">
-        💡 Натисни велику плитку зліва, щоб почути назву літери та приклад поспіль. Озвучення працює через системний голос німецькою (de-DE).
+        {t("lesson.audio.footerTip")}
       </p>
     </div>
   );
