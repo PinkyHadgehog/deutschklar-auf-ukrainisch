@@ -300,7 +300,7 @@ const Home = () => {
             {lessonStructure.map((s, i) => (
               <Card key={s.title} className="p-4 rounded-2xl border-0 shadow-soft bg-card flex gap-3 items-start">
                 <div className="h-9 w-9 shrink-0 rounded-xl bg-primary-soft grid place-items-center">
-                  <s.icon className="h-4.5 w-4.5 h-[18px] w-[18px] text-primary" />
+                  <s.icon className="h-[18px] w-[18px] text-primary" />
                 </div>
                 <div>
                   <div className="text-[11px] font-semibold text-muted-foreground">Крок {i + 1}</div>
