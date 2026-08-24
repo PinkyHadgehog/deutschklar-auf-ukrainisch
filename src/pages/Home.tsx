@@ -137,7 +137,7 @@ const Home = () => {
               <Sparkles className="h-3.5 w-3.5" /> {t("home.badge")}
             </Badge>
             <h1 className={H1}>
-              {t("home.hero.title", { highlight: "" }).replace(/\s*\.$/, "").split("{highlight}")[0]}
+              {t("home.hero.title").split("{highlight}")[0]}
               <span className="text-gradient">{t("home.hero.titleHighlight")}</span>.
             </h1>
             <p className={`mt-5 max-w-xl ${LEAD}`}>{t("home.hero.subtitle")}</p>

@@ -9,13 +9,26 @@ import { useLang } from "@/context/LanguageContext";
 import WeeklyGoalCard from "@/components/profile/WeeklyGoalCard";
 import { Trophy, LogOut, CreditCard, Bookmark } from "lucide-react";
 import { useSavedItems } from "@/lib/savedItems";
-import { savedWordsLabel } from "@/lib/savedWordGroups";
 import { toast } from "sonner";
 
 const Profile = () => {
   const { user, logout, updateUser } = useAuth();
   const { lang, setLang, t } = useLang();
   const saved = useSavedItems();
+
+  const savedWordsCountLabel = (n: number) => {
+    const mod10 = n % 10;
+    const mod100 = n % 100;
+    let suffix: "one" | "few" | "many";
+    if (lang === "uk") {
+      if (mod10 === 1 && mod100 !== 11) suffix = "one";
+      else if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) suffix = "few";
+      else suffix = "many";
+    } else {
+      suffix = n === 1 ? "one" : "many";
+    }
+    return t(`savedPage.count.word_${suffix}`, { n });
+  };
   if (!user) return <Navigate to="/login" replace />;
 
   return (
@@ -84,7 +97,7 @@ const Profile = () => {
             <Bookmark className="h-4 w-4 text-primary" /> {t("profile.saved")}
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            {savedWordsLabel(saved.words.length)} · {t("profile.savedLessonsCount", { n: saved.lessons.length })} · {t("profile.savedTopicsCount", { n: saved.topics.length })}
+            {savedWordsCountLabel(saved.words.length)} · {t("profile.savedLessonsCount", { n: saved.lessons.length })} · {t("profile.savedTopicsCount", { n: saved.topics.length })}
           </p>
           <Button asChild variant="outline" className="mt-4">
             <Link to="/saved">{t("profile.openSaved")}</Link>
