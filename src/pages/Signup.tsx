@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
+import { useLang } from "@/context/LanguageContext";
 import { GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 
@@ -12,6 +13,7 @@ const levels = ["A1", "A2", "B1", "B2", "C1", "C2"] as const;
 
 const Signup = () => {
   const { signup } = useAuth();
+  const { t } = useLang();
   const nav = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -21,7 +23,7 @@ const Signup = () => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     await signup(name || "Олена", email || "olena@example.com", password, level);
-    toast.success("Вітаємо в deutsch.klar! 🎉");
+    toast.success(t("auth.signup.successToast"));
     nav("/dashboard");
   };
 
@@ -33,24 +35,24 @@ const Signup = () => {
             <GraduationCap className="h-6 w-6 text-primary-foreground" />
           </div>
         </div>
-        <h1 className="font-display text-2xl font-extrabold text-center">Створіть акаунт</h1>
-        <p className="text-center text-muted-foreground text-sm mt-1">7 днів безкоштовно. Без прив'язки картки.</p>
+        <h1 className="font-display text-2xl font-extrabold text-center">{t("auth.signup.title")}</h1>
+        <p className="text-center text-muted-foreground text-sm mt-1">{t("auth.signup.subtitle")}</p>
 
         <form onSubmit={submit} className="mt-6 space-y-4">
           <div>
-            <Label htmlFor="name">Ім'я</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Олена" className="mt-1.5" />
+            <Label htmlFor="name">{t("auth.signup.name")}</Label>
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t("auth.signup.namePlaceholder")} className="mt-1.5" />
           </div>
           <div>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="ви@example.com" className="mt-1.5" />
+            <Label htmlFor="email">{t("auth.signup.email")}</Label>
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("auth.signup.emailPlaceholder")} className="mt-1.5" />
           </div>
           <div>
-            <Label htmlFor="pw">Пароль</Label>
-            <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Мінімум 8 символів" className="mt-1.5" />
+            <Label htmlFor="pw">{t("auth.signup.password")}</Label>
+            <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("auth.signup.passwordPlaceholder")} className="mt-1.5" />
           </div>
           <div>
-            <Label>Ваш рівень німецької</Label>
+            <Label>{t("auth.signup.levelLabel")}</Label>
             <div className="grid grid-cols-6 gap-1.5 mt-1.5">
               {levels.map((l) => (
                 <button type="button" key={l}
@@ -60,13 +62,13 @@ const Signup = () => {
                   }`}>{l}</button>
               ))}
             </div>
-            <Link to="/test" className="text-xs text-primary hover:underline mt-2 inline-block">Не знаєте рівень? Пройдіть тест →</Link>
+            <Link to="/test" className="text-xs text-primary hover:underline mt-2 inline-block">{t("auth.signup.dontKnowLevel")}</Link>
           </div>
-          <Button type="submit" className="w-full bg-gradient-primary h-11">Створити акаунт</Button>
+          <Button type="submit" className="w-full bg-gradient-primary h-11">{t("auth.signup.submit")}</Button>
         </form>
 
         <div className="mt-5 text-sm text-center text-muted-foreground">
-          Вже є акаунт? <Link to="/login" className="text-primary font-semibold">Увійти</Link>
+          {t("auth.signup.haveAccount")} <Link to="/login" className="text-primary font-semibold">{t("auth.signup.loginLink")}</Link>
         </div>
       </Card>
     </div>
