@@ -41,12 +41,17 @@ const normalize = (u: User): User => ({
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  // Hydrate synchronously so gated routes (/saved, /profile) don't bounce to /login on refresh.
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const raw = localStorage.getItem(KEY);
+      return raw ? normalize(JSON.parse(raw)) : null;
+    } catch (error) {
+      console.error("Could not load user", error);
+      return null;
+    }
+  });
 
-  useEffect(() => {
-    const raw = localStorage.getItem(KEY);
-    if (raw) setUser(normalize(JSON.parse(raw)));
-  }, []);
 
   const persist = (u: User | null) => {
     setUser(u);
