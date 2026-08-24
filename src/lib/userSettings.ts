@@ -6,9 +6,25 @@
  *   PATCH /api/users/me/settings   { "weekly_xp_goal": 120, "daily_study_minutes_goal": 20 }
  */
 
+export type WeekDayKey = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+export type XpDistributionMode = "even" | "days" | "custom";
+
+/** Monday-first order — never change to Sunday-first. */
+export const WEEK_DAYS: WeekDayKey[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+export const WEEK_DAY_LABELS: Record<WeekDayKey, string> = {
+  mon: "Пн", tue: "Вт", wed: "Ср", thu: "Чт", fri: "Пт", sat: "Сб", sun: "Нд",
+};
+
+export type DailyXpGoals = Record<WeekDayKey, number>;
+
 export interface UserSettings {
   weeklyXpGoal: number;
   dailyStudyMinutesGoal: number;
+  xpDistributionMode: XpDistributionMode;
+  /** Days selected in "days" mode. */
+  studyDays: WeekDayKey[];
+  /** Manual per-day targets used in "custom" mode. */
+  dailyXpGoals: DailyXpGoals;
 }
 
 export const DEFAULT_WEEKLY_XP_GOAL = 100;
@@ -25,6 +41,27 @@ const KEY = "dk_user_settings";
 const listeners = new Set<() => void>();
 
 const notify = () => listeners.forEach((l) => l());
+
+/** Split `total` over `days` keys as whole numbers whose sum equals `total` exactly. */
+export const distributeEvenly = (total: number, days: WeekDayKey[]): DailyXpGoals => {
+  const out = emptyGoals();
+  if (days.length === 0) return out;
+  const base = Math.floor(total / days.length);
+  let rest = total - base * days.length;
+  days.forEach((d) => {
+    out[d] = base + (rest > 0 ? 1 : 0);
+    if (rest > 0) rest -= 1;
+  });
+  return out;
+};
+
+export function emptyGoals(): DailyXpGoals {
+  return { mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0 };
+}
+
+export const sumGoals = (goals: DailyXpGoals): number =>
+  WEEK_DAYS.reduce((s, d) => s + (goals[d] || 0), 0);
+
 
 export const isValidWeeklyGoal = (value: unknown): value is number =>
   typeof value === "number" &&
