@@ -1,1 +1,32 @@
-export default {} as const;
+export default {
+  login: {
+    title: "З поверненням!",
+    subtitle: "Увійдіть, щоб продовжити навчання.",
+    email: "Email",
+    emailPlaceholder: "ви@example.com",
+    password: "Пароль",
+    passwordPlaceholder: "••••••••",
+    forgotPassword: "Забули пароль?",
+    submit: "Увійти",
+    submitting: "Вхід…",
+    noAccount: "Ще немає акаунту?",
+    signupLink: "Зареєструйтесь",
+    successToast: "З поверненням! 👋",
+  },
+  signup: {
+    title: "Створіть акаунт",
+    subtitle: "7 днів безкоштовно. Без прив'язки картки.",
+    name: "Ім'я",
+    namePlaceholder: "Олена",
+    email: "Email",
+    emailPlaceholder: "ви@example.com",
+    password: "Пароль",
+    passwordPlaceholder: "Мінімум 8 символів",
+    levelLabel: "Ваш рівень німецької",
+    dontKnowLevel: "Не знаєте рівень? Пройдіть тест →",
+    submit: "Створити акаунт",
+    haveAccount: "Вже є акаунт?",
+    loginLink: "Увійти",
+    successToast: "Вітаємо в deutsch.klar! 🎉",
+  },
+} as const;

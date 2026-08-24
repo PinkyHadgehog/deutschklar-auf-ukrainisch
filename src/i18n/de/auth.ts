@@ -1,1 +1,32 @@
-export default {} as const;
+export default {
+  login: {
+    title: "Willkommen zurück!",
+    subtitle: "Melden Sie sich an, um weiterzulernen.",
+    email: "E-Mail",
+    emailPlaceholder: "sie@example.com",
+    password: "Passwort",
+    passwordPlaceholder: "••••••••",
+    forgotPassword: "Passwort vergessen?",
+    submit: "Anmelden",
+    submitting: "Anmeldung…",
+    noAccount: "Noch kein Konto?",
+    signupLink: "Registrieren",
+    successToast: "Willkommen zurück! 👋",
+  },
+  signup: {
+    title: "Konto erstellen",
+    subtitle: "7 Tage kostenlos. Keine Kreditkarte erforderlich.",
+    name: "Name",
+    namePlaceholder: "Olena",
+    email: "E-Mail",
+    emailPlaceholder: "sie@example.com",
+    password: "Passwort",
+    passwordPlaceholder: "Mindestens 8 Zeichen",
+    levelLabel: "Ihr Deutschniveau",
+    dontKnowLevel: "Niveau unbekannt? Machen Sie den Test →",
+    submit: "Konto erstellen",
+    haveAccount: "Bereits ein Konto?",
+    loginLink: "Anmelden",
+    successToast: "Willkommen bei deutsch.klar! 🎉",
+  },
+} as const;
