@@ -31,13 +31,14 @@ export interface StudySession {
   durationSeconds: number;
 }
 
+/** Translation keys — resolve with t() in components. */
 export const studyTypeLabel: Record<StudyActivityType, string> = {
-  lesson: "Уроки",
-  lesson_exercises: "Вправи",
-  vocabulary: "Словник",
-  flashcards: "Flashcards",
-  vocabulary_quiz: "Quiz",
-  mistake_review: "Робота над помилками",
+  lesson: "dashboard.studyType.lesson",
+  lesson_exercises: "dashboard.studyType.lessonExercises",
+  vocabulary: "dashboard.studyType.vocabulary",
+  flashcards: "dashboard.studyType.flashcards",
+  vocabulary_quiz: "dashboard.studyType.vocabularyQuiz",
+  mistake_review: "dashboard.studyType.mistakeReview",
 };
 
 const KEY = "dk_study_sessions";
@@ -234,12 +235,15 @@ export const getWeeklyStudyBreakdown = (): { type: StudyActivityType; label: str
     .sort((a, b) => b.seconds - a.seconds);
 };
 
-/** 2940 → "49 хв" · 5100 → "1 год 25 хв" · 10800 → "3 год" */
-export const formatStudyTime = (seconds: number): string => {
+/**
+ * 2940 → "49 min" · 5100 → "1 h 25 min" · 10800 → "3 h"
+ * `t` is the LanguageContext translator, injected by the caller.
+ */
+export const formatStudyTime = (seconds: number, t: (key: string, vars?: Record<string, string | number>) => string): string => {
   const total = Math.max(0, Math.floor(seconds / 60));
   const h = Math.floor(total / 60);
   const m = total % 60;
-  if (h === 0) return `${m} хв`;
-  if (m === 0) return `${h} год`;
-  return `${h} год ${m} хв`;
+  if (h === 0) return t("dashboard.studyTime.minutes", { n: m });
+  if (m === 0) return t("dashboard.studyTime.hours", { n: h });
+  return t("dashboard.studyTime.hoursMinutes", { h, m });
 };

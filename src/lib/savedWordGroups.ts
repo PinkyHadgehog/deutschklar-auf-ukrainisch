@@ -79,8 +79,9 @@ export const groupSavedWordsByTopic = (words: SavedItem[]): SavedWordGroup[] => 
     .sort((a, b) => b.lastSavedAt - a.lastSavedAt || a.title.localeCompare(b.title));
 };
 
-/** Ukrainian plural for "збережене слово". */
-export const wordCountLabel = (n: number) => {
+/** Plural form for "saved word" count. Ukrainian by default, German when `lang === "de"`. */
+export const wordCountLabel = (n: number, lang: "uk" | "de" = "uk") => {
+  if (lang === "de") return n === 1 ? `${n} gespeichertes Wort` : `${n} gespeicherte Wörter`;
   const mod10 = n % 10;
   const mod100 = n % 100;
   if (mod10 === 1 && mod100 !== 11) return `${n} збережене слово`;
@@ -88,14 +89,16 @@ export const wordCountLabel = (n: number) => {
   return `${n} збережених слів`;
 };
 
-export const topicCountLabel = (n: number) => {
+export const topicCountLabel = (n: number, lang: "uk" | "de" = "uk") => {
+  if (lang === "de") return n === 1 ? `${n} Thema` : `${n} Themen`;
   const mod10 = n % 10;
   const mod100 = n % 100;
   if (mod10 === 1 && mod100 !== 11) return `${n} темі`;
   return `${n} темах`;
 };
 
-export const savedWordsLabel = (n: number) => {
+export const savedWordsLabel = (n: number, lang: "uk" | "de" = "uk") => {
+  if (lang === "de") return n === 1 ? `${n} Wort` : `${n} Wörter`;
   const mod10 = n % 10;
   const mod100 = n % 100;
   if (mod10 === 1 && mod100 !== 11) return `${n} слово`;

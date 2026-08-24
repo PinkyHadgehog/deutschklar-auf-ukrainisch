@@ -11,8 +11,9 @@ export type XpDistributionMode = "even" | "days" | "custom";
 
 /** Monday-first order — never change to Sunday-first. */
 export const WEEK_DAYS: WeekDayKey[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
+/** Locale-neutral fallback abbreviations; UI components use t("dashboard.weekdays.*") instead. */
 export const WEEK_DAY_LABELS: Record<WeekDayKey, string> = {
-  mon: "Пн", tue: "Вт", wed: "Ср", thu: "Чт", fri: "Пт", sat: "Сб", sun: "Нд",
+  mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun",
 };
 
 export type DailyXpGoals = Record<WeekDayKey, number>;

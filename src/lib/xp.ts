@@ -25,9 +25,10 @@ export interface LearningEvent {
 const KEY = "dk_learning_events";
 const listeners = new Set<() => void>();
 
+/** Translation keys — resolve with t() in components. */
 export const eventTypeLabel: Record<LearningEventType, string> = {
-  vocabulary_quiz: "Словниковий Quiz",
-  lesson_exercises: "Вправи уроку",
+  vocabulary_quiz: "dashboard.xpSource.vocabularyQuiz",
+  lesson_exercises: "dashboard.xpSource.lessonExercises",
 };
 
 const read = (): LearningEvent[] => {

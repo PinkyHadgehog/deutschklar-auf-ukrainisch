@@ -56,8 +56,8 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
   const [isRepeat, setIsRepeat] = useState(false);
   const [confirmChange, setConfirmChange] = useState(false);
 
-  const questions = useMemo(() => buildQuiz(pool, length), [pool, length, round]);
-  const score = useMemo(() => scoreQuiz(answers, isRepeat), [answers, isRepeat]);
+  const questions = useMemo(() => buildQuiz(pool, t, length), [pool, length, round, t]);
+  const score = useMemo(() => scoreQuiz(answers, t, isRepeat), [answers, isRepeat, t]);
   const finished = idx >= questions.length;
 
   const loggedRound = useRef<number | null>(null);
@@ -110,7 +110,7 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
     const wrongRecords = answers.filter((a) => !a.correct);
     const wrong = wrongRecords.map((a) => a.word);
     const groups = groupMistakes(answers);
-    const focus = focusMessage(groups);
+    const focus = focusMessage(groups, t);
     const gained = score.xp;
     return (
       <Card className="p-8 rounded-3xl border-0 shadow-elevated">
@@ -145,9 +145,9 @@ const QuizMode = ({ words, themeId, themeTitle, onBackToVocab, onChangeTopic }: 
                 {groups.map((g) => (
                   <div key={g.key} className="p-3 rounded-xl bg-secondary/60 text-sm">
                     <div className="font-semibold">
-                      {g.label} · {mistakeCountLabel(g.count)}
+                      {t(g.labelKey)} · {mistakeCountLabel(g.count, t)}
                     </div>
-                    <div className="text-muted-foreground">{g.hint}</div>
+                    <div className="text-muted-foreground">{t(g.hintKey)}</div>
                   </div>
                 ))}
               </div>

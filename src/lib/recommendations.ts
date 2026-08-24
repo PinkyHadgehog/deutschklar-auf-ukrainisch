@@ -32,6 +32,9 @@ export interface Recommendation {
   priority: number;
   reason: RecommendationReason;
   context: string;
+  /** True when `context` is an i18n key (resolve with t()) rather than final text. */
+  isContextKey?: boolean;
+  contextParams?: Record<string, string | number>;
   href: string;
   score?: number;
   mistakeCount?: number;
@@ -105,7 +108,7 @@ const themeById = (id: string) => vocabThemes.find((t) => t.id === id);
 export interface RecommendationInput {
   level: Level;
   completedLessonSlugs?: string[];
-  /** Items already shown elsewhere on the Dashboard (e.g. Остання лекція). */
+  /** Items already shown elsewhere on the Dashboard (e.g. last completed lesson). */
   excludeIds?: string[];
 }
 
@@ -142,7 +145,8 @@ export const getRecommendations = (input: RecommendationInput): Recommendation[]
         level: lesson!.level,
         priority: 100 - i,
         reason: "lesson_started",
-        context: "Продовжити урок",
+        context: "dashboard.recommendations.continueLesson",
+        isContextKey: true,
         href: `/lesson/${lesson!.slug}`,
       });
     });
@@ -181,7 +185,9 @@ export const getRecommendations = (input: RecommendationInput): Recommendation[]
         level,
         priority: 80 - i,
         reason: "low_quiz_score",
-        context: `Quiz: ${s.latestScorePct}% · повторити`,
+        context: "dashboard.recommendations.quizRepeat",
+        isContextKey: true,
+        contextParams: { pct: s.latestScorePct },
         href: `/vocab?tab=quiz&topic=${s.topicId}`,
         score: s.latestScorePct,
       });
@@ -213,7 +219,8 @@ export const getRecommendations = (input: RecommendationInput): Recommendation[]
       level: l.level,
       priority: 50 - i,
       reason: "next_in_sequence",
-      context: i === 0 ? "Наступний урок" : "Рекомендований урок",
+      context: i === 0 ? "dashboard.recommendations.nextLesson" : "dashboard.recommendations.recommendedLesson",
+      isContextKey: true,
       href: `/lesson/${l.slug}`,
     });
   });

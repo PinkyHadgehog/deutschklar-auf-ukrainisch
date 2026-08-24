@@ -22,7 +22,7 @@ const Signup = () => {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signup(name || "Олена", email || "olena@example.com", password, level);
+    await signup(name || t("auth.signup.namePlaceholder"), email || "olena@example.com", password, level);
     toast.success(t("auth.signup.successToast"));
     nav("/dashboard");
   };

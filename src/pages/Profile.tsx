@@ -13,7 +13,7 @@ import { toast } from "sonner";
 
 const Profile = () => {
   const { user, logout, updateUser } = useAuth();
-  const { lang, setLang, t } = useLang();
+  const { lang, setLang, explanationLang, setExplanationLang, t } = useLang();
   const saved = useSavedItems();
 
   const savedWordsCountLabel = (n: number) => {
@@ -73,6 +73,24 @@ const Profile = () => {
             <button onClick={() => setLang("uk")} className={`p-3 rounded-xl border-2 text-sm font-semibold ${lang === "uk" ? "border-primary bg-primary-soft" : "border-border"}`}>🇺🇦 Українська</button>
             <button onClick={() => setLang("de")} className={`p-3 rounded-xl border-2 text-sm font-semibold ${lang === "de" ? "border-primary bg-primary-soft" : "border-border"}`}>🇩🇪 Deutsch</button>
           </div>
+
+          <div className="mt-6 font-display font-bold mb-1">{t("language.explanation")}</div>
+          <p className="text-sm text-muted-foreground mb-3">{t("language.explanationHint")}</p>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setExplanationLang("uk")}
+              className={`p-3 rounded-xl border-2 text-sm font-semibold ${explanationLang === "uk" ? "border-primary bg-primary-soft" : "border-border"}`}
+            >
+              🇺🇦 {t("language.explanationUk")}
+            </button>
+            <button
+              onClick={() => setExplanationLang("de")}
+              className={`p-3 rounded-xl border-2 text-sm font-semibold ${explanationLang === "de" ? "border-primary bg-primary-soft" : "border-border"}`}
+            >
+              🇩🇪 {t("language.explanationDe")}
+            </button>
+          </div>
+
 
           <div className="mt-6 font-display font-bold mb-3">{t("profile.completedLessons")}</div>
           <div className="space-y-2 max-h-64 overflow-auto pr-1">

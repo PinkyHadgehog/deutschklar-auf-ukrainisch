@@ -26,7 +26,7 @@ const LessonStatusControl = ({
     return (
       <div className={cn("flex flex-col items-start gap-2", className)}>
         <div className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-3 py-1 text-xs font-medium text-success">
-          <Check className="h-3.5 w-3.5" /> {statusLabel.completed}
+          <Check className="h-3.5 w-3.5" /> {t(statusLabel.completed)}
         </div>
         <p className="text-xs text-muted-foreground">{t("lesson.status.completedDesc")}</p>
         <button
@@ -46,7 +46,7 @@ const LessonStatusControl = ({
       <div className={cn("flex flex-col items-start gap-2", className)}>
         <div className="flex flex-wrap items-center gap-2">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-            <CircleDot className="h-3.5 w-3.5" /> {statusLabel.started}
+            <CircleDot className="h-3.5 w-3.5" /> {t(statusLabel.started)}
           </div>
           <button
             type="button"
