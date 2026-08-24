@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Target, Clock } from "lucide-react";
 import DailyGoalEditor from "@/components/goals/DailyGoalEditor";
 import WeeklyGoalEditor from "@/components/goals/WeeklyGoalEditor";
+import XpDistributionEditor from "@/components/goals/XpDistributionEditor";
 import { getDailyStudyMinutesGoal, getWeeklyXpGoal, subscribeUserSettings } from "@/lib/userSettings";
 
 const WeeklyGoalCard = () => {
