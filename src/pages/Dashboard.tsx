@@ -19,6 +19,7 @@ import LearningJourneyCard from "@/components/dashboard/LearningJourneyCard";
 import { getWeeklyStudySeconds, formatStudyTime, subscribeStudyTime } from "@/lib/studyTime";
 import DailyGoalEditor from "@/components/goals/DailyGoalEditor";
 import WeeklyGoalEditor from "@/components/goals/WeeklyGoalEditor";
+import XpDistributionEditor from "@/components/goals/XpDistributionEditor";
 import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles, Play, RotateCw, AlertTriangle, ArrowRight, Pencil, Settings2 } from "lucide-react";
 
 const recIcon: Record<RecommendationType, typeof Play> = {
