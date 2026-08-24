@@ -204,8 +204,10 @@ const Dashboard = () => {
                   <Settings2 className="h-4 w-4" />
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-72" align="end">
+              <PopoverContent className="w-80 max-h-[70vh] overflow-auto" align="end">
                 <WeeklyGoalEditor />
+                <div className="my-4 border-t" />
+                <XpDistributionEditor />
               </PopoverContent>
             </Popover>
           </div>
@@ -219,16 +221,53 @@ const Dashboard = () => {
 
           <Progress value={visualProgress} className="h-2 mb-4" />
 
-          <div className="flex items-end gap-1.5 h-24">
-            {weekly.map((v, i) => (
-              <div key={i} className="flex-1 flex flex-col items-center gap-1">
-                <div className="text-[10px] font-semibold text-muted-foreground">{weeklyByDay[i]}</div>
-                <div className="w-full rounded-md bg-primary-soft" style={{ height: `${v}%` }}>
-                  <div className="w-full rounded-md bg-gradient-primary h-full" style={{ opacity: v / 100 }} />
+          {/* Today */}
+          <div className="rounded-xl bg-secondary/60 p-3 mb-4">
+            <div className="text-xs text-muted-foreground flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Сьогодні
+            </div>
+            {todayGoal > 0 ? (
+              <>
+                <div className="flex items-end justify-between gap-2 mt-0.5">
+                  <div className="font-display font-extrabold text-lg leading-none">
+                    {todayXp} <span className="text-muted-foreground font-bold text-sm">/ {todayGoal} XP</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground font-medium">{todayPct}%</span>
                 </div>
-                <div className="text-[10px] text-muted-foreground">{["Пн","Вт","Ср","Чт","Пт","Сб","Нд"][i]}</div>
-              </div>
-            ))}
+                <Progress value={Math.min(todayPct, 100)} className="h-1.5 mt-2" />
+              </>
+            ) : (
+              <div className="font-display font-extrabold text-lg leading-none mt-0.5">Вихідний день</div>
+            )}
+          </div>
+
+          <div className="flex items-end gap-1.5 h-28">
+            {plannedByDay.map((planned, i) => {
+              const earned = weeklyByDay[i];
+              const isToday = i === todayIndex;
+              const fill = planned > 0 ? Math.min(100, Math.round((earned / planned) * 100)) : 0;
+              return (
+                <div key={i} className="flex-1 flex flex-col items-center gap-1 min-w-0">
+                  <div className={`text-[10px] leading-tight text-center ${isToday ? "font-bold text-foreground" : "font-semibold text-muted-foreground"}`}>
+                    {planned > 0 ? (
+                      <>
+                        {earned}
+                        <span className="text-muted-foreground">/{planned}</span>
+                        {earned >= planned && earned > 0 ? " ✓" : ""}
+                      </>
+                    ) : (
+                      "—"
+                    )}
+                  </div>
+                  <div className={`w-full rounded-md ${planned > 0 ? "bg-primary-soft" : "bg-muted"} h-12 flex flex-col justify-end overflow-hidden`}>
+                    <div className="w-full rounded-md bg-gradient-primary" style={{ height: `${fill}%` }} />
+                  </div>
+                  <div className={`text-[10px] ${isToday ? "font-bold text-primary" : "text-muted-foreground"}`}>
+                    {WEEK_DAY_LABELS[WEEK_DAYS[i]]}
+                  </div>
+                </div>
+              );
+            })}
           </div>
 
           <div className="mt-3 text-xs">
@@ -243,6 +282,7 @@ const Dashboard = () => {
             )}
           </div>
         </Card>
+
 
 
         {/* Weekly activity */}
