@@ -47,9 +47,14 @@ const WeeklyGoalCard = () => {
             <WeeklyGoalEditor />
           </div>
         </div>
+
+        <div className="sm:col-span-2 rounded-xl bg-secondary/50 p-4">
+          <XpDistributionEditor />
+        </div>
       </div>
     </Card>
   );
 };
+
 
 export default WeeklyGoalCard;
