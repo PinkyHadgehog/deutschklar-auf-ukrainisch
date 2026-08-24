@@ -133,8 +133,19 @@ export const saveItem = (type: SavedType, id: string, meta?: SavedItem["meta"]) 
   const all = read();
   const key = bucket(type);
   if (all[key].some((i) => i.id === id)) return;
-  write({ ...all, [key]: [{ id, type, savedAt: Date.now(), meta }, ...all[key]] });
+  // Always keep a stable topic id alongside display text.
+  const topicId =
+    typeof meta?.topicId === "string"
+      ? meta.topicId
+      : typeof meta?.theme === "string"
+        ? meta.theme
+        : type === "word"
+          ? id.split(":")[0]
+          : undefined;
+  const nextMeta = topicId ? { ...meta, topicId } : meta;
+  write({ ...all, [key]: [{ id, type, savedAt: Date.now(), meta: nextMeta }, ...all[key]] });
 };
+
 
 export const removeSavedItem = (type: SavedType, id: string) => {
   const all = read();
