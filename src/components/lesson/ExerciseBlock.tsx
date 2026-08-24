@@ -11,22 +11,11 @@ import {
   submitLessonExerciseResult,
   LESSON_EXERCISE_MAX_XP,
 } from "@/lib/xp";
+import { useLang } from "@/context/LanguageContext";
 
 
 const norm = (s: string) =>
   s.toLowerCase().replace(/[.,!?;:„"""'’()\s]+/g, " ").trim();
-
-const typeLabel: Record<ExerciseItem["type"], string> = {
-  mc: "Multiple Choice",
-  gap: "Lückentext",
-  tf: "Richtig / Falsch",
-  order: "Скласти речення",
-  translate: "Переклад",
-  match: "Зіставлення",
-  multi: "Кілька правильних",
-  correct: "Виправ помилку",
-  writeFree: "Коротка відповідь",
-};
 
 interface CardProps {
   item: ExerciseItem;
@@ -35,6 +24,7 @@ interface CardProps {
 }
 
 const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
+  const { t } = useLang();
   const [answer, setAnswer] = useState<unknown>(null);
   const [checked, setChecked] = useState(false);
   const [attempts, setAttempts] = useState(0);
@@ -142,7 +132,7 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
     switch (item.type) {
       case "mc": return item.options[item.correct];
       case "gap": return Array.isArray(item.answer) ? item.answer[0] : item.answer;
-      case "tf": return item.correct ? "Richtig" : "Falsch";
+      case "tf": return item.correct ? t("lesson.exercise.trueLabel") : t("lesson.exercise.falseLabel");
       case "order": return item.correct.join(" ").replace(/\s([.,!?;:])/g, "$1");
       case "translate": return Array.isArray(item.de) ? item.de[0] : item.de;
       case "match": return item.pairs.map(p => `${p.left} → ${p.right}`).join(" · ");
@@ -159,11 +149,11 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
     <Card className="p-5 rounded-2xl border-0 shadow-soft mb-3">
       <div className="flex items-center justify-between mb-2">
         <div className="text-xs uppercase tracking-wider text-muted-foreground">
-          {idx + 1} · {typeLabel[item.type]}
+          {idx + 1} · {t(`lesson.exercise.type.${item.type}`)}
         </div>
         {checked && (
           <span className={`text-xs font-semibold inline-flex items-center gap-1 ${correct ? "text-success" : "text-destructive"}`}>
-            {correct ? <><Check className="h-3.5 w-3.5"/> Правильно!</> : <><X className="h-3.5 w-3.5"/> Спробуй ще раз</>}
+            {correct ? <><Check className="h-3.5 w-3.5"/> {t("lesson.exercise.correct")}</> : <><X className="h-3.5 w-3.5"/> {t("lesson.exercise.tryAgain")}</>}
           </span>
         )}
       </div>
@@ -202,7 +192,7 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
             value={String(answer ?? "")}
             disabled={checked && correct}
             onChange={(e) => { setAnswer(e.target.value); setChecked(false); }}
-            placeholder="Твоя відповідь…"
+            placeholder={t("lesson.exercise.answerPlaceholder")}
             className={`w-full h-11 rounded-xl border-2 px-4 font-medium focus:outline-none ${
               checked ? (correct ? "border-success bg-success/10" : "border-destructive bg-destructive/10") : "border-input focus:border-primary"
             }`}
@@ -217,8 +207,8 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
           <div className="font-medium mb-3">{item.q}</div>
           <div className="flex gap-2">
             {[
-              { v: true, l: "Richtig" },
-              { v: false, l: "Falsch" },
+              { v: true, l: t("lesson.exercise.trueLabel") },
+              { v: false, l: t("lesson.exercise.falseLabel") },
             ].map(({ v, l }) => {
               const isPicked = answer === v;
               const state = !checked ? "" : v === item.correct ? "correct" : isPicked ? "wrong" : "";
@@ -256,7 +246,7 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
               </button>
             ))}
           </div>
-          <div className="mt-2 text-xs text-muted-foreground">Натисни на слово, щоб посунути його ліворуч.</div>
+          <div className="mt-2 text-xs text-muted-foreground">{t("lesson.exercise.orderHint")}</div>
         </>
       )}
 
@@ -269,7 +259,7 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
             value={String(answer ?? "")}
             disabled={checked && correct}
             onChange={(e) => { setAnswer(e.target.value); setChecked(false); }}
-            placeholder="Напиши німецькою…"
+            placeholder={t("lesson.exercise.translatePlaceholder")}
             rows={2}
             className={`w-full rounded-xl border-2 px-4 py-2 font-medium focus:outline-none ${
               checked ? (correct ? "border-success bg-success/10" : "border-destructive bg-destructive/10") : "border-input focus:border-primary"
@@ -322,7 +312,7 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
               })}
             </div>
           </div>
-          <div className="mt-2 text-xs text-muted-foreground">Спочатку обери ліворуч, потім — праворуч.</div>
+          <div className="mt-2 text-xs text-muted-foreground">{t("lesson.exercise.matchHint")}</div>
         </>
       )}
 
@@ -363,7 +353,7 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
             value={String(answer ?? "")}
             disabled={checked && correct}
             onChange={(e) => { setAnswer(e.target.value); setChecked(false); }}
-            placeholder="Запиши правильний варіант…"
+            placeholder={t("lesson.exercise.correctPlaceholder")}
             className={`w-full h-11 rounded-xl border-2 px-4 font-medium focus:outline-none ${
               checked ? (correct ? "border-success bg-success/10" : "border-destructive bg-destructive/10") : "border-input focus:border-primary"
             }`}
@@ -379,7 +369,7 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
             value={String(answer ?? "")}
             disabled={checked && correct}
             onChange={(e) => { setAnswer(e.target.value); setChecked(false); }}
-            placeholder="Напиши свою відповідь (мін. 10 символів)…"
+            placeholder={t("lesson.exercise.writeFreePlaceholder")}
             rows={3}
             className={`w-full rounded-xl border-2 px-4 py-2 font-medium focus:outline-none ${
               checked ? (correct ? "border-success bg-success/10" : "border-destructive bg-destructive/10") : "border-input focus:border-primary"
@@ -391,18 +381,18 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
       {/* FEEDBACK + buttons */}
       {checked && !correct && (
         <div className="mt-3 p-3 rounded-xl bg-destructive/5 text-sm">
-          <div className="font-semibold text-destructive">Спробуй ще раз.</div>
+          <div className="font-semibold text-destructive">{t("lesson.exercise.tryAgainTitle")}</div>
           {explain && <div className="text-foreground/80 mt-1">💡 {explain}</div>}
           {showAnswer && (
             <div className="mt-2 text-foreground">
-              ✅ Правильна відповідь: <b>{expectedAnswerText}</b>
+              ✅ {t("lesson.exercise.correctAnswer")} <b>{expectedAnswerText}</b>
             </div>
           )}
         </div>
       )}
       {checked && correct && explain && (
         <div className="mt-3 p-3 rounded-xl bg-success/5 text-sm text-foreground/85">
-          <span className="font-semibold text-success">Правильно!</span> {explain}
+          <span className="font-semibold text-success">{t("lesson.exercise.correct")}</span> {explain}
         </div>
       )}
 
@@ -417,23 +407,23 @@ const ExerciseCard = ({ item, idx, onResult }: CardProps) => {
               (item.type === "multi" && multiPicks.size === 0)
             }
             onClick={onCheck}
-          >Перевірити</Button>
+          >{t("lesson.exercise.check")}</Button>
         )}
         {checked && !correct && (
           <>
             {canShowAnswer && !showAnswer && (
               <Button variant="outline" size="sm" onClick={() => setShowAnswer(true)}>
-                <Eye className="h-4 w-4 mr-1" /> Показати відповідь
+                <Eye className="h-4 w-4 mr-1" /> {t("lesson.exercise.showAnswer")}
               </Button>
             )}
             <Button variant="outline" size="sm" onClick={onRetry}>
-              <RotateCcw className="h-4 w-4 mr-1" /> Ще раз
+              <RotateCcw className="h-4 w-4 mr-1" /> {t("lesson.exercise.retry")}
             </Button>
           </>
         )}
         {checked && correct && (
           <Button variant="ghost" size="sm" onClick={onRetry}>
-            <RotateCcw className="h-4 w-4 mr-1" /> Повторити
+            <RotateCcw className="h-4 w-4 mr-1" /> {t("lesson.exercise.repeat")}
           </Button>
         )}
       </div>
@@ -450,6 +440,7 @@ interface BlockProps {
 }
 
 const ExerciseBlock = ({ items, lessonId, onFinish, onNext, onPrev }: BlockProps) => {
+  const { t } = useLang();
   const [results, setResults] = useState<Record<number, boolean>>({});
   const [round, setRound] = useState(0);
   // indices (into `items`) of the current run; null = full set
@@ -492,10 +483,10 @@ const ExerciseBlock = ({ items, lessonId, onFinish, onNext, onPrev }: BlockProps
 
   if (!items || items.length === 0) return null;
 
-  let message = "Чудовий результат! Ти добре засвоїв / засвоїла цю тему.";
+  let message = t("lesson.exercise.messageGood");
   let suggestRepeat = false;
-  if (percent < 50) { message = "Раджу повторити теорію — ти зрозумієш матеріал краще на другому колі."; suggestRepeat = true; }
-  else if (percent < 80) { message = "Гарний результат! Кілька тем варто повторити."; }
+  if (percent < 50) { message = t("lesson.exercise.messageRepeat"); suggestRepeat = true; }
+  else if (percent < 80) { message = t("lesson.exercise.messageOk"); }
 
   const restart = (only: number[] | null) => {
     setResults({});
@@ -510,20 +501,20 @@ const ExerciseBlock = ({ items, lessonId, onFinish, onNext, onPrev }: BlockProps
     <section className="mt-10">
       <div className="flex items-end justify-between mb-1">
         <h2 className="font-display text-2xl font-bold flex items-center gap-2">
-          <BookOpen className="h-5 w-5 text-primary"/> Вправи
+          <BookOpen className="h-5 w-5 text-primary"/> {t("lesson.exercise.title")}
         </h2>
         <span className="text-sm text-muted-foreground">
-          {total} завдань · від простіших до складніших
+          {t("lesson.exercise.taskCount", { n: total })}
           {!isRepeat && (
             <span className="ml-2 inline-flex items-center gap-1 text-primary font-medium">
-              <Sparkles className="h-3.5 w-3.5" /> до {LESSON_EXERCISE_MAX_XP} XP
+              <Sparkles className="h-3.5 w-3.5" /> {t("lesson.exercise.upToXp", { xp: LESSON_EXERCISE_MAX_XP })}
             </span>
           )}
         </span>
       </div>
       <p className="text-sm text-muted-foreground mb-4">
-        {isRepeat ? "Режим повторення помилок — без XP. " : "Виконуй по черзі та перевіряй себе одразу. "}
-        Прогрес: <b>{answered}/{total}</b> · правильно: <b>{correctCount}</b>.
+        {isRepeat ? t("lesson.exercise.repeatModeDesc") : t("lesson.exercise.normalModeDesc")}
+        {t("lesson.exercise.progress")}: <b>{answered}/{total}</b> · {t("lesson.exercise.correctCount")}: <b>{correctCount}</b>.
       </p>
       <div>
         {activeIdx.map((i, pos) => (
@@ -541,42 +532,42 @@ const ExerciseBlock = ({ items, lessonId, onFinish, onNext, onPrev }: BlockProps
           <div className="flex items-start gap-4">
             <Trophy className="h-10 w-10 shrink-0" />
             <div className="flex-1">
-              <div className="font-display text-xl font-extrabold">🎉 Вправи завершено!</div>
+              <div className="font-display text-xl font-extrabold">{t("lesson.exercise.finishedTitle")}</div>
               <div className="font-display text-lg font-bold mt-1">
-                {correctCount} / {total} правильно · {percent}%
+                {t("lesson.exercise.correctOutOf", { correct: correctCount, total, percent })}
               </div>
               <div className="mt-1 inline-flex items-center gap-1 text-sm font-semibold">
-                <Sparkles className="h-4 w-4" /> {isRepeat || xpEarned === 0 ? "0 XP" : `+${xpEarned} XP`}
+                <Sparkles className="h-4 w-4" /> {isRepeat || xpEarned === 0 ? t("lesson.exercise.xpZero") : t("lesson.exercise.xpEarned", { xp: xpEarned })}
               </div>
               {!isRepeat && xpEarned === 0 && (
-                <div className="text-xs opacity-80 mt-1">XP за ці вправи вже нараховано раніше.</div>
+                <div className="text-xs opacity-80 mt-1">{t("lesson.exercise.xpAlreadyAwarded")}</div>
               )}
               <p className="text-sm opacity-90 mt-2">{message}</p>
               {wrongIdx.length > 0 && (
                 <div className="text-sm opacity-90 mt-1">
-                  {wrongIdx.length} {wrongIdx.length === 1 ? "помилка варта" : "помилки варто"} повторити
+                  {wrongIdx.length} {wrongIdx.length === 1 ? t("lesson.exercise.mistakeToRepeatOne") : t("lesson.exercise.mistakeToRepeatMany")}
                 </div>
               )}
               <div className="mt-4 flex flex-wrap gap-2">
                 {wrongIdx.length > 0 && (
                   <Button variant="secondary" size="sm" onClick={() => restart(wrongIdx)}>
-                    <RotateCcw className="h-4 w-4 mr-1" /> Повторити помилки
+                    <RotateCcw className="h-4 w-4 mr-1" /> {t("lesson.exercise.repeatMistakes")}
                   </Button>
                 )}
                 <Button variant="secondary" size="sm" onClick={() => restart(null)}>
-                  <RotateCcw className="h-4 w-4 mr-1" /> Повторити вправи
+                  <RotateCcw className="h-4 w-4 mr-1" /> {t("lesson.exercise.repeatExercises")}
                 </Button>
                 {onPrev && (
-                  <Button variant="secondary" size="sm" onClick={onPrev}>До уроку</Button>
+                  <Button variant="secondary" size="sm" onClick={onPrev}>{t("lesson.exercise.toLesson")}</Button>
                 )}
                 {onFinish && (
                   <Button size="sm" className="bg-white text-primary hover:bg-white/90" onClick={onFinish}>
-                    Завершити урок
+                    {t("lesson.exercise.finishLesson")}
                   </Button>
                 )}
                 {onNext && !suggestRepeat && (
                   <Button size="sm" className="bg-white text-primary hover:bg-white/90" onClick={onNext}>
-                    Наступний урок <ArrowRight className="h-4 w-4 ml-1" />
+                    {t("lesson.exercise.nextLesson")} <ArrowRight className="h-4 w-4 ml-1" />
                   </Button>
                 )}
               </div>

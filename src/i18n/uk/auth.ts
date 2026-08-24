@@ -30,8 +30,8 @@ export default {
     successToast: "Вітаємо в deutsch.klar! 🎉",
   },
   misc: {
-    notFoundTitle: "Oops! Сторінку не знайдено",
-    returnHome: "Повернутися на головну",
+    notFoundTitle: "Oops! Page not found",
+    returnHome: "Return to Home",
     legalImpressum: "Impressum",
     legalDatenschutz: "Datenschutz",
     legalDatenschutzText: "Ми поважаємо вашу приватність. Дані використовуються лише для роботи платформи та персоналізації навчання.",
