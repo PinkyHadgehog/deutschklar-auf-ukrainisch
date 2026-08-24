@@ -1,6 +1,6 @@
 export default {
   intro: {
-    title: "Bestimme dein Deutschniveau",
+    title: "Mein Niveau bestimmen",
     subtitle: "Ein kurzer, adaptiver Test hilft dir, dein ungefähres Niveau nach dem CEFR-Rahmen A1–C2 zu bestimmen.",
     duration: "≈ 10–15 Min.",
     levelRange: "A1–C2",

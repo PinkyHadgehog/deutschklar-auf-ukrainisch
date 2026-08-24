@@ -88,7 +88,7 @@ const Dashboard = () => {
   const visualProgress = Math.min(weekDone, 100);
   const goalReached = weeklyXp >= weeklyGoal;
   const { start: weekStart, end: weekEnd } = getCurrentWeekRange();
-  const weekdayKeys: (keyof typeof import("@/i18n/uk/dashboard").default.weekdaysFull)[] = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"];
+  const weekdayKeys = ["sun", "mon", "tue", "wed", "thu", "fri", "sat"] as const;
   const fmtDay = (d: Date) => `${t(`dashboard.weekdaysFull.${weekdayKeys[d.getDay()]}`)} · ${d.toLocaleDateString(lang === "de" ? "de-DE" : "uk-UA", { day: "numeric", month: "short" })}`;
   const weekRangeLabel = `${fmtDay(weekStart)} — ${fmtDay(weekEnd)}`;
   const weekEmpty = weeklyLessons === 0 && weeklyQuizzes === 0 && weeklySeconds === 0;
