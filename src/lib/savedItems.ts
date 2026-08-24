@@ -26,7 +26,9 @@ export interface SavedItems {
   topics: SavedItem[];
 }
 
-const KEY = "dk_saved_items";
+const KEY = "deutschklar_saved_items";
+/** Older builds used this key — migrated once on first read. */
+const LEGACY_KEY = "dk_saved_items";
 const listeners = new Set<() => void>();
 
 const bucket = (type: SavedType): keyof SavedItems =>
@@ -34,31 +36,85 @@ const bucket = (type: SavedType): keyof SavedItems =>
 
 const empty = (): SavedItems => ({ words: [], lessons: [], topics: [] });
 
-const read = (): SavedItems => {
+const sanitize = (items: unknown, type: SavedType): SavedItem[] =>
+  Array.isArray(items)
+    ? items
+        .filter((i): i is SavedItem => !!i && typeof i === "object" && typeof (i as SavedItem).id === "string")
+        .map((i) => ({
+          id: i.id,
+          type: i.type ?? type,
+          savedAt: typeof i.savedAt === "number" ? i.savedAt : Date.now(),
+          meta: i.meta,
+        }))
+    : [];
+
+/** Tolerant parse: partial objects keep whatever buckets they do have. */
+const parse = (raw: string | null): SavedItems | null => {
+  if (!raw) return null;
   try {
-    const raw = localStorage.getItem(KEY);
-    const parsed = raw ? JSON.parse(raw) : null;
-    if (!parsed || typeof parsed !== "object") return empty();
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object") return null;
     return {
-      words: Array.isArray(parsed.words) ? parsed.words : [],
-      lessons: Array.isArray(parsed.lessons) ? parsed.lessons : [],
-      topics: Array.isArray(parsed.topics) ? parsed.topics : [],
+      words: sanitize(parsed.words, "word"),
+      lessons: sanitize(parsed.lessons, "lesson"),
+      topics: sanitize(parsed.topics, "topic"),
     };
   } catch {
-    return empty();
+    return null;
   }
 };
 
+/** In-memory cache, hydrated from localStorage on first access. */
+let cache: SavedItems | null = null;
+
+const hydrate = (): SavedItems => {
+  try {
+    const current = parse(localStorage.getItem(KEY));
+    if (current) return current;
+    const legacy = parse(localStorage.getItem(LEGACY_KEY));
+    if (legacy) {
+      // Migrate, but never clear the legacy key (harmless fallback).
+      try {
+        localStorage.setItem(KEY, JSON.stringify(legacy));
+      } catch {
+        /* ignore */
+      }
+      return legacy;
+    }
+  } catch (error) {
+    console.error("Could not load saved items", error);
+  }
+  // No stored data at all → start empty WITHOUT writing anything yet.
+  return empty();
+};
+
+const read = (): SavedItems => {
+  if (!cache) cache = hydrate();
+  return cache;
+};
+
+/** Persist after every mutation. */
 const write = (next: SavedItems) => {
+  cache = next;
   try {
     localStorage.setItem(KEY, JSON.stringify(next));
-  } catch {
-    /* ignore */
+  } catch (error) {
+    console.error("Could not persist saved items", error);
   }
   listeners.forEach((l) => l());
 };
 
+// Keep other tabs/windows of the same origin in sync.
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (e) => {
+    if (e.key !== KEY) return;
+    cache = parse(e.newValue) ?? empty();
+    listeners.forEach((l) => l());
+  });
+}
+
 const sorted = (items: SavedItem[]) => [...items].sort((a, b) => b.savedAt - a.savedAt);
+
 
 /** Snapshot, newest first. */
 export const getSavedItems = (): SavedItems => {
@@ -77,8 +133,19 @@ export const saveItem = (type: SavedType, id: string, meta?: SavedItem["meta"]) 
   const all = read();
   const key = bucket(type);
   if (all[key].some((i) => i.id === id)) return;
-  write({ ...all, [key]: [{ id, type, savedAt: Date.now(), meta }, ...all[key]] });
+  // Always keep a stable topic id alongside display text.
+  const topicId =
+    typeof meta?.topicId === "string"
+      ? meta.topicId
+      : typeof meta?.theme === "string"
+        ? meta.theme
+        : type === "word"
+          ? id.split(":")[0]
+          : undefined;
+  const nextMeta = topicId ? { ...meta, topicId } : meta;
+  write({ ...all, [key]: [{ id, type, savedAt: Date.now(), meta: nextMeta }, ...all[key]] });
 };
+
 
 export const removeSavedItem = (type: SavedType, id: string) => {
   const all = read();
