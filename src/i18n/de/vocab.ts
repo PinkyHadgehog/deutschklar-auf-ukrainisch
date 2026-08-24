@@ -46,7 +46,7 @@ export default {
   "vocab.quiz.dialog.confirm": "Thema ändern",
   "vocab.quiz.correct": "Richtig!",
   "vocab.quiz.incorrect": "Falsch",
-  "vocab.quiz.correctAnswer": "Richtige Antwort: {answer}",
+  "vocab.quiz.correctAnswerLabel": "Richtige Antwort: ",
   "vocab.quiz.next": "Weiter",
   "vocab.quiz.finishedTitle": "🎉 Quiz abgeschlossen!",
   "vocab.quiz.score": "{correct} / {total} richtig",

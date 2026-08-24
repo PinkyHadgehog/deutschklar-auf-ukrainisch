@@ -46,7 +46,7 @@ export default {
   "vocab.quiz.dialog.confirm": "Змінити тему",
   "vocab.quiz.correct": "Правильно!",
   "vocab.quiz.incorrect": "Неправильно",
-  "vocab.quiz.correctAnswer": "Правильна відповідь: {answer}",
+  "vocab.quiz.correctAnswerLabel": "Правильна відповідь: ",
   "vocab.quiz.next": "Далі",
   "vocab.quiz.finishedTitle": "🎉 Quiz abgeschlossen!",
   "vocab.quiz.score": "{correct} / {total} правильно",

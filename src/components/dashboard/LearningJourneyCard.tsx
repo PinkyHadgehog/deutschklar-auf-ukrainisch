@@ -5,9 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { RotateCw } from "lucide-react";
 import type { LearningJourney } from "@/lib/learningJourney";
 import { getLessonXp } from "@/lib/learningJourney";
+import { useLang } from "@/context/LanguageContext";
 
-const fmtDate = (iso?: string | null) =>
-  iso ? new Date(iso).toLocaleDateString("uk-UA", { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
+const fmtDate = (iso: string | null | undefined, locale: string) =>
+  iso ? new Date(iso).toLocaleDateString(locale, { day: "2-digit", month: "2-digit", year: "numeric" }) : "";
 
 const Step = ({
   icon,
@@ -82,20 +83,22 @@ const LearningJourneyCard = ({
   journey: LearningJourney;
   onSwitchLevel?: () => void;
 }) => {
+  const { t, lang } = useLang();
   const { state, lastCompletedLesson: completed, currentStartedLesson: current, nextLesson: next, level, nextLevel } =
     journey;
+  const locale = lang === "de" ? "de-DE" : "uk-UA";
 
   const primary =
     state === "in_progress" && current
-      ? { label: "Продовжити урок", href: `/lesson/${current.slug}` }
+      ? { label: t("dashboard.journey.continueLesson"), href: `/lesson/${current.slug}` }
       : next
         ? {
             label:
               state === "level_completed"
-                ? `Перейти до ${nextLevel}`
+                ? t("dashboard.journey.goToLevel", { level: nextLevel ?? "" })
                 : state === "new_learner"
-                  ? "Почати навчання"
-                  : "Почати наступний урок",
+                  ? t("dashboard.journey.startLearning")
+                  : t("dashboard.journey.startNextLesson"),
             href: `/lesson/${next.slug}`,
           }
         : null;
@@ -103,27 +106,27 @@ const LearningJourneyCard = ({
   return (
     <Card className="p-6 rounded-2xl border-0 shadow-soft lg:col-span-2">
       <div className="mb-4">
-        <div className="font-display font-bold text-lg">Твій навчальний шлях</div>
-        <p className="text-sm text-muted-foreground">Де ти зупинилася і що варто вчити далі</p>
+        <div className="font-display font-bold text-lg">{t("dashboard.journey.title")}</div>
+        <p className="text-sm text-muted-foreground">{t("dashboard.journey.subtitle")}</p>
       </div>
 
       {state === "level_completed" ? (
         <div className="rounded-xl bg-secondary/50 p-4">
-          <div className="text-base font-display font-bold">🎉 Рівень {level} завершено</div>
+          <div className="text-base font-display font-bold">{t("dashboard.journey.levelCompleted", { level })}</div>
           <p className="text-sm text-muted-foreground mt-1">
-            Ти завершила всі уроки цього рівня.
-            {next && nextLevel ? " Наступний крок:" : ""}
+            {t("dashboard.journey.levelCompletedDesc")}
+            {next && nextLevel ? ` ${t("dashboard.journey.nextStep")}` : ""}
           </p>
           {next && nextLevel && (
             <div className="mt-3">
-              <Step icon="→" tone="primary" title={next.title} level={next.level} href={`/lesson/${next.slug}`} meta={`${nextLevel} · наступний урок`} last />
+              <Step icon="→" tone="primary" title={next.title} level={next.level} href={`/lesson/${next.slug}`} meta={t("dashboard.journey.nextLessonMeta", { level: nextLevel })} last />
             </div>
           )}
         </div>
       ) : (
         <div className="rounded-xl bg-secondary/50 p-4">
           {state === "new_learner" && (
-            <p className="text-sm text-muted-foreground mb-3">Ти ще не почала навчання</p>
+            <p className="text-sm text-muted-foreground mb-3">{t("dashboard.journey.notStarted")}</p>
           )}
 
           {state !== "new_learner" && completed && (
@@ -134,7 +137,7 @@ const LearningJourneyCard = ({
               level={completed.level}
               href={`/lesson/${completed.slug}`}
               last={!current && !next}
-              meta={`Завершено ${fmtDate(completed.progress.completedAt)}${
+              meta={`${t("dashboard.journey.completedAt", { date: fmtDate(completed.progress.completedAt, locale) })}${
                 getLessonXp(completed.slug) > 0 ? ` · +${getLessonXp(completed.slug)} XP` : ""
               }`}
             />
@@ -147,7 +150,7 @@ const LearningJourneyCard = ({
               title={current.title}
               level={current.level}
               href={`/lesson/${current.slug}`}
-              meta={`У процесі · ${current.progress.progress}%`}
+              meta={t("dashboard.journey.inProgress", { progress: current.progress.progress })}
               last={!next}
             />
           )}
@@ -159,7 +162,7 @@ const LearningJourneyCard = ({
               title={next.title}
               level={next.level}
               href={`/lesson/${next.slug}`}
-              meta={state === "new_learner" ? "Перший урок" : "Наступний урок"}
+              meta={state === "new_learner" ? t("dashboard.journey.firstLesson") : t("dashboard.journey.nextLesson")}
               muted={state === "in_progress"}
               last
             />
@@ -181,7 +184,7 @@ const LearningJourneyCard = ({
             onClick={onSwitchLevel}
             className="text-xs text-muted-foreground hover:text-primary hover:underline"
           >
-            Змінити поточний рівень на {nextLevel}
+            {t("dashboard.journey.switchLevel", { level: nextLevel ?? "" })}
           </button>
         )}
         {state !== "new_learner" && completed && (
@@ -190,7 +193,7 @@ const LearningJourneyCard = ({
             onClick={scrollTop}
             className="text-xs text-muted-foreground hover:text-primary hover:underline inline-flex items-center gap-1"
           >
-            <RotateCw className="h-3 w-3" /> Повторити останній урок
+            <RotateCw className="h-3 w-3" /> {t("dashboard.journey.repeatLastLesson")}
           </Link>
         )}
       </div>

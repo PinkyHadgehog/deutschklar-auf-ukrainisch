@@ -15,6 +15,7 @@ import {
   LearningGoals, RuleBox, UkrainianTips, LanguageComparison, LessonSummary, PremiumNotice,
 } from "@/components/lesson/LessonSections";
 import AlphabetAudio from "@/components/lesson/AlphabetAudio";
+import { useLang } from "@/context/LanguageContext";
 import LessonStatusControl from "@/components/lesson/LessonStatusControl";
 import { useLessonProgress, touchLessonOpened } from "@/lib/lessonProgress";
 import { useStudySession } from "@/hooks/use-study-session";
@@ -28,6 +29,7 @@ const Lesson = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
   const { user, completeLesson, isLessonCompleted } = useAuth();
+  const { t } = useLang();
 
   // Lookup: base lessons or extra (e.g. konjunktiv1)
   const lesson = getLesson(slug) ?? (slug ? extraLessons[slug] : undefined);
@@ -49,13 +51,13 @@ const Lesson = () => {
     return (
       <div className="container max-w-3xl py-16 text-center">
         <Link to="/grammar" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="h-4 w-4 mr-1" /> До граматики
+          <ArrowLeft className="h-4 w-4 mr-1" /> {t("lesson.backToGrammar")}
         </Link>
-        <h1 className="font-display text-3xl font-extrabold mt-6">Урок у розробці</h1>
+        <h1 className="font-display text-3xl font-extrabold mt-6">{t("lesson.developing.title")}</h1>
         <p className="text-muted-foreground mt-2">
-          Контент для цієї теми ({slug}) скоро з'явиться. Оберіть, будь ласка, іншу тему в граматичній бібліотеці.
+          {t("lesson.developing.desc", { slug: slug ?? "" })}
         </p>
-        <Button asChild className="mt-6 bg-gradient-primary"><Link to="/grammar">До бібліотеки</Link></Button>
+        <Button asChild className="mt-6 bg-gradient-primary"><Link to="/grammar">{t("lesson.developing.toLibrary")}</Link></Button>
       </div>
     );
   }
@@ -83,25 +85,25 @@ const Lesson = () => {
 
   const handleComplete = () => {
     markCompleted();
-    if (!user) { toast("Увійдіть, щоб зберегти прогрес"); navigate("/login"); return; }
-    if (alreadyDone) { toast.success("Лекцію вже зараховано раніше ✓"); return; }
+    if (!user) { toast(t("lesson.toast.loginToSave")); navigate("/login"); return; }
+    if (alreadyDone) { toast.success(t("lesson.toast.alreadyCompleted")); return; }
     completeLesson({ slug: lesson.slug, title: lesson.titleDe, level: lesson.level, points: 10 });
-    toast.success("Лекцію завершено! +10 балів — прогрес збережено в профілі 🎉");
+    toast.success(t("lesson.toast.completed"));
   };
 
   const handleUndo = () => {
     setStatus("started");
-    toast("Позначку знято");
+    toast(t("lesson.toast.undo"));
   };
 
   const handleStart = () => {
     setStatus("started");
-    toast("Урок розпочато");
+    toast(t("lesson.toast.started"));
   };
 
   const handleCancelStart = () => {
     setStatus("not_started");
-    toast("Початок скасовано");
+    toast(t("lesson.toast.cancelStart"));
   };
 
   return (
@@ -123,11 +125,11 @@ const Lesson = () => {
                 level: lesson.level,
                 category: lesson.category,
               });
-              toast(nowSaved ? "Урок збережено" : "Видалено зі збереженого");
+              toast(nowSaved ? t("lesson.toast.lessonSaved") : t("lesson.toast.lessonUnsaved"));
             }}
           >
             <Bookmark className={`h-4 w-4 mr-1.5 ${lessonSaved ? "fill-current" : ""}`} />
-            {lessonSaved ? "Збережено" : "Зберегти"}
+            {lessonSaved ? t("lesson.saved") : t("lesson.save")}
           </Button>
         }
         statusControl={
@@ -153,7 +155,7 @@ const Lesson = () => {
         <div className="flex items-start gap-3">
           <div className="h-10 w-10 rounded-xl bg-info text-info-foreground grid place-items-center shrink-0"><Sparkles className="h-5 w-5"/></div>
           <div>
-            <div className="font-display font-bold">Lernziel · Мета уроку</div>
+            <div className="font-display font-bold">{t("lesson.goalTitle")}</div>
             <p className="text-sm mt-1 text-foreground/80">{lesson.goal}</p>
           </div>
         </div>
@@ -161,7 +163,7 @@ const Lesson = () => {
 
       {/* EXPLANATION */}
       <section className="mt-8">
-        <h2 className="font-display text-2xl font-bold mb-3">Пояснення</h2>
+        <h2 className="font-display text-2xl font-bold mb-3">{t("lesson.explanationTitle")}</h2>
         <div className="space-y-3 text-foreground/85 leading-relaxed">
           {lesson.explanation.map((p, i) => (
             <p key={i}><Html html={p} /></p>
@@ -193,7 +195,7 @@ const Lesson = () => {
 
       {/* EXAMPLES */}
       <section className="mt-8">
-        <h2 className="font-display text-2xl font-bold mb-3">Приклади</h2>
+        <h2 className="font-display text-2xl font-bold mb-3">{t("lesson.examplesTitle")}</h2>
         <div className="grid sm:grid-cols-2 gap-3">
           {lesson.examples.map((ex, i) => (
             <Card key={i} className="p-4 rounded-xl border-0 shadow-soft">
@@ -210,7 +212,7 @@ const Lesson = () => {
         <div className="flex items-start gap-3">
           <Lightbulb className="h-6 w-6 text-accent-foreground shrink-0 mt-0.5" />
           <div>
-            <div className="font-display font-bold">Запам'ятай</div>
+            <div className="font-display font-bold">{t("lesson.memorizeTitle")}</div>
             <p className="text-sm mt-1"><Html html={lesson.tip} /></p>
           </div>
         </div>
@@ -227,7 +229,7 @@ const Lesson = () => {
           <div className="flex items-start gap-3">
             <AlertTriangle className="h-6 w-6 text-destructive shrink-0 mt-0.5" />
             <div>
-              <div className="font-display font-bold">Типові помилки</div>
+              <div className="font-display font-bold">{t("lesson.mistakesTitle")}</div>
               <ul className="text-sm mt-2 space-y-1.5 text-foreground/85">
                 {lesson.mistakes.map((m, i) => (
                   <li key={i}>
@@ -259,17 +261,17 @@ const Lesson = () => {
       {/* NAVIGATION */}
       <div className="flex flex-col sm:flex-row gap-3 items-center justify-between mt-10 pt-6 border-t">
         {lesson.prevSlug ? (
-          <Button variant="outline" asChild><Link to={`/lesson/${lesson.prevSlug}`}><ArrowLeft className="h-4 w-4 mr-1"/> Попередня тема</Link></Button>
+          <Button variant="outline" asChild><Link to={`/lesson/${lesson.prevSlug}`}><ArrowLeft className="h-4 w-4 mr-1"/> {t("lesson.prevTopic")}</Link></Button>
         ) : (
-          <Button variant="outline" asChild><Link to="/grammar"><ArrowLeft className="h-4 w-4 mr-1"/> До бібліотеки</Link></Button>
+          <Button variant="outline" asChild><Link to="/grammar"><ArrowLeft className="h-4 w-4 mr-1"/> {t("lesson.toLibrary")}</Link></Button>
         )}
         <Button className="bg-gradient-primary" onClick={handleComplete}>
-          {alreadyDone || status === "completed" ? "Завершено ✓" : "Завершити урок"}
+          {alreadyDone || status === "completed" ? t("lesson.completed") : t("lesson.completeLesson")}
         </Button>
         {lesson.nextSlug ? (
-          <Button variant="outline" asChild><Link to={`/lesson/${lesson.nextSlug}`}>Наступна тема <ArrowRight className="h-4 w-4 ml-1"/></Link></Button>
+          <Button variant="outline" asChild><Link to={`/lesson/${lesson.nextSlug}`}>{t("lesson.nextTopic")} <ArrowRight className="h-4 w-4 ml-1"/></Link></Button>
         ) : (
-          <Button variant="outline" asChild><Link to="/grammar">До бібліотеки <ArrowRight className="h-4 w-4 ml-1"/></Link></Button>
+          <Button variant="outline" asChild><Link to="/grammar">{t("lesson.toLibrary")} <ArrowRight className="h-4 w-4 ml-1"/></Link></Button>
         )}
       </div>
     </div>
