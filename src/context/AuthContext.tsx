@@ -74,21 +74,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     });
   };
 
-  const signup = async (name: string, email: string, _password: string, level: User["level"]) => {
-    persist({
-      id: "u_1",
+const signup = async (
+  name: string,
+  email: string,
+  password: string,
+  level: User["level"]
+) => {
+  const response = await fetch("http://127.0.0.1:8000/users", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
       name,
       email,
-      level,
-      plan: "free",
-      goalMinutes: 15,
-      streak: 1,
-      joinedAt: new Date().toISOString(),
-      completedLessons: [],
-      points: 0,
-    });
-  };
+      password,
+    }),
+  });
 
+  if (!response.ok) {
+    throw new Error("Registration failed");
+  }
+
+  const createdUser = await response.json();
+
+  persist({
+    id: String(createdUser.id),
+    name: createdUser.name,
+    email: createdUser.email,
+    level,
+    plan: "free",
+    goalMinutes: 15,
+    streak: 1,
+    joinedAt: createdUser.created_at,
+    completedLessons: [],
+    points: 0,
+  });
+};
+
+  
   const logout = () => persist(null);
   const updateUser = (patch: Partial<User>) => user && persist({ ...user, ...patch });
 
