@@ -64,9 +64,28 @@ const Dashboard = () => {
       const currentLesson = await response.json();
 
       console.log("Backend current lesson:", currentLesson);
-      
+
+      const backendCurrentLesson = {
+      slug: currentLesson.slug,
+      title: currentLesson.lesson_title_de,
+      level: currentLesson.level,
+      order: 0,
+      progress: {
+        lessonId: currentLesson.slug,
+        status: "started" as const,
+        progress: currentLesson.progress_percent,
+        startedAt: null,
+        completedAt: null,
+        updatedAt: Date.now(),
+        },
+      };
+        
       const j = getLearningJourney(user?.level ?? "A1");
-      setJourney(j);
+      setJourney({
+      ...j,
+      state: "in_progress",
+      currentStartedLesson: backendCurrentLesson,
+      });
       setRecommendations(getRecommendations({
         level: user?.level ?? "A1",
         completedLessonSlugs: (user?.completedLessons ?? []).map((l) => l.slug),
