@@ -47,7 +47,7 @@ const Dashboard = () => {
   const [journey, setJourney] = useState<LearningJourney>({ state: "new_learner", lastCompletedLesson: null, currentStartedLesson: null, nextLesson: null, level: "A1", nextLevel: "A2", nextLevelLesson: null });
 
   useEffect(() => {
-    const sync = () => {
+    const sync = async () => {
       setDailyXp(getDailyXp());
       setBreakdown(getDailyBreakdown());
       setWeeklyXp(getWeeklyXp());
@@ -58,6 +58,13 @@ const Dashboard = () => {
       setWeeklySeconds(getWeeklyStudySeconds());
       setWeeklyLessons(getWeeklyCompletedLessons());
       setWeeklyQuizzes(getWeeklyCompletedQuizzes());
+
+      const response = await fetch("http://127.0.0.1:8000/lesson-progress/current");
+
+      const currentLesson = await response.json();
+
+      console.log("Backend current lesson:", currentLesson);
+      
       const j = getLearningJourney(user?.level ?? "A1");
       setJourney(j);
       setRecommendations(getRecommendations({
