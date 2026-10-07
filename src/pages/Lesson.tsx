@@ -97,20 +97,20 @@ const Lesson = () => {
   };
 
   const handleStart = async () => {
-  await fetch("http://127.0.0.1:8000/lesson-progress/start", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      lesson_id: 2,
-    }),
-  });
-
-  setStatus("started");
-  toast(t("lesson.toast.started"));
-};
-
+    await fetch("http://127.0.0.1:8000/lesson-progress/start", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        slug,
+      }),
+    });
+  
+    setStatus("started");
+    toast(t("lesson.toast.started"));
+  };
+  
   const handleCancelStart = () => {
     setStatus("not_started");
     toast(t("lesson.toast.cancelStart"));
