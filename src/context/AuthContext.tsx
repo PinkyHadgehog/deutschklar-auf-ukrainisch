@@ -23,6 +23,7 @@ export interface User {
 
 interface Ctx {
   user: User | null;
+  accessToken: string | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string, level: User["level"]) => Promise<void>;
   logout: () => void;
@@ -34,45 +35,66 @@ interface Ctx {
 const KEY = "dk_user";
 const AuthContext = createContext<Ctx | null>(null);
 
-const normalize = (u: User): User => ({
-  ...u,
-  completedLessons: u.completedLessons ?? [],
-  points: u.points ?? 0,
-});
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  // Hydrate synchronously so gated routes (/saved, /profile) don't bounce to /login on refresh.
-  const [user, setUser] = useState<User | null>(() => {
-    try {
-      const raw = localStorage.getItem(KEY);
-      return raw ? normalize(JSON.parse(raw)) : null;
-    } catch (error) {
-      console.error("Could not load user", error);
-      return null;
-    }
-  });
+  // Nutzer ist beim Laden der Anwendung zunächst nicht angemeldet.
+  const [user, setUser] = useState<User | null>(null);
 
+  // Speichert das JWT für authentifizierte API-Anfragen
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const persist = (u: User | null) => {
     setUser(u);
-    if (u) localStorage.setItem(KEY, JSON.stringify(u));
-    else localStorage.removeItem(KEY);
   };
 
-  const login = async (email: string, _password: string) => {
-    persist({
-      id: "u_1",
-      name: email.split("@")[0] || "Олена",
-      email,
-      level: "A2",
-      plan: "plus",
-      goalMinutes: 20,
-      streak: 7,
-      joinedAt: new Date().toISOString(),
-      completedLessons: [],
-      points: 0,
-    });
-  };
+const login = async (email: string, password: string) => {
+  // 1. Zugangsdaten an FastAPI senden
+  const response = await fetch("http://127.0.0.1:8000/login", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, password }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Ungültige E-Mail oder Passwort");
+  }
+
+  // 2. JWT aus der Backend-Antwort lesen
+  const data = await response.json();
+  const token: string = data.access_token;
+
+  // 3. Nutzerprofil mit JWT abrufen
+  const profileResponse = await fetch("http://127.0.0.1:8000/users/me", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!profileResponse.ok) {
+    throw new Error("Nutzerprofil konnte nicht geladen werden");
+  }
+
+  const profile = await profileResponse.json();
+
+  // 4. Nutzer mit echten Backend-Daten im React-State speichern
+  persist({
+    id: String(profile.id),
+    name: profile.name,
+    email: profile.email,
+    level: "A2",
+    plan: "free",
+    goalMinutes: 20,
+    streak: 0,
+    joinedAt: profile.created_at,
+    completedLessons: [],
+    points: 0,
+  });
+
+  // JWT nach erfolgreichem Login im React-State speichern
+setAccessToken(token);
+};
 
 const signup = async (
   name: string,
@@ -113,7 +135,12 @@ const signup = async (
 };
 
   
-  const logout = () => persist(null);
+  const logout = () => {
+      //entfernt das JWT aus dem React-State
+      setAccessToken(null);
+      //entfernt die Nutzerdaten aus dem React-State und aus localStorage.
+      persist(null);
+  };
   const updateUser = (patch: Partial<User>) => user && persist({ ...user, ...patch });
 
   const completeLesson: Ctx["completeLesson"] = (lesson) => {
@@ -133,7 +160,7 @@ const signup = async (
     !!user?.completedLessons.some((l) => l.slug === slug);
 
   return (
-    <AuthContext.Provider value={{ user, login, signup, logout, updateUser, completeLesson, isLessonCompleted }}>
+    <AuthContext.Provider value={{ user, accessToken, login, signup, logout, updateUser, completeLesson, isLessonCompleted }}>
       {children}
     </AuthContext.Provider>
   );
