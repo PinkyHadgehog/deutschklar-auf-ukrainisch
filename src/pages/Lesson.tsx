@@ -145,10 +145,50 @@ const handleStart = async () => {
 };
 
   
-  const handleCancelStart = () => {
+
+const handleCancelStart = async () => {
+  // Prüft, ob ein JWT und ein Lektions-Slug vorhanden sind
+  if (!accessToken || !slug) {
+    toast.error("Bitte melde dich erneut an.");
+    return;
+  }
+
+  try {
+    // Sendet die Reset-Anfrage an FastAPI
+    const response = await fetch(
+      "http://127.0.0.1:8000/lesson-progress/reset",
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ slug }),
+      }
+    );
+
+    // Prüft die Backend-Antwort
+    if (!response.ok) {
+      throw new Error("Lektion konnte nicht zurückgesetzt werden");
+    }
+
+    // Prüft den zurückgegebenen Fortschritt
+    const data = await response.json();
+
+    if (data.status !== "not_started" || data.progress_percent !== 0) {
+      throw new Error("Unerwartete Backend-Antwort");
+    }
+
+    // Aktualisiert das Frontend erst nach erfolgreichem Reset
     setStatus("not_started");
     toast(t("lesson.toast.cancelStart"));
-  };
+
+  } catch (error) {
+    console.error("Fehler beim Zurücksetzen:", error);
+    toast.error("Lektion konnte nicht zurückgesetzt werden.");
+  }
+};
+
 
   return (
     <div className="container max-w-4xl py-8 md:py-12">
