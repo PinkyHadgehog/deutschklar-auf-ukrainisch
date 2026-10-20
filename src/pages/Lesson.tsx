@@ -39,7 +39,6 @@ const Lesson = () => {
   const { status, progress, markCompleted, setStatus } = useLessonProgress(slug);
   const lessonSaved = useIsSaved("lesson", slug ?? "");
 
-
   useStudySession("lesson", slug ?? "", { enabled: !!slug, priority: 1 });
 
   useEffect(() => {
@@ -83,112 +82,142 @@ const Lesson = () => {
     ? full15
     : [...legacyItems, ...((slug && exerciseSets[slug]) || [])];
 
-  const handleComplete = () => {
-    markCompleted();
-    if (!user) { toast(t("lesson.toast.loginToSave")); navigate("/login"); return; }
-    if (alreadyDone) { toast.success(t("lesson.toast.alreadyCompleted")); return; }
-    completeLesson({ slug: lesson.slug, title: lesson.titleDe, level: lesson.level, points: 10 });
-    toast.success(t("lesson.toast.completed"));
+
+  // Lektion erst nach erfolgreicher Bestätigung durch FastAPI abschließen.
+  const handleComplete = async () => {
+    if (!user || !accessToken) {
+      toast(t("lesson.toast.loginToSave"));
+      navigate("/login");
+      return;
+    }
+
+    if (alreadyDone) {
+      toast.success(t("lesson.toast.alreadyCompleted"));
+      return;
+    }
+
+    if (!slug || !lesson) {
+      toast.error("Lektion nicht gefunden.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/lesson-progress/complete",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ slug }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Lektion konnte nicht abgeschlossen werden");
+      }
+
+      const data = await response.json();
+      if (data.status !== "completed" || data.progress_percent !== 100) {
+        throw new Error("Unerwartete Backend-Antwort");
+      }
+
+      // Lokalen Fortschritt und XP erst nach dem bestätigten Abschluss speichern.
+      markCompleted();
+      completeLesson({
+        slug: lesson.slug,
+        title: lesson.titleDe,
+        level: lesson.level,
+        points: 10,
+      });
+      toast.success(t("lesson.toast.completed"));
+    } catch (error) {
+      console.error("Fehler beim Lektionsabschluss:", error);
+      toast.error("Lektion konnte nicht abgeschlossen werden.");
+    }
   };
 
-  const handleUndo = () => {
-    setStatus("started");
-    toast(t("lesson.toast.undo"));
+
+  // Start einer Lektion über FastAPI speichern.
+  const handleStart = async () => {
+    if (!accessToken) {
+      toast.error("Bitte melde dich zuerst an.");
+      navigate("/login");
+      return;
+    }
+
+    if (!slug) {
+      toast.error("Lektion nicht gefunden.");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/lesson-progress/start",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ slug }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Lektion konnte nicht gestartet werden");
+      }
+
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      setStatus("started");
+      toast(t("lesson.toast.started"));
+    } catch (error) {
+      console.error("Fehler beim Lektionsstart:", error);
+      toast.error("Lektion konnte nicht gestartet werden.");
+    }
   };
 
+  // Abbruch einer begonnenen Lektion mit PostgreSQL synchronisieren.
+  const handleCancelStart = async () => {
+    if (!accessToken || !slug) {
+      toast.error("Bitte melde dich erneut an.");
+      return;
+    }
 
-const handleStart = async () => {
-  // Prüft, ob ein JWT vorhanden ist
-  if (!accessToken) {
-    toast.error("Bitte melde dich zuerst an.");
-    navigate("/login");
-    return;
-  }
-  // Prüft, ob die Lektion einen gültigen Slug hat
-  if (!slug) {
-    toast.error("Lektion nicht gefunden.");
-    return;
-  }
-  try {
-    // Sendet den Lektionsstart mit JWT an FastAPI
-    const response = await fetch(
-      "http://127.0.0.1:8000/lesson-progress/start",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/lesson-progress/reset",
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ slug }),
         },
-        body: JSON.stringify({ slug }),
+      );
+
+      if (!response.ok) {
+        throw new Error("Lektion konnte nicht zurückgesetzt werden");
       }
-    );
 
-    // Prüft HTTP-Fehler und Backend-Fehlermeldungen
-    if (!response.ok) {
-      throw new Error("Lektion konnte nicht gestartet werden");
-    }
-
-    const data = await response.json();
-
-    if (data.error) {
-      throw new Error(data.error);
-    }
-
-    // Erst nach erfolgreicher Backend-Antwort lokal aktualisieren
-    setStatus("started");
-    toast(t("lesson.toast.started"));
-
-  } catch (error) {
-    console.error("Fehler beim Lektionsstart:", error);
-    toast.error("Lektion konnte nicht gestartet werden.");
-  }
-};
-
-  
-
-const handleCancelStart = async () => {
-  // Prüft, ob ein JWT und ein Lektions-Slug vorhanden sind
-  if (!accessToken || !slug) {
-    toast.error("Bitte melde dich erneut an.");
-    return;
-  }
-
-  try {
-    // Sendet die Reset-Anfrage an FastAPI
-    const response = await fetch(
-      "http://127.0.0.1:8000/lesson-progress/reset",
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({ slug }),
+      const data = await response.json();
+      if (data.status !== "not_started" || data.progress_percent !== 0) {
+        throw new Error("Unerwartete Backend-Antwort");
       }
-    );
 
-    // Prüft die Backend-Antwort
-    if (!response.ok) {
-      throw new Error("Lektion konnte nicht zurückgesetzt werden");
+      setStatus("not_started");
+      toast(t("lesson.toast.cancelStart"));
+    } catch (error) {
+      console.error("Fehler beim Zurücksetzen:", error);
+      toast.error("Lektion konnte nicht zurückgesetzt werden.");
     }
-
-    // Prüft den zurückgegebenen Fortschritt
-    const data = await response.json();
-
-    if (data.status !== "not_started" || data.progress_percent !== 0) {
-      throw new Error("Unerwartete Backend-Antwort");
-    }
-
-    // Aktualisiert das Frontend erst nach erfolgreichem Reset
-    setStatus("not_started");
-    toast(t("lesson.toast.cancelStart"));
-
-  } catch (error) {
-    console.error("Fehler beim Zurücksetzen:", error);
-    toast.error("Lektion konnte nicht zurückgesetzt werden.");
-  }
-};
-
+  };
 
   return (
     <div className="container max-w-4xl py-8 md:py-12">
@@ -337,7 +366,6 @@ const handleCancelStart = async () => {
         items={allExercises}
         lessonId={lesson.slug}
         onFinish={handleComplete}
-
         onNext={lesson.nextSlug ? () => navigate(`/lesson/${lesson.nextSlug}`) : undefined}
         onPrev={lesson.prevSlug ? () => navigate(`/lesson/${lesson.prevSlug}`) : undefined}
       />

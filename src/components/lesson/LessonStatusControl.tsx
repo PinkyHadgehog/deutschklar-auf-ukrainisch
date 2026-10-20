@@ -9,7 +9,6 @@ interface Props {
   onStart?: () => void;
   onCancelStart?: () => void;
   onComplete: () => void;
-  onUndo?: () => void;
   className?: string;
 }
 
@@ -18,7 +17,6 @@ const LessonStatusControl = ({
   onStart,
   onCancelStart,
   onComplete,
-  onUndo,
   className,
 }: Props) => {
   const { t } = useLang();
@@ -29,14 +27,6 @@ const LessonStatusControl = ({
           <Check className="h-3.5 w-3.5" /> {t(statusLabel.completed)}
         </div>
         <p className="text-xs text-muted-foreground">{t("lesson.status.completedDesc")}</p>
-        <button
-          type="button"
-          onClick={onUndo}
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition hover:text-foreground"
-          aria-label={t("lesson.status.undoAria")}
-        >
-          <RotateCcw className="h-3 w-3" /> {t("lesson.status.undoLabel")}
-        </button>
       </div>
     );
   }
