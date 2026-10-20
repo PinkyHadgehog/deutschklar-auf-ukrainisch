@@ -28,7 +28,7 @@ const Html = ({ html }: { html: string }) => (
 const Lesson = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { user, completeLesson, isLessonCompleted } = useAuth();
+  const { user, accessToken, completeLesson, isLessonCompleted } = useAuth();
   const { t } = useLang();
 
   // Lookup: base lessons or extra (e.g. konjunktiv1)
@@ -96,20 +96,54 @@ const Lesson = () => {
     toast(t("lesson.toast.undo"));
   };
 
-  const handleStart = async () => {
-    await fetch("http://127.0.0.1:8000/lesson-progress/start", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        slug,
-      }),
-    });
-  
+
+const handleStart = async () => {
+  // Prüft, ob ein JWT vorhanden ist
+  if (!accessToken) {
+    toast.error("Bitte melde dich zuerst an.");
+    navigate("/login");
+    return;
+  }
+  // Prüft, ob die Lektion einen gültigen Slug hat
+  if (!slug) {
+    toast.error("Lektion nicht gefunden.");
+    return;
+  }
+  try {
+    // Sendet den Lektionsstart mit JWT an FastAPI
+    const response = await fetch(
+      "http://127.0.0.1:8000/lesson-progress/start",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ slug }),
+      }
+    );
+
+    // Prüft HTTP-Fehler und Backend-Fehlermeldungen
+    if (!response.ok) {
+      throw new Error("Lektion konnte nicht gestartet werden");
+    }
+
+    const data = await response.json();
+
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    // Erst nach erfolgreicher Backend-Antwort lokal aktualisieren
     setStatus("started");
     toast(t("lesson.toast.started"));
-  };
+
+  } catch (error) {
+    console.error("Fehler beim Lektionsstart:", error);
+    toast.error("Lektion konnte nicht gestartet werden.");
+  }
+};
+
   
   const handleCancelStart = () => {
     setStatus("not_started");
