@@ -165,4 +165,39 @@ export const completeLessonProgress = async (
 };
 
 
+/**
+ * Ruft alle Lektionsfortschritte des angemeldeten
+ * Nutzers über FastAPI aus PostgreSQL ab.
+ */
+export const getAllLessonProgressFromApi = async (
+  token: string
+): Promise<BackendLessonProgress[]> => {
+  const response = await fetch(
+    `${API_BASE_URL}/lesson-progress`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to load lesson progress: ${response.status}`
+    );
+  }
+
+  const data: unknown = await response.json();
+
+  // Die Antwort muss eine Liste sein
+  if (!Array.isArray(data)) {
+    throw new Error("Invalid lesson progress response");
+  }
+
+  return data as BackendLessonProgress[];
+};
+
+
 

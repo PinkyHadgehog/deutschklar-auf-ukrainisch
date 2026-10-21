@@ -20,6 +20,7 @@ import LessonStatusControl from "@/components/lesson/LessonStatusControl";
 import { useLessonProgress, touchLessonOpened } from "@/lib/lessonProgress";
 import { useStudySession } from "@/hooks/use-study-session";
 import { toggleSavedItem, useIsSaved } from "@/lib/savedItems";
+import { useLessonProgressQuery } from "@/hooks/useLessonProgressQuery";
 
 const Html = ({ html }: { html: string }) => (
   <span dangerouslySetInnerHTML={{ __html: html.replace(/class='hl'/g, 'class="text-primary font-semibold"') }} />
@@ -37,6 +38,45 @@ const Lesson = () => {
 
   const alreadyDone = useMemo(() => (slug ? isLessonCompleted(slug) : false), [slug, isLessonCompleted]);
   const { status, progress, markCompleted, setStatus } = useLessonProgress(slug);
+
+  const {
+    data: backendProgress,
+    isLoading: isProgressLoading,
+    isError: isProgressError,
+  } = useLessonProgressQuery();
+
+
+  // Fortschritt der aktuell geöffneten Lektion aus den Backend-Daten auswählen
+  const currentLessonProgress = backendProgress?.find(
+    (entry) => entry.slug === slug
+  );
+
+
+  // Backend-Status in den Frontend-Status übersetzen
+  const backendStatus =
+    currentLessonProgress?.status === "in_progress"
+      ? "started"
+      : currentLessonProgress?.status ?? "not_started";
+
+
+  // Backend-Daten sind erst nach erfolgreicher Anfrage zuverlässig.
+  const isProgressReady =
+    !!user &&
+    !!accessToken &&
+    !isProgressLoading &&
+    !isProgressError &&
+    backendProgress !== undefined;
+
+
+  // Den Backend-Status nur verwenden, wenn die Daten geladen wurden
+  const displayStatus = isProgressReady ? backendStatus : "not_started";
+
+  // Fortschritt aus PostgreSQL übernehmen
+  const displayProgress = isProgressReady
+    ? (currentLessonProgress?.progress_percent ?? 0)
+    : 0;
+
+
   const lessonSaved = useIsSaved("lesson", slug ?? "");
 
   useStudySession("lesson", slug ?? "", { enabled: !!slug, priority: 1 });
@@ -45,6 +85,28 @@ const Lesson = () => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
     if (slug) touchLessonOpened(slug);
   }, [slug]);
+
+
+  // Fortschrittsdaten werden noch geladen
+  if (user && accessToken && !isProgressReady && !isProgressError) {
+    return (
+      <div className="container max-w-4xl py-12 text-center">
+        <p>Lektionsfortschritt wird geladen...</p>
+      </div>
+    );
+  }
+
+  // Fehler beim Laden aus FastAPI
+  if (user && accessToken && isProgressError) {
+    return (
+      <div className="container max-w-4xl py-12 text-center">
+        <p className="text-destructive">
+          Der Lektionsfortschritt konnte nicht geladen werden.
+        </p>
+      </div>
+    );
+  }
+
 
   if (!lesson) {
     return (
@@ -223,7 +285,7 @@ const Lesson = () => {
     <div className="container max-w-4xl py-8 md:py-12">
       <LessonHeader
         lesson={lesson}
-        progress={progress}
+        progress={displayProgress}
         duration={extras?.duration}
         premium={extras?.premium}
         saveControl={
