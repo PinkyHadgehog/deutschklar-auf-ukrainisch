@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Card } from "@/components/ui/card";
@@ -17,10 +17,11 @@ import {
 import AlphabetAudio from "@/components/lesson/AlphabetAudio";
 import { useLang } from "@/context/LanguageContext";
 import LessonStatusControl from "@/components/lesson/LessonStatusControl";
-import { useLessonProgress, touchLessonOpened } from "@/lib/lessonProgress";
+import { touchLessonOpened } from "@/lib/lessonProgress";
 import { useStudySession } from "@/hooks/use-study-session";
 import { toggleSavedItem, useIsSaved } from "@/lib/savedItems";
 import { useLessonProgressQuery } from "@/hooks/useLessonProgressQuery";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Html = ({ html }: { html: string }) => (
   <span dangerouslySetInnerHTML={{ __html: html.replace(/class='hl'/g, 'class="text-primary font-semibold"') }} />
@@ -29,15 +30,14 @@ const Html = ({ html }: { html: string }) => (
 const Lesson = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { user, accessToken, completeLesson, isLessonCompleted } = useAuth();
+  const queryClient = useQueryClient();
+  const { user, accessToken } = useAuth();
   const { t } = useLang();
 
   // Lookup: base lessons or extra (e.g. konjunktiv1)
   const lesson = getLesson(slug) ?? (slug ? extraLessons[slug] : undefined);
   const extras = slug ? lessonExtras[slug] : undefined;
 
-  const alreadyDone = useMemo(() => (slug ? isLessonCompleted(slug) : false), [slug, isLessonCompleted]);
-  const { status, progress, markCompleted, setStatus } = useLessonProgress(slug);
 
   const {
     data: backendProgress,
@@ -153,10 +153,17 @@ const Lesson = () => {
       return;
     }
 
-    if (alreadyDone) {
+
+    if (!isProgressReady) {
+      toast.error("Lektionsfortschritt konnte nicht geladen werden.");
+      return;
+    }
+
+    if (backendStatus === "completed") {
       toast.success(t("lesson.toast.alreadyCompleted"));
       return;
     }
+
 
     if (!slug || !lesson) {
       toast.error("Lektion nicht gefunden.");
@@ -185,14 +192,12 @@ const Lesson = () => {
         throw new Error("Unerwartete Backend-Antwort");
       }
 
-      // Lokalen Fortschritt und XP erst nach dem bestätigten Abschluss speichern.
-      markCompleted();
-      completeLesson({
-        slug: lesson.slug,
-        title: lesson.titleDe,
-        level: lesson.level,
-        points: 10,
+
+      // Fortschritt nach erfolgreichem Abschluss aus PostgreSQL neu laden
+      await queryClient.invalidateQueries({
+        queryKey: ["lesson-progress", user.id],
       });
+
       toast.success(t("lesson.toast.completed"));
     } catch (error) {
       console.error("Fehler beim Lektionsabschluss:", error);
@@ -203,7 +208,7 @@ const Lesson = () => {
 
   // Start einer Lektion über FastAPI speichern.
   const handleStart = async () => {
-    if (!accessToken) {
+    if (!user || !accessToken) {
       toast.error("Bitte melde dich zuerst an.");
       navigate("/login");
       return;
@@ -236,8 +241,14 @@ const Lesson = () => {
         throw new Error(data.error);
       }
 
-      setStatus("started");
+
+      // Fortschritt nach erfolgreichem Start aus PostgreSQL neu laden
+      await queryClient.invalidateQueries({
+        queryKey: ["lesson-progress", user.id],
+      });
+
       toast(t("lesson.toast.started"));
+
     } catch (error) {
       console.error("Fehler beim Lektionsstart:", error);
       toast.error("Lektion konnte nicht gestartet werden.");
@@ -246,7 +257,7 @@ const Lesson = () => {
 
   // Abbruch einer begonnenen Lektion mit PostgreSQL synchronisieren.
   const handleCancelStart = async () => {
-    if (!accessToken || !slug) {
+    if (!user || !accessToken || !slug) {
       toast.error("Bitte melde dich erneut an.");
       return;
     }
@@ -273,8 +284,14 @@ const Lesson = () => {
         throw new Error("Unerwartete Backend-Antwort");
       }
 
-      setStatus("not_started");
+
+      // Aktualisierten Fortschritt aus PostgreSQL laden
+      await queryClient.invalidateQueries({
+        queryKey: ["lesson-progress", user.id],
+      });
+
       toast(t("lesson.toast.cancelStart"));
+
     } catch (error) {
       console.error("Fehler beim Zurücksetzen:", error);
       toast.error("Lektion konnte nicht zurückgesetzt werden.");
@@ -309,11 +326,10 @@ const Lesson = () => {
         }
         statusControl={
           <LessonStatusControl
-            status={status}
+            status={displayStatus}
             onStart={handleStart}
             onCancelStart={handleCancelStart}
             onComplete={handleComplete}
-            onUndo={handleUndo}
           />
         }
       />
@@ -440,7 +456,9 @@ const Lesson = () => {
           <Button variant="outline" asChild><Link to="/grammar"><ArrowLeft className="h-4 w-4 mr-1"/> {t("lesson.toLibrary")}</Link></Button>
         )}
         <Button className="bg-gradient-primary" onClick={handleComplete}>
-          {alreadyDone || status === "completed" ? t("lesson.completed") : t("lesson.completeLesson")}
+            {displayStatus === "completed"
+                ? t("lesson.completed")
+                : t("lesson.completeLesson")}
         </Button>
         {lesson.nextSlug ? (
           <Button variant="outline" asChild><Link to={`/lesson/${lesson.nextSlug}`}>{t("lesson.nextTopic")} <ArrowRight className="h-4 w-4 ml-1"/></Link></Button>
