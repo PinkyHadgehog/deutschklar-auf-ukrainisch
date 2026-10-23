@@ -104,6 +104,7 @@ const signup = async (
 ) => {
   const response = await fetch("http://localhost:8000/users", {
     method: "POST",
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },

@@ -23,6 +23,7 @@ import XpDistributionEditor from "@/components/goals/XpDistributionEditor";
 import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles, Play, RotateCw, AlertTriangle, ArrowRight, Pencil, Settings2 } from "lucide-react";
 import { useLang } from "@/context/LanguageContext";
 
+
 const recIcon: Record<RecommendationType, typeof Play> = {
   continue_lesson: Play,
   vocabulary_review: RotateCw,
@@ -31,7 +32,7 @@ const recIcon: Record<RecommendationType, typeof Play> = {
 };
 
 const Dashboard = () => {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, accessToken } = useAuth();
   const { t, lang } = useLang();
   const [dailyXp, setDailyXp] = useState(0);
   const [breakdown, setBreakdown] = useState<{ label: string; xp: number }[]>([]);
@@ -59,9 +60,44 @@ const Dashboard = () => {
       setWeeklyLessons(getWeeklyCompletedLessons());
       setWeeklyQuizzes(getWeeklyCompletedQuizzes());
 
-      const response = await fetch("http://localhost:8000/lesson-progress/current");
+
+      const j = getLearningJourney(user?.level ?? "A1");
+
+      setJourney(j);
+
+      setRecommendations(getRecommendations({
+        level: user?.level ?? "A1",
+        completedLessonSlugs: (user?.completedLessons ?? []).map((l) => l.slug),
+        excludeIds: [
+          j.lastCompletedLesson?.slug,
+          j.currentStartedLesson?.slug,
+          j.nextLesson?.slug
+        ].filter(Boolean) as string[],
+      }));
+
+
+        if (!accessToken) return;
+
+        const response = await fetch(
+          "http://localhost:8000/lesson-progress/current",
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          console.error(
+            "Fehler beim Laden der aktuellen Lektion:",
+            response.status
+          );
+          return;
+        }
+
 
       const currentLesson = await response.json();
+      if (!currentLesson) return;
 
       console.log("Backend current lesson:", currentLesson);
 
@@ -79,18 +115,12 @@ const Dashboard = () => {
         updatedAt: Date.now(),
         },
       };
-        
-      const j = getLearningJourney(user?.level ?? "A1");
+
       setJourney({
       ...j,
       state: "in_progress",
       currentStartedLesson: backendCurrentLesson,
       });
-      setRecommendations(getRecommendations({
-        level: user?.level ?? "A1",
-        completedLessonSlugs: (user?.completedLessons ?? []).map((l) => l.slug),
-        excludeIds: [j.lastCompletedLesson?.slug, j.currentStartedLesson?.slug, j.nextLesson?.slug].filter(Boolean) as string[],
-      }));
     };
     sync();
     const un1 = subscribeLearningEvents(sync);
@@ -100,7 +130,7 @@ const Dashboard = () => {
     const un5 = subscribeLessonProgress(sync);
     const un6 = subscribeVocabMistakes(sync);
     return () => { un1(); un2(); un3(); un4(); un5(); un6(); };
-  }, [user?.level, user?.completedLessons]);
+  }, [accessToken, user?.level, user?.completedLessons]);
 
   if (!user) return <Navigate to="/login" replace />;
 
