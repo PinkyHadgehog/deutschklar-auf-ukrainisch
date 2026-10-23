@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 const login = async (email: string, password: string) => {
   // 1. Zugangsdaten an FastAPI senden
-  const response = await fetch("http://127.0.0.1:8000/login", {
+  const response = await fetch("http://localhost:8000/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -66,7 +66,7 @@ const login = async (email: string, password: string) => {
   const token: string = data.access_token;
 
   // 3. Nutzerprofil mit JWT abrufen
-  const profileResponse = await fetch("http://127.0.0.1:8000/users/me", {
+  const profileResponse = await fetch("http://localhost:8000/users/me", {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -102,7 +102,7 @@ const signup = async (
   password: string,
   level: User["level"]
 ) => {
-  const response = await fetch("http://127.0.0.1:8000/users", {
+  const response = await fetch("http://localhost:8000/users", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -172,7 +172,7 @@ const Lesson = () => {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/lesson-progress/complete",
+        "http://localhost:8000/lesson-progress/complete",
         {
           method: "PATCH",
           headers: {
@@ -221,7 +221,7 @@ const Lesson = () => {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/lesson-progress/start",
+        "http://localhost:8000/lesson-progress/start",
         {
           method: "POST",
           headers: {
@@ -264,7 +264,7 @@ const Lesson = () => {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/lesson-progress/reset",
+        "http://localhost:8000/lesson-progress/reset",
         {
           method: "PATCH",
           headers: {
