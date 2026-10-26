@@ -110,7 +110,18 @@ export const Header = () => {
                 <DropdownMenuItem onClick={() => nav("/profile")}><User2 className="h-4 w-4 mr-2"/> {t("nav.profile")}</DropdownMenuItem>
                 <DropdownMenuItem onClick={() => nav("/admin")}>{t("nav.admin")}</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => { logout(); nav("/"); }}>{t("nav.logout")}</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async () => {
+                    try {
+                      await logout();
+                      nav("/");
+                    } catch (error) {
+                      console.error("Abmeldung fehlgeschlagen:", error);
+                    }
+                  }}
+                >
+                  {t("nav.logout")}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
@@ -167,7 +178,18 @@ export const Header = () => {
             {user && (
               <>
                 <NavLink to="/profile" onClick={() => setOpen(false)} className="px-3 py-2.5 text-sm rounded-lg hover:bg-muted">{t("nav.profile")}</NavLink>
-                <button onClick={() => { logout(); setOpen(false); nav("/"); }} className="text-left px-3 py-2.5 text-sm rounded-lg hover:bg-muted">{t("nav.logout")}</button>
+                <button onClick={async () => {
+                try {
+                  await logout();
+                  setOpen(false);
+                  nav("/");
+                } catch (error) {
+                  console.error("Abmeldung fehlgeschlagen:", error);
+                }
+              }}
+              className="text-left px-3 py-2.5 text-sm rounded-lg hover:bg-muted">
+              {t("nav.logout")}
+                </button>
               </>
             )}
           </div>

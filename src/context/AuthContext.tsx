@@ -26,7 +26,7 @@ interface Ctx {
   accessToken: string | null;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string, level: User["level"]) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   updateUser: (patch: Partial<User>) => void;
   completeLesson: (lesson: Omit<CompletedLesson, "completedAt">) => CompletedLesson;
   isLessonCompleted: (slug: string) => boolean;
@@ -211,13 +211,26 @@ const signup = async (
   });
 };
 
-  
-  const logout = () => {
-      //entfernt das JWT aus dem React-State
+
+  const logout = async (): Promise<void> => {
+      // 1. Refresh Session im Backend beenden
+      const response = await fetch("http://localhost:8000/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      // 2. Prüfen, ob der Logout erfolgreich war
+      if (!response.ok) {
+        throw new Error(`Logout fehlgeschlagen: HTTP ${response.status}`);
+      }
+
+      // 3. JWT aus dem React-State entfernen
       setAccessToken(null);
-      //entfernt die Nutzerdaten aus dem React-State und aus localStorage.
+
+      // 4. Nutzerprofil aus dem React-State entfernen
       persist(null);
-  };
+    };
+
   const updateUser = (patch: Partial<User>) => user && persist({ ...user, ...patch });
 
   const completeLesson: Ctx["completeLesson"] = (lesson) => {
