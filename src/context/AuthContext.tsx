@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 
 export interface CompletedLesson {
   slug: string;
@@ -42,20 +42,96 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Speichert das JWT für authentifizierte API-Anfragen
   const [accessToken, setAccessToken] = useState<string | null>(null);
+    const [isAuthLoading, setIsAuthLoading] = useState(true);
+    const restoreAttempted = useRef(false);
 
   const persist = (u: User | null) => {
     setUser(u);
   };
 
+
+useEffect(() => {
+  if (restoreAttempted.current) return;
+  restoreAttempted.current = true;
+
+  const restoreSession = async () => {
+    try {
+      // 1. Refresh-Cookie an FastAPI senden
+      const response = await fetch(
+        "http://localhost:8000/auth/refresh",
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+
+      // Kein gültiges Cookie: Nutzer bleibt abgemeldet
+      if (!response.ok) {
+        if (response.status !== 401) {
+          console.error("Session refresh failed:", response.status);
+        }
+        return;
+      }
+
+      // 2. Neuen Access Token auslesen
+      const data = await response.json();
+      const token: string = data.access_token;
+
+      // 3. Nutzerprofil aus PostgreSQL abrufen
+      const profileResponse = await fetch(
+        "http://localhost:8000/users/me",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!profileResponse.ok) {
+        throw new Error("Nutzerprofil konnte nicht geladen werden");
+      }
+
+      const profile = await profileResponse.json();
+
+      // 4. Nutzerprofil im React-State wiederherstellen
+      setUser({
+        id: String(profile.id),
+        name: profile.name,
+        email: profile.email,
+        level: "A2",
+        plan: "free",
+        goalMinutes: 20,
+        streak: 0,
+        joinedAt: profile.created_at,
+        completedLessons: [],
+        points: 0,
+      });
+
+      // 5. Neuen JWT speichern
+      setAccessToken(token);
+
+    } catch (error) {
+      console.error("Fehler bei der Sitzungswiederherstellung:", error);
+    } finally {
+      // 6. Prüfung abschließen
+      setIsAuthLoading(false);
+    }
+  };
+
+  void restoreSession();
+}, []);
+
+
 const login = async (email: string, password: string) => {
   // 1. Zugangsdaten an FastAPI senden
   const response = await fetch("http://localhost:8000/login", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ email, password }),
-  });
+  method: "POST",
+  credentials: "include",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({ email, password }),
+});
 
   if (!response.ok) {
     throw new Error("Ungültige E-Mail oder Passwort");
@@ -159,6 +235,14 @@ const signup = async (
 
   const isLessonCompleted = (slug: string) =>
     !!user?.completedLessons.some((l) => l.slug === slug);
+
+
+    if (isAuthLoading) {
+      return <div className="min-h-screen flex items-center justify-center">
+        Anmeldung wird geprüft…
+      </div>;
+    }
+
 
   return (
     <AuthContext.Provider value={{ user, accessToken, login, signup, logout, updateUser, completeLesson, isLessonCompleted }}>
