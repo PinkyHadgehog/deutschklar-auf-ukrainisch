@@ -14,7 +14,11 @@ import { getWeeklyCompletedLessons, getWeeklyCompletedQuizzes, subscribeCompleti
 import { getRecommendations, type Recommendation, type RecommendationType } from "@/lib/recommendations";
 import { subscribeVocabMistakes } from "@/lib/vocabMistakes";
 import { subscribeLessonProgress } from "@/lib/lessonProgress";
-import { getLearningJourney, type LearningJourney } from "@/lib/learningJourney";
+import {
+  getLearningJourney,
+  mapBackendProgress,
+  type LearningJourney,
+} from "@/lib/learningJourney";
 import LearningJourneyCard from "@/components/dashboard/LearningJourneyCard";
 import { getWeeklyStudySeconds, formatStudyTime, subscribeStudyTime } from "@/lib/studyTime";
 import DailyGoalEditor from "@/components/goals/DailyGoalEditor";
@@ -50,13 +54,13 @@ const Dashboard = () => {
   const [weeklyQuizzes, setWeeklyQuizzes] = useState(0);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [journey, setJourney] = useState<LearningJourney>({ state: "new_learner", lastCompletedLesson: null, currentStartedLesson: null, nextLesson: null, level: "A1", nextLevel: "A2", nextLevelLesson: null });
-  const [backendProgress, setBackendProgress] = useState<BackendLessonProgress[]>([]);
+  const [backendProgress, setBackendProgress] = useState<BackendLessonProgress[] | null>(null);
 
 
   // Alle gespeicherten Lektionsfortschritte aus PostgreSQL laden
   useEffect(() => {
     if (!accessToken) return;
-
+    setBackendProgress(null);
     let cancelled = false;
 
     const loadLessonProgress = async () => {
@@ -83,90 +87,67 @@ const Dashboard = () => {
   }, [accessToken]);
 
 
-  useEffect(() => {
-    const sync = async () => {
-      setDailyXp(getDailyXp());
-      setBreakdown(getDailyBreakdown());
-      setWeeklyXp(getWeeklyXp());
-      setWeeklyByDay(getWeeklyXpByDay());
-      setWeeklyGoal(getWeeklyXpGoal());
-      setDailyGoal(getDailyStudyMinutesGoal());
-      setPlannedGoals(getEffectiveDailyXpGoals());
-      setWeeklySeconds(getWeeklyStudySeconds());
-      setWeeklyLessons(getWeeklyCompletedLessons());
-      setWeeklyQuizzes(getWeeklyCompletedQuizzes());
+useEffect(() => {
+  const sync = () => {
+    // 1. Bestehende lokale Statistiken aktualisieren
+    setDailyXp(getDailyXp());
+    setBreakdown(getDailyBreakdown());
+    setWeeklyXp(getWeeklyXp());
+    setWeeklyByDay(getWeeklyXpByDay());
+    setWeeklyGoal(getWeeklyXpGoal());
+    setDailyGoal(getDailyStudyMinutesGoal());
+    setPlannedGoals(getEffectiveDailyXpGoals());
+    setWeeklySeconds(getWeeklyStudySeconds());
+    setWeeklyLessons(getWeeklyCompletedLessons());
+    setWeeklyQuizzes(getWeeklyCompletedQuizzes());
 
+    // 2. Warten, bis PostgreSQL-Daten geladen wurden
+    if (!accessToken || backendProgress === null) return;
 
-      const j = getLearningJourney(user?.level ?? "A1");
+    // 3. PostgreSQL-Daten ins Frontend-Format umwandeln
+    const progressMap = mapBackendProgress(backendProgress);
 
-      setJourney(j);
+    // 4. Lernweg auf Basis der Backend-Daten berechnen
+    const j = getLearningJourney(
+      user?.level ?? "A1",
+      progressMap
+    );
 
-      setRecommendations(getRecommendations({
-        level: user?.level ?? "A1",
-        completedLessonSlugs: (user?.completedLessons ?? []).map((l) => l.slug),
-        excludeIds: [
-          j.lastCompletedLesson?.slug,
-          j.currentStartedLesson?.slug,
-          j.nextLesson?.slug
-        ].filter(Boolean) as string[],
-      }));
+    setJourney(j);
 
+    // 5. Empfehlungen auf Basis der Backend-Daten berechnen
+    setRecommendations(getRecommendations({
+      level: user?.level ?? "A1",
+      completedLessonSlugs: backendProgress
+        .filter((p) => p.status === "completed")
+        .map((p) => p.slug),
+      excludeIds: [
+        j.lastCompletedLesson?.slug,
+        j.currentStartedLesson?.slug,
+        j.nextLesson?.slug,
+      ].filter(Boolean) as string[],
+    }));
+  };
 
-        if (!accessToken) return;
+  sync();
 
-        const response = await fetch(
-          "http://localhost:8000/lesson-progress/current",
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
+  const un1 = subscribeLearningEvents(sync);
+  const un2 = subscribeUserSettings(sync);
+  const un3 = subscribeStudyTime(sync);
+  const un4 = subscribeCompletionEvents(sync);
+  const un5 = subscribeLessonProgress(sync);
+  const un6 = subscribeVocabMistakes(sync);
 
-        if (!response.ok) {
-          console.error(
-            "Fehler beim Laden der aktuellen Lektion:",
-            response.status
-          );
-          return;
-        }
+  return () => {
+    un1();
+    un2();
+    un3();
+    un4();
+    un5();
+    un6();
+  };
+}, [accessToken, backendProgress, user?.level]);
 
-
-      const currentLesson = await response.json();
-      if (!currentLesson) return;
-
-      console.log("Backend current lesson:", currentLesson);
-
-      const backendCurrentLesson = {
-      slug: currentLesson.slug,
-      title: currentLesson.lesson_title_de,
-      level: currentLesson.level,
-      order: 0,
-      progress: {
-        lessonId: currentLesson.slug,
-        status: "started" as const,
-        progress: currentLesson.progress_percent,
-        startedAt: null,
-        completedAt: null,
-        updatedAt: Date.now(),
-        },
-      };
-
-      setJourney({
-      ...j,
-      state: "in_progress",
-      currentStartedLesson: backendCurrentLesson,
-      });
-    };
-    sync();
-    const un1 = subscribeLearningEvents(sync);
-    const un2 = subscribeUserSettings(sync);
-    const un3 = subscribeStudyTime(sync);
-    const un4 = subscribeCompletionEvents(sync);
-    const un5 = subscribeLessonProgress(sync);
-    const un6 = subscribeVocabMistakes(sync);
-    return () => { un1(); un2(); un3(); un4(); un5(); un6(); };
-  }, [accessToken, user?.level, user?.completedLessons]);
 
   if (!user) return <Navigate to="/login" replace />;
 
