@@ -22,6 +22,10 @@ import WeeklyGoalEditor from "@/components/goals/WeeklyGoalEditor";
 import XpDistributionEditor from "@/components/goals/XpDistributionEditor";
 import { Flame, Clock, Trophy, Target, BookOpen, ChevronRight, Sparkles, Play, RotateCw, AlertTriangle, ArrowRight, Pencil, Settings2 } from "lucide-react";
 import { useLang } from "@/context/LanguageContext";
+import {
+  fetchMyLessonProgress,
+  type BackendLessonProgress,
+} from "@/lib/lessonProgressApi";
 
 
 const recIcon: Record<RecommendationType, typeof Play> = {
@@ -46,6 +50,38 @@ const Dashboard = () => {
   const [weeklyQuizzes, setWeeklyQuizzes] = useState(0);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [journey, setJourney] = useState<LearningJourney>({ state: "new_learner", lastCompletedLesson: null, currentStartedLesson: null, nextLesson: null, level: "A1", nextLevel: "A2", nextLevelLesson: null });
+  const [backendProgress, setBackendProgress] = useState<BackendLessonProgress[]>([]);
+
+
+  // Alle gespeicherten Lektionsfortschritte aus PostgreSQL laden
+  useEffect(() => {
+    if (!accessToken) return;
+
+    let cancelled = false;
+
+    const loadLessonProgress = async () => {
+      try {
+        const progress = await fetchMyLessonProgress(accessToken);
+
+        if (cancelled) return;
+
+        setBackendProgress(progress);
+
+        console.log("Lernfortschritte aus PostgreSQL:", progress);
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Fehler beim Laden der Lernfortschritte:", error);
+        }
+      }
+    };
+
+    void loadLessonProgress();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken]);
+
 
   useEffect(() => {
     const sync = async () => {

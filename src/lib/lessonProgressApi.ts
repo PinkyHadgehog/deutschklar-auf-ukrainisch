@@ -200,4 +200,41 @@ export const getAllLessonProgressFromApi = async (
 };
 
 
+export interface BackendLessonProgress {
+  id: number;
+  lesson_id: number;
+  slug: string;
+  status: "in_progress" | "completed" | "not_started";
+  progress_percent: number;
+  started_at: string | null;
+  completed_at: string | null;
+}
+
+export async function fetchMyLessonProgress(
+  accessToken: string
+): Promise<BackendLessonProgress[]> {
+  const baseUrl =
+    import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
+  const response = await fetch(
+    `${baseUrl}/lesson-progress/me`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Lernfortschritt konnte nicht geladen werden: HTTP ${response.status}`
+    );
+  }
+
+  return response.json();
+}
+
+
+
 

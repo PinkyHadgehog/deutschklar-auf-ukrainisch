@@ -5,10 +5,16 @@
  * flat course order (`lessonIndex`). No duplicate progress data is created here.
  */
 
-import { getAllLessonProgress, type LessonProgress } from "@/lib/lessonProgress";
+import {
+  getAllLessonProgress,
+  statusToProgress,
+  type LessonProgress,
+  type LessonStatus,
+} from "@/lib/lessonProgress";
 import { lessonIndex, type LessonRef } from "@/lib/recommendations";
 import { getLearningEvents } from "@/lib/xp";
 import type { Level } from "@/data/mock";
+import type { BackendLessonProgress } from "@/lib/lessonProgressApi";
 
 export interface JourneyLesson {
   slug: string;
@@ -145,3 +151,32 @@ export const getLearningJourneyState = (level: Level): LearningJourney => {
 
 /** Back-compat alias. */
 export const getLearningJourney = getLearningJourneyState;
+
+
+/**
+ * Wandelt Backend-Fortschritte in das bestehende
+ * LessonProgress-Format um.
+ * Keine Speicherung in localStorage.
+ */
+export const mapBackendProgress = (
+  records: BackendLessonProgress[]
+): Record<string, LessonProgress> => {
+  const result: Record<string, LessonProgress> = {};
+
+  for (const record of records) {
+    const status: LessonStatus =
+      record.status === "in_progress" ? "started" : record.status;
+
+    result[record.slug] = {
+      lessonId: record.slug,
+      status,
+      progress: statusToProgress(status),
+      startedAt: record.started_at,
+      completedAt: record.completed_at,
+      lastOpenedAt: null,
+    };
+  }
+
+  return result;
+};
+
