@@ -11,6 +11,7 @@ import {
   getLessonProgressValue,
   isLessonCompletedStatus,
   subscribeLessonProgress,
+  type LessonProgress,
 } from "@/lib/lessonProgress";
 
 export interface LessonRef {
@@ -76,11 +77,40 @@ export interface AggregateStats {
   completed: number;
 }
 
-export const getAggregate = (lessonIds: string[]): AggregateStats => ({
-  progress: getCategoryProgress(lessonIds),
-  total: lessonIds.length,
-  completed: getCompletedLessonCount(lessonIds),
-});
+
+export const getAggregate = (
+  lessonIds: string[],
+  progressMap?: Record<string, LessonProgress>
+): AggregateStats => {
+  // PostgreSQL-Daten verwenden, falls übergeben
+  if (progressMap) {
+    const total = lessonIds.length;
+
+    const completed = lessonIds.filter(
+      (id) => progressMap[id]?.status === "completed"
+    ).length;
+
+    const progress =
+      total === 0
+        ? 0
+        : Math.round(
+            lessonIds.reduce(
+              (sum, id) => sum + (progressMap[id]?.progress ?? 0),
+              0
+            ) / total
+          );
+
+    return { progress, total, completed };
+  }
+
+  // Bestehendes Verhalten für andere Komponenten
+  return {
+    progress: getCategoryProgress(lessonIds),
+    total: lessonIds.length,
+    completed: getCompletedLessonCount(lessonIds),
+  };
+};
+
 
 /** Re-renders the component whenever any lesson status changes. */
 export const useProgressVersion = (): number => {

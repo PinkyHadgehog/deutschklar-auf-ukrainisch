@@ -1,5 +1,4 @@
-import { useMemo, useRef, useState } from "react";
-import LessonStatusBadge from "@/components/lesson/LessonStatusBadge";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,30 +16,83 @@ import {
   getAggregate,
   getLevelLessonIds,
   getTopicLessonIds,
-  useProgressVersion,
 } from "@/lib/progressAggregate";
 import { Lock, ArrowRight, BookOpen, Search, X, Bookmark } from "lucide-react";
 import { toast } from "sonner";
 import { toggleSavedItem, useSavedItems } from "@/lib/savedItems";
 import { useLang } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
+import {
+  fetchMyLessonProgress,
+  type BackendLessonProgress,
+} from "@/lib/lessonProgressApi";
+import { mapBackendProgress } from "@/lib/learningJourney";
 
 
 const LEVELS: Array<"all" | Level> = ["all", "A1", "A2", "B1", "B2", "C1", "C2"];
 
 const norm = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
 
+
 const Courses = () => {
   const { t } = useLang();
+  const { accessToken } = useAuth();
+
   const [level, setLevel] = useState<"all" | Level>("all");
   const [query, setQuery] = useState("");
   const [categoryId, setCategoryId] = useState<"all" | string>("all");
   const lessonsRef = useRef<HTMLElement | null>(null);
-  useProgressVersion();
+  const [progressResponse, setProgressResponse] = useState<{
+    token: string;
+    records: BackendLessonProgress[];
+  } | null>(null);
+
+  // Lernfortschritte des angemeldeten Nutzers aus FastAPI laden
+  useEffect(() => {
+    if (!accessToken) {
+      setProgressResponse(null);
+      return;
+    }
+
+    let cancelled = false;
+    setProgressResponse(null);
+
+    const loadProgress = async () => {
+      try {
+        const records = await fetchMyLessonProgress(accessToken);
+
+        if (!cancelled) {
+          setProgressResponse({ token: accessToken, records });
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Fehler beim Laden der Lernfortschritte:", error);
+          toast.error("Lernfortschritte konnten nicht geladen werden.");
+        }
+      }
+    };
+
+    void loadProgress();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken]);
+
+  const progressMap = useMemo(
+    () =>
+      mapBackendProgress(
+        progressResponse?.token === accessToken
+          ? progressResponse.records
+          : []
+      ),
+    [progressResponse, accessToken]
+  );
+
+
   const saved = useSavedItems();
   const savedTopicIds = useMemo(() => new Set(saved.topics.map((t) => t.id)), [saved.topics]);
   const filteredCourses = level === "all" ? courses : courses.filter((c) => c.level === level);
-
-
   const openLevel = (l: Level) => {
     setLevel(l);
     requestAnimationFrame(() => {
@@ -241,7 +293,7 @@ const Courses = () => {
                     defaultValue={q ? cat.topics.map((t) => t.slug) : []}
                   >
                     {cat.topics.map((topic) => {
-                      const topicStats = getAggregate(getTopicLessonIds(topic.slug));
+                      const topicStats = getAggregate(getTopicLessonIds(topic.slug), progressMap);
                       return (
                       <AccordionItem key={topic.slug} value={topic.slug}>
                         <AccordionTrigger className="hover:no-underline">
@@ -300,7 +352,9 @@ const Courses = () => {
                                   >
                                     <span className="truncate">{s.title}</span>
                                     <span className="flex items-center gap-2 shrink-0">
-                                      <LessonStatusBadge lessonId={s.slug} />
+                                      <Badge variant="outline" className="text-xs">
+                                        {progressMap[s.slug]?.progress ?? 0}%
+                                      </Badge>
                                       <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
                                     </span>
                                   </Link>
