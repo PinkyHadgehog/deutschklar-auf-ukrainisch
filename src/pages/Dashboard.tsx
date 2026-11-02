@@ -10,7 +10,7 @@ import { courses } from "@/data/mock";
 import { allLessons, getAggregate, getLevelLessonIds } from "@/lib/progressAggregate";
 import { getDailyXp, getDailyBreakdown, subscribeLearningEvents, getWeeklyXp, getWeeklyXpByDay } from "@/lib/xp";
 import { getWeeklyXpGoal, getDailyStudyMinutesGoal, subscribeUserSettings, getEffectiveDailyXpGoals, WEEK_DAYS, WEEK_DAY_LABELS, type DailyXpGoals, emptyGoals } from "@/lib/userSettings";
-import { getWeeklyCompletedLessons, getWeeklyCompletedQuizzes, subscribeCompletionEvents, getCurrentWeekRange } from "@/lib/weeklyStats";
+import { isInCurrentWeek, getWeeklyCompletedQuizzes, subscribeCompletionEvents, getCurrentWeekRange } from "@/lib/weeklyStats";
 import { getRecommendations, type Recommendation, type RecommendationType } from "@/lib/recommendations";
 import { subscribeVocabMistakes } from "@/lib/vocabMistakes";
 import { subscribeLessonProgress } from "@/lib/lessonProgress";
@@ -98,11 +98,22 @@ useEffect(() => {
     setDailyGoal(getDailyStudyMinutesGoal());
     setPlannedGoals(getEffectiveDailyXpGoals());
     setWeeklySeconds(getWeeklyStudySeconds());
-    setWeeklyLessons(getWeeklyCompletedLessons());
     setWeeklyQuizzes(getWeeklyCompletedQuizzes());
 
     // 2. Warten, bis PostgreSQL-Daten geladen wurden
     if (!accessToken || backendProgress === null) return;
+
+
+    // Abgeschlossene Lektionen dieser Woche aus PostgreSQL zählen
+    const completedThisWeek = backendProgress.filter(
+      (lesson) =>
+        lesson.status === "completed" &&
+        lesson.completed_at != null &&
+        isInCurrentWeek(lesson.completed_at)
+    ).length;
+
+    setWeeklyLessons(completedThisWeek);
+
 
     // 3. PostgreSQL-Daten ins Frontend-Format umwandeln
     const progressMap = mapBackendProgress(backendProgress);

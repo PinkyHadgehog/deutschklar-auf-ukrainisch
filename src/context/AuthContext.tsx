@@ -143,9 +143,9 @@ export const AuthProvider = ({
           name: profile.name,
           email: profile.email,
 
-          // MVP-Standardwert
-          // Später aus dem Backend laden
-          level: "A2",
+
+          // Gespeichertes Sprachniveau aus PostgreSQL
+          level: profile.level,
 
           plan: "free",
           goalMinutes: 20,
@@ -229,9 +229,8 @@ export const AuthProvider = ({
       name: profile.name,
       email: profile.email,
 
-      // MVP-Standardwert
-      // Später aus PostgreSQL übernehmen
-      level: "A2",
+      // Gespeichertes Sprachniveau aus PostgreSQL
+      level: profile.level,
 
       plan: "free",
       goalMinutes: 20,
@@ -264,10 +263,12 @@ export const AuthProvider = ({
         headers: {
           "Content-Type": "application/json",
         },
+
         body: JSON.stringify({
           name,
           email,
           password,
+          level,
         }),
       }
     );
@@ -279,17 +280,6 @@ export const AuthProvider = ({
     // Nach erfolgreicher Registrierung
     // automatisch anmelden
     await login(email, password);
-
-    // Das bei der Registrierung gewählte
-    // Sprachniveau im React-State beibehalten
-    setUser((currentUser) =>
-      currentUser
-        ? {
-            ...currentUser,
-            level,
-          }
-        : null
-    );
   };
 
   // --------------------------------------------------

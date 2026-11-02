@@ -20,12 +20,25 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [level, setLevel] = useState<typeof levels[number]>("A1");
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await signup(name || t("auth.signup.namePlaceholder"), email || "olena@example.com", password, level);
-    toast.success(t("auth.signup.successToast"));
-    nav("/dashboard");
-  };
+
+    const submit = async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      if (!name.trim() || !email.trim() || !password) {
+        toast.error("Bitte alle Pflichtfelder ausfüllen.");
+        return;
+      }
+
+      try {
+        await signup(name.trim(), email.trim(), password, level);
+        toast.success(t("auth.signup.successToast"));
+        nav("/dashboard");
+      } catch (error) {
+        console.error("Registrierung fehlgeschlagen:", error);
+        toast.error("Registrierung fehlgeschlagen. Bitte Eingaben prüfen.");
+      }
+    };
+
 
   return (
     <div className="min-h-[80vh] grid place-items-center py-12 px-4 bg-gradient-hero">
@@ -41,15 +54,33 @@ const Signup = () => {
         <form onSubmit={submit} className="mt-6 space-y-4">
           <div>
             <Label htmlFor="name">{t("auth.signup.name")}</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t("auth.signup.namePlaceholder")} className="mt-1.5" />
+            <Input id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t("auth.signup.namePlaceholder")}
+            className="mt-1.5"
+            required
+            />
           </div>
           <div>
             <Label htmlFor="email">{t("auth.signup.email")}</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("auth.signup.emailPlaceholder")} className="mt-1.5" />
+            <Input id="email"
+            type="email"
+            value={email} onChange={(e) => setEmail(e.target.value)}
+            placeholder={t("auth.signup.emailPlaceholder")}
+            className="mt-1.5"
+            required
+            />
           </div>
           <div>
             <Label htmlFor="pw">{t("auth.signup.password")}</Label>
-            <Input id="pw" type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("auth.signup.passwordPlaceholder")} className="mt-1.5" />
+            <Input id="pw"
+            type="password" value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={t("auth.signup.passwordPlaceholder")}
+            className="mt-1.5"
+            required
+            />
           </div>
           <div>
             <Label>{t("auth.signup.levelLabel")}</Label>
