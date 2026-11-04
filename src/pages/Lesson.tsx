@@ -23,6 +23,10 @@ import { toggleSavedItem, useIsSaved } from "@/lib/savedItems";
 import { useLessonProgressQuery } from "@/hooks/useLessonProgressQuery";
 import { useQueryClient } from "@tanstack/react-query";
 
+
+const API_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
+
 const Html = ({ html }: { html: string }) => (
   <span dangerouslySetInnerHTML={{ __html: html.replace(/class='hl'/g, 'class="text-primary font-semibold"') }} />
 );
@@ -172,7 +176,7 @@ const Lesson = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:8000/lesson-progress/complete",
+        `${API_URL}/lesson-progress/complete`,
         {
           method: "PATCH",
           headers: {
@@ -221,7 +225,7 @@ const Lesson = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:8000/lesson-progress/start",
+        `${API_URL}/lesson-progress/start`,
         {
           method: "POST",
           headers: {
@@ -264,7 +268,7 @@ const Lesson = () => {
 
     try {
       const response = await fetch(
-        "http://localhost:8000/lesson-progress/reset",
+        `${API_URL}/lesson-progress/reset`,
         {
           method: "PATCH",
           headers: {
