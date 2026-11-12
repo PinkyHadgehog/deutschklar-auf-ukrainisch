@@ -1,0 +1,286 @@
+{
+  "lesson_slug": "regelmaessige-verben",
+  "count": 15,
+  "exercises": [
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-01",
+      "position": 1,
+      "type": "mc",
+      "payload": {
+        "q": "Ich ___ Deutsch.",
+        "options": [
+          "lerne",
+          "lernst",
+          "lernt",
+          "lernen"
+        ]
+      },
+      "solution": {
+        "correct": 0
+      },
+      "explain": "ich → -e."
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-02",
+      "position": 2,
+      "type": "mc",
+      "payload": {
+        "q": "Du ___ in Köln.",
+        "options": [
+          "wohne",
+          "wohnst",
+          "wohnt",
+          "wohnen"
+        ]
+      },
+      "solution": {
+        "correct": 1
+      },
+      "explain": "du → -st."
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-03",
+      "position": 3,
+      "type": "mc",
+      "payload": {
+        "q": "Er ___ einen Apfel.",
+        "options": [
+          "kaufe",
+          "kaufst",
+          "kauft",
+          "kaufen"
+        ]
+      },
+      "solution": {
+        "correct": 2
+      },
+      "explain": null
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-04",
+      "position": 4,
+      "type": "mc",
+      "payload": {
+        "q": "Wir ___ Tee.",
+        "options": [
+          "trinke",
+          "trinkst",
+          "trinkt",
+          "trinken"
+        ]
+      },
+      "solution": {
+        "correct": 3
+      },
+      "explain": "wir → -en."
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-05",
+      "position": 5,
+      "type": "tf",
+      "payload": {
+        "q": "У 1 особі однини закінчення завжди -e."
+      },
+      "solution": {
+        "correct": true
+      },
+      "explain": null
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-06",
+      "position": 6,
+      "type": "gap",
+      "payload": {
+        "q": "Du ___ viel. (arbeiten)",
+        "hint": "Основа на -t → -e- перед -st."
+      },
+      "solution": {
+        "accepted": [
+          "arbeitest"
+        ]
+      },
+      "explain": null
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-07",
+      "position": 7,
+      "type": "gap",
+      "payload": {
+        "q": "Er ___ die Tür. (öffnen)",
+        "hint": "Основа на -ffn → -et."
+      },
+      "solution": {
+        "accepted": [
+          "öffnet"
+        ]
+      },
+      "explain": null
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-08",
+      "position": 8,
+      "type": "gap",
+      "payload": {
+        "q": "Wie ___ du? (heißen)",
+        "hint": "Основа на -ß → лише -t."
+      },
+      "solution": {
+        "accepted": [
+          "heißt"
+        ]
+      },
+      "explain": null
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-09",
+      "position": 9,
+      "type": "gap",
+      "payload": {
+        "q": "Ihr ___ Brot. (kaufen)"
+      },
+      "solution": {
+        "accepted": [
+          "kauft"
+        ]
+      },
+      "explain": null
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-10",
+      "position": 10,
+      "type": "match",
+      "payload": {
+        "prompt": "Зістав займенник із формою дієслова «machen»:",
+        "left": [
+          "ich",
+          "du",
+          "wir",
+          "ihr"
+        ],
+        "right": [
+          "mache",
+          "machen",
+          "machst",
+          "macht"
+        ]
+      },
+      "solution": {
+        "pairs": [
+          {
+            "left": "ich",
+            "right": "mache"
+          },
+          {
+            "left": "du",
+            "right": "machst"
+          },
+          {
+            "left": "wir",
+            "right": "machen"
+          },
+          {
+            "left": "ihr",
+            "right": "macht"
+          }
+        ]
+      },
+      "explain": null
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-11",
+      "position": 11,
+      "type": "tf",
+      "payload": {
+        "q": "У формі «du tanzst» закінчення правильне."
+      },
+      "solution": {
+        "correct": false
+      },
+      "explain": "Основа на -z → лише -t: du tanzt."
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-12",
+      "position": 12,
+      "type": "correct",
+      "payload": {
+        "prompt": "Виправ помилку:",
+        "wrong": "Wir wohnt in Berlin."
+      },
+      "solution": {
+        "accepted": [
+          "Wir wohnen in Berlin."
+        ]
+      },
+      "explain": "wir → -en."
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-13",
+      "position": 13,
+      "type": "order",
+      "payload": {
+        "prompt": "Склади речення:",
+        "words": [
+          "jeden",
+          "Tag",
+          "Anna",
+          "Deutsch",
+          "lernt"
+        ]
+      },
+      "solution": {
+        "correct": [
+          "Anna",
+          "lernt",
+          "jeden",
+          "Tag",
+          "Deutsch"
+        ]
+      },
+      "explain": "Дієслово на 2 місці."
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-14",
+      "position": 14,
+      "type": "translate",
+      "payload": {
+        "prompt": "Переклади німецькою:",
+        "uk": "Ти багато працюєш."
+      },
+      "solution": {
+        "accepted": [
+          "Du arbeitest viel."
+        ]
+      },
+      "explain": null
+    },
+    {
+      "lesson_slug": "regelmaessige-verben",
+      "exercise_key": "regelmaessige-verben-15",
+      "position": 15,
+      "type": "writeFree",
+      "payload": {
+        "prompt": "Напиши 3 речення про себе у Präsens (де живеш, що вчиш, що любиш)."
+      },
+      "solution": {
+        "sample": "Ich wohne in Lwiw. Ich lerne Deutsch. Ich liebe Musik.",
+        "grading": "manual_review",
+        "auto_gradable": false
+      },
+      "explain": "Перевір: займенник + дієслово з -e/-st/-t."
+    }
+  ]
+}
